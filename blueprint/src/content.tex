@@ -7,6 +7,7 @@
 % can start with a \section or \chapter for instance.
 
 \begin{lemma}
+\label{memdhiff}
   Let $(f,h)$ be a spring morphism from $(X,A)$ to $(X',A')$. Suppose $x\in{X}$ and $c\in{A'}$.
   Then $x\in{d(h(c))}$ if and only if $f(x)\in{d(c)}$.
 \end{lemma}
@@ -21,5 +22,7 @@
   belongs to $G(\boldsymbol{A'},v')$, then (h(a),h(b)) belongs to $G(\boldsymbol{A},v)$.
 \end{proposition}
 \begin{proof}
-  Sorry!
+  We first show that $z(h(b))\subseteq{z(h(a))}$. Indeed, if $x\in{X}$ belongs to $z(h(b))$, then
+  by Lemma \ref{memdhiff} we have that $f(x)\in{z(b)}$. As $z(b)\subseteq{z(a)}$, $f(x)\in{z(a)}$.
+  Then \ref{memdhiff} implies that $x\in{z(h(a))}$.
 \end{proof}
