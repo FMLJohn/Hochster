@@ -6,8 +6,7 @@
 % the current file can be a simple sequence of \input. Otherwise It
 % can start with a \section or \chapter for instance.
 
-\begin{lemma}
-\label{memdhiff}
+\begin{lemma}\label{memdhiff}
   Let $(f,h)$ be a spring morphism from $(X,A)$ to $(X',A')$. Suppose $x\in{X}$ and $c\in{A'}$.
   Then $x\in{d(h(c))}$ if and only if $f(x)\in{d(c)}$.
 \end{lemma}
@@ -16,7 +15,8 @@
   (because $f=Spec(h)$), which is equivalent to $f(x)\in{d(c)}$.
 \end{proof}
 
-\begin{proposition}
+
+\begin{proposition}\label{memGofmemG}\uses{memdhiff}
   Let $\boldsymbol{A}$ and $\boldsymbol{A'}$ be springs with indices $v$ and $v'$ respectively. Let
   $(f,h)$ be an indexed spring homomorphism from $\boldsymbol{A}$ to $\boldsymbol{A'}$. If $(a,b)$
   belongs to $G(\boldsymbol{A'},v')$, then (h(a),h(b)) belongs to $G(\boldsymbol{A},v)$.
@@ -44,3 +44,11 @@
   If $v_p(h(b))={v_p(h(a))}$, then $v_{f(p)}(a)={v}_{f(p)}(b)$ and so $f(x)\in{d(b)}$. Thus, by
   Lemma \ref{memdhiff} we have that $x\in{d(h(b))}$ and we are done!
 \end{proof}
+
+
+\begin{proposition}\uses{memGofmemG}
+  Let $\boldsymbol{A}$ and $\boldsymbol{A'}$ be springs with indices $v$ and $v'$ respectively. Let
+  $(f,h)$ be an indexed spring morphism from $\boldsymbol{A}$ to $\boldsymbol{A'}$. Suppose
+  $(a,b)\in{G}(\boldsymbol{A'},v')$. Then there exists a unique ring homomorphism $h_1$ from
+  $A'[a#b]$ to $A[h(a),h(b)]$ that extends $h$ and maps $a#b$ to $h(b)#h(b)$.
+\end{proposition}
