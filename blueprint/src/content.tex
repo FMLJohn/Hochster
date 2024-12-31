@@ -24,5 +24,17 @@
 \begin{proof}
   We first show that $z(h(b))\subseteq{z(h(a))}$. Indeed, if $x\in{X}$ belongs to $z(h(b))$, then
   by Lemma \ref{memdhiff} we have that $f(x)\in{z(b)}$. As $z(b)\subseteq{z(a)}$, $f(x)\in{z(a)}$.
-  Then \ref{memdhiff} implies that $x\in{z(h(a))}$.
+  Then Lemma \ref{memdhiff} implies that $x\in{z(h(a))}$.
+  \\
+  By Theorem $3$ of Hochster's paper, we now only need to show that for any element $p=(y,x)$ of
+  $\sigma(X)$ such that $d(h(a))(y)\neq{0}$ it is true that $v_p(h(b))\leq{v_p(h(a))}$, with
+  equality only if $d(h(b))(x)\neq{0}$.
+  \\
+  Indeed, if $y\in{d(h(a))}$, then by Lemma \ref{memdhiff} we know that $f(y)\in{d(a)}$. Because
+  $(f(y),f(x))\in\sigma(X')$, Theorem $3$ in Hochster's thesis implies that
+  $v_{f(p)}(a)\geq{v}_{f(p)}(b)$. By the definition of an indexed spring morphism,
+  $v_{f(p)}(a)=v_p(h(a))$ and $v_{f(p)}(b)=v_p(h(b))$. Hence $v_p(h(a))\geq{v_p(h(b))}$.
+  \\
+  If $v_p(h(b))={v_p(h(a))}$, then $v_{f(p)}(a)={v}_{f(p)}(b)$ and so $f(x)\in{d(b)}$. Thus, by
+  Lemma \ref{memdhiff} we have that $x\in{d(h(b))}$ and we are done!
 \end{proof}
