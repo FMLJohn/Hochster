@@ -1,6 +1,12 @@
 \chapter{Proposition 2 of Hochster's Paper}
 
 
+\begin{lemma}\label{zbnmem}
+  Let $n$ be a positive integer and let $(X,A)$ be a spring. Suppose $a,b\in{A}$ satisfy
+  $z(b)\subseteq{z(a)}$. Then $z(b^n)\subseteq{z(a^n)}$ and $(a\#b)^n={a^n}\#b^n$.
+\end{lemma}
+
+
 \begin{lemma}\label{memdhiff}
   Let $(f,h)$ be a spring morphism from $(X,A)$ to $(X',A')$. Suppose $x\in{X}$ and $c\in{A'}$.
   Then $x\in{d(h(c))}$ if and only if $f(x)\in{d(c)}$.
@@ -41,7 +47,7 @@
 \end{proof}
 
 
-\begin{proposition}\uses{memGofmemG}
+\begin{proposition}\uses{memGofmemG, zbnmem}
   Let $\boldsymbol{A}$ and $\boldsymbol{A'}$ be springs with indices $v$ and $v'$ respectively. Let
   $(f,h)$ be an indexed spring morphism from $\boldsymbol{A}$ to $\boldsymbol{A'}$. Suppose
   $(a,b)\in{G}(\boldsymbol{A'},v')$. Then there exists a unique ring homomorphism $h_1$ from
