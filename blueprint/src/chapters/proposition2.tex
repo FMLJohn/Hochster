@@ -1,7 +1,7 @@
 \chapter{Proposition 2 of Hochster's Paper}
 
 
-\begin{lemma}\label{zbnmem}
+\begin{lemma}\label{zbnmempow}
   Let $n$ be a positive integer and let $(X,A)$ be a spring. Suppose $a,b\in{A}$ satisfy
   $z(b)\subseteq{z(a)}$. Then $z(b^n)\subseteq{z(a^n)}$ and $(a\#b)^n={a^n}\#b^n$.
 \end{lemma}
@@ -47,7 +47,7 @@
 \end{proof}
 
 
-\begin{proposition}\uses{memGofmemG, zbnmem}
+\begin{proposition}\uses{memGofmemG, zbnmempow, memdhiff}
   Let $\boldsymbol{A}$ and $\boldsymbol{A'}$ be springs with indices $v$ and $v'$ respectively. Let
   $(f,h)$ be an indexed spring morphism from $\boldsymbol{A}$ to $\boldsymbol{A'}$. Suppose
   $(a,b)\in{G}(\boldsymbol{A'},v')$. Then there exists a unique ring homomorphism $h_1$ from
@@ -58,4 +58,23 @@
   $q=\Sigma_{i=0}^m{a_i}t^i$, then $r':=\Sigma_{i=0}^m{h(a_i)}(h(a){\#}h(b))^i$ belongs to $A$ and
   equals $h(r)$. The purpose of showing this is to guarantee that if we construct the homomorphism
   $h_1$ in the obvious way, then $h_1$ is well-defined.
+
+  \
+
+  Let $c:=b^m{r}$. Then $h(b^m)r'=\Sigma_{i=0}^m{h(a_i)}h(a)^i{h(b)^{m-i}}=h(b^m)h(r)$. We then try
+  to prove that $r'(x)=h(r)(x)$ for any $x\in{X}$. We show this by classifying the $x$'s. If
+  $x\in{d(h(b))}$, then it is clear that $r'(x)=h(r)(x)$ because we have shown that
+  $h(b^m)r'=h(b^m)h(r)$.
+
+  \
+
+  Now assume $x\in{z(h(b))}$. Let $\overline{h}:\frac{A'}{h^{-1}(x)}\rightarrow\frac{A}{x}$ be the
+  ring homomorphism induced by $h$. Then $r'(x)=h(a_0)(x)=h(a_0)+x(\in\frac{A}{x})=
+  \overline{h}(a_0+h^{-1}(x))=\overline{h}(a_0(f(x)))=\overline{h}(r(f(x)))=
+  \overline{h}(r+h^{-1}(x))=h(r)+x(\in\frac{A}{x})=h(r)(x)$.
+
+  \
+
+  It is easy to show that the obvious way to define $h_1$ gives satisfy the axioms of ring
+  homomorphisms.
 \end{proof}
