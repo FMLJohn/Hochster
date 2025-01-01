@@ -18,9 +18,10 @@
 
 
 \begin{proposition}\label{memGofmemG}\uses{memdhiff}
-  Let $\boldsymbol{A}$ and $\boldsymbol{A'}$ be springs with indices $v$ and $v'$ respectively. Let
-  $(f,h)$ be an indexed spring homomorphism from $\boldsymbol{A}$ to $\boldsymbol{A'}$. If $(a,b)$
-  belongs to $G(\boldsymbol{A'},v')$, then (h(a),h(b)) belongs to $G(\boldsymbol{A},v)$.
+  Let $\boldsymbol{A}=(X,A)$ and $\boldsymbol{A'}=(X',A')$ be springs with indices $v$ and $v'$
+  respectively. Let $(f,h)$ be an indexed spring homomorphism from $\boldsymbol{A}$ to
+  $\boldsymbol{A'}$. If $(a,b)$ belongs to $G(\boldsymbol{A'},v')$, then (h(a),h(b)) belongs to
+  $G(\boldsymbol{A},v)$.
 \end{proposition}
 \begin{proof}
   We first show that $z(h(b))\subseteq{z(h(a))}$. Indeed, if $x\in{X}$ belongs to $z(h(b))$, then
@@ -48,10 +49,11 @@
 
 
 \begin{proposition}\label{hext}\uses{memGofmemG, zbnmempow, memdhiff}
-  Let $\boldsymbol{A}$ and $\boldsymbol{A'}$ be springs with indices $v$ and $v'$ respectively. Let
-  $(f,h)$ be an indexed spring morphism from $\boldsymbol{A}$ to $\boldsymbol{A'}$. Suppose
-  $(a,b)\in{G}(\boldsymbol{A'},v')$. Then there exists a unique ring homomorphism $h_1$ from
-  $A'[a{\#}b]$ to $A[h(a),h(b)]$ that extends $h$ and maps $a{\#}b$ to $h(b){\#}h(b)$.
+  Let $\boldsymbol{A}=(X,A)$ and $\boldsymbol{A'}=(X',A')$ be springs with indices $v$ and $v'$
+  respectively. Let $(f,h)$ be an indexed spring morphism from $\boldsymbol{A}$ to
+  $\boldsymbol{A'}$. Suppose $(a,b)\in{G}(\boldsymbol{A'},v')$. Then there exists a unique ring
+  homomorphism $h_1$ from $A'[a{\#}b]$ to $A[h(a),h(b)]$ that extends $h$ and maps $a{\#}b$ to
+  $h(b){\#}h(b)$.
 \end{proposition}
 \begin{proof}
   The most difficult part of the proof is to show that if $r=q(a{\#}b)\in{A'}$ where
@@ -115,4 +117,16 @@
   We still need to show that for any $p=(y,x)\in\sigma(X)$ with $y\in{d}(h_1(r))$ it is true that
   $v_p(h_1(r))=v_{f(p)}(r)$. Indeed, because $h(c)=h(b)^m{h_1}(r)$,
   $v_p(h_1(r))=v_p(h(c))-v_p(h(b^m))=v_{f(p)}(c)-v_{f(p)}(b^m)=v_{f(p)}(r)$.
+\end{proof}
+
+
+\begin{proposition}
+  Let $\boldsymbol{A}=(X,A)$ and $\boldsymbol{A'}=(X',A')$ be springs with indices $v$ and $v'$
+  respectively. Let $(f,h)$ be an indexed spring morphism from $(X,A)$ to $(X',A')$. Suppose
+  $(a,b)\in{G}(\boldsymbol{A'},v')$, $\boldsymbol{A''}$ and $\boldsymbol{A'''}$ extend
+  $\boldsymbol{A}$ and $\boldsymbol{A'}[a\#b]$ respectively, and $h_2:A'''\rightarrow{A''}$ is a
+  ring homomorphism extending $h$. If $(f,h_2)$ is a spring morphism from $\boldsymbol{A''}$ to
+  $\boldsymbol{A'''}$, then $h(a)\#h(b)=h_2(a\#b)$, meaning that $h(a)\#h(b)$ belongs to $A''$.
+\end{proposition}
+\begin{proof}
 \end{proof}
