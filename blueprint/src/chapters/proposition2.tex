@@ -120,7 +120,7 @@
 \end{proof}
 
 
-\begin{proposition}
+\begin{proposition}\uses{memdhiff}
   Let $\boldsymbol{A}=(X,A)$ and $\boldsymbol{A'}=(X',A')$ be springs with indices $v$ and $v'$
   respectively. Let $(f,h)$ be an indexed spring morphism from $(X,A)$ to $(X',A')$. Suppose
   $(a,b)\in{G}(\boldsymbol{A'},v')$, $\boldsymbol{{A'}{'}}$ and $\boldsymbol{{A'}{'}{'}}$ extend
@@ -130,4 +130,9 @@
   ${A'}{'}$.
 \end{proposition}
 \begin{proof}
+  We show that for any $x\in{X}$, $h_2(a\#b)(x)=(h(a)\#h(b))(x)$. Indeed, if $h(b)(x)\neq{0}$, then
+  as $h_2(a\#b)h(b)=h_2(a\#b)h_2(b)=h_2(a)=h(a)=(h(a)\#h(b))h(b)$, we immediately have that
+  $h_2(a\#b)(x)=(h(a)\#h(b))(x)$. If $h(b)(x)=0$, then $x\in{z}(h_2(b))$ and so $f(x)\in{z}(b)$ by
+  Lemma \ref{memdhiff}. This means $(a\#b)(f(x))=0$. Then Lemma \ref{memdhiff} implies
+  $h_2(a\#b)(x)=0$. Therefore, $h_2(a\#b)(x)=(h(a)\#h(b))(x)$.
 \end{proof}
