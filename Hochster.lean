@@ -1,1 +1,1 @@
-import Hochster.Example
+import Hochster.Spectral
