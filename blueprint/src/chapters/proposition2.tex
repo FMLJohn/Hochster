@@ -1,0 +1,141 @@
+\chapter{Proposition 2 of Hochster's Paper}
+
+
+\begin{lemma}\label{zbnmempow}
+  Let $n$ be a positive integer and let $(X,A)$ be a spring. Suppose $a,b\in{A}$ satisfy
+  $z(b)\subseteq{z(a)}$. Then $z(b^n)\subseteq{z(a^n)}$ and $(a\#b)^n={a^n}\#b^n$.
+\end{lemma}
+
+
+\begin{lemma}\label{memdhiff}
+  Let $(f,h)$ be a spring morphism from $(X,A)$ to $(X',A')$. Suppose $x\in{X}$ and $c\in{A'}$.
+  Then $x\in{d(h(c))}$ if and only if $f(x)\in{d(c)}$.
+\end{lemma}
+\begin{proof}
+  $x\in{d(h(c))}$ if and only if $h(c)\notin{x}$, which is true if and only if $c\notin{f(x)}$
+  (because $f=Spec(h)$), which is equivalent to $f(x)\in{d(c)}$.
+\end{proof}
+
+
+\begin{proposition}\label{memGofmemG}\uses{memdhiff}
+  Let $\boldsymbol{A}=(X,A)$ and $\boldsymbol{A'}=(X',A')$ be springs with indices $v$ and $v'$
+  respectively. Let $(f,h)$ be an indexed spring homomorphism from $\boldsymbol{A}$ to
+  $\boldsymbol{A'}$. If $(a,b)$ belongs to $G(\boldsymbol{A'},v')$, then (h(a),h(b)) belongs to
+  $G(\boldsymbol{A},v)$.
+\end{proposition}
+\begin{proof}
+  We first show that $z(h(b))\subseteq{z(h(a))}$. Indeed, if $x\in{X}$ belongs to $z(h(b))$, then
+  by Lemma \ref{memdhiff} we have that $f(x)\in{z(b)}$. As $z(b)\subseteq{z(a)}$, $f(x)\in{z(a)}$.
+  Then Lemma \ref{memdhiff} implies that $x\in{z(h(a))}$.
+
+  \
+
+  By Theorem 3 of Hochster's paper, we now only need to show that for any element $p=(y,x)$ of
+  $\sigma(X)$ such that $h(a)(y)\neq{0}$ it is true that $v_p(h(b))\leq{v_p(h(a))}$, with equality
+  only if $h(b)(x)\neq{0}$.
+
+  \
+
+  Indeed, if $y\in{d(h(a))}$, then by Lemma \ref{memdhiff} we know that $f(y)\in{d(a)}$. Because
+  $(f(y),f(x))\in\sigma(X')$, Theorem 3 in Hochster's thesis implies that
+  $v_{f(p)}(a)\geq{v}_{f(p)}(b)$. By the definition of an indexed spring morphism,
+  $v_{f(p)}(a)=v_p(h(a))$ and $v_{f(p)}(b)=v_p(h(b))$. Hence $v_p(h(a))\geq{v_p(h(b))}$.
+
+  \
+
+  If $v_p(h(b))={v_p(h(a))}$, then $v_{f(p)}(a)={v}_{f(p)}(b)$ and so $f(x)\in{d(b)}$. Thus, by
+  Lemma \ref{memdhiff} we have that $x\in{d(h(b))}$ and we are done!
+\end{proof}
+
+
+\begin{proposition}\label{hext}\uses{memGofmemG, zbnmempow, memdhiff}
+  Let $\boldsymbol{A}=(X,A)$ and $\boldsymbol{A'}=(X',A')$ be springs with indices $v$ and $v'$
+  respectively. Let $(f,h)$ be an indexed spring morphism from $\boldsymbol{A}$ to
+  $\boldsymbol{A'}$. Suppose $(a,b)\in{G}(\boldsymbol{A'},v')$. Then there exists a unique ring
+  homomorphism $h_1$ from $A'[a{\#}b]$ to $A[h(a),h(b)]$ that extends $h$ and maps $a{\#}b$ to
+  $h(b){\#}h(b)$.
+\end{proposition}
+\begin{proof}
+  The most difficult part of the proof is to show that if $r=q(a{\#}b)\in{A'}$ where
+  $q=\Sigma_{i=0}^m{a_i}t^i$, then $r':=\Sigma_{i=0}^m{h(a_i)}(h(a){\#}h(b))^i$ belongs to $A$ and
+  equals $h(r)$. The purpose of showing this is to guarantee that if we construct the homomorphism
+  $h_1$ in the obvious way, then $h_1$ is well-defined.
+
+  \
+
+  Let $c:=b^m{r}$. Then $h(b^m)r'=\Sigma_{i=0}^m{h(a_i)}h(a)^i{h(b)^{m-i}}=h(b^m)h(r)$. We then try
+  to prove that $r'(x)=h(r)(x)$ for any $x\in{X}$. We show this by classifying the $x$'s. If
+  $x\in{d(h(b))}$, then it is clear that $r'(x)=h(r)(x)$ because we have shown that
+  $h(b^m)r'=h(b^m)h(r)$.
+
+  \
+
+  Now assume $x\in{z(h(b))}$. Let $\overline{h}:\frac{A'}{h^{-1}(x)}\rightarrow\frac{A}{x}$ be the
+  ring homomorphism induced by $h$. Then
+  \\
+  $r'(x)=h(a_0)(x)=h(a_0)+x(\in\frac{A}{x})=\overline{h}(a_0+h^{-1}(x))$
+  \\
+  $=\overline{h}(a_0(f(x)))=\overline{h}(r(f(x)))=\overline{h}(r+h^{-1}(x))$
+  \\
+  $=h(r)+x(\in\frac{A}{x})=h(r)(x)$.
+
+  \
+
+  It is easy to show that the obvious way to define $h_1$ satisfy the axioms of ring homomorphisms,
+  and that this extension of $h$ is unique.
+\end{proof}
+
+
+\begin{proposition}\uses{zbnmempow, memdhiff, hext}
+  Let $\boldsymbol{A}=(X,A)$ and $\boldsymbol{A'}=(X',A')$ be springs with indices $v$ and $v'$
+  respectively. Let $(f,h)$ be an indexed spring morphism from $(X,A)$ to $(X',A')$. Suppose
+  $(a,b)\in{G}(\boldsymbol{A'},v')$ and let $h_1$ be the ring homomorphism constructed in
+  Proposition \ref{hext}. Then $(f,h_1)$ is an indexed spring morphism from
+  $\boldsymbol{A}[h(a)\#h(b)],v$ to $\boldsymbol{A'}[a\#b],v'$.
+\end{proposition}
+\begin{proof}
+  Let $r=q(a\#b)$ where $q=\Sigma_{i=0}^{m}{a_i}t^i\in{A'}[t]$. We first show that
+  $f^{-1}(z(r))=z(h_1(r))$. By a previous comment, this is sufficient for proving that $(f,h_1)$ is
+  a spring morphism from $\boldsymbol{A}[h(a)\#h(b)]$ to $\boldsymbol{A'}[a\#b]$, as $r$ has been
+  taken arbitrarily.
+
+  \
+
+  Pick some $x\in{X}$. Let $c:=b^m{r}=\Sigma_{i=0}^m{a_i}a^i{b^{m-i}}$. Then
+  $h(c)=\Sigma_{i=0}^m{h(a_i)}{h(a)^i}h(b)^{m-i}=h(b)^m{h_1(r)}$ and we have:
+  \\
+  $x\in{f^{-1}}(z(r))$
+  \\
+  $\Leftrightarrow{f(x)\in{z(r)}}=(z(c)\cap{d}(a))\cup(z(a_0)\cap{z}(a))$
+  \\
+  $\Leftrightarrow{x}\in(z(h(c))\cap{d}(h(a)))\cup(z(h(a_0))\cap{z}(h(a)))$
+  \\
+  $\Leftrightarrow{x}\in{z(h_1(r))}$.
+
+  \
+
+  We still need to show that for any $p=(y,x)\in\sigma(X)$ with $y\in{d}(h_1(r))$ it is true that
+  $v_p(h_1(r))=v_{f(p)}(r)$. Indeed, because $h(c)=h(b)^m{h_1}(r)$,
+  $v_p(h_1(r))=v_p(h(c))-v_p(h(b^m))=v_{f(p)}(c)-v_{f(p)}(b^m)=v_{f(p)}(r)$.
+\end{proof}
+
+
+\begin{proposition}\uses{memdhiff}
+  Let $\boldsymbol{A}=(X,A)$ and $\boldsymbol{A'}=(X',A')$ be springs with indices $v$ and $v'$
+  respectively. Let $(f,h)$ be an indexed spring morphism from $(X,A)$ to $(X',A')$. Suppose
+  $(a,b)\in{G}(\boldsymbol{A'},v')$, $\boldsymbol{{A'}{'}}$ and $\boldsymbol{{A'}{'}{'}}$ extend
+  $\boldsymbol{A}$ and $\boldsymbol{A'}[a\#b]$ respectively, and $h_2:{A'{'}{'}}\rightarrow{A'{'}}$
+  is a ring homomorphism extending $h$. If $(f,h_2)$ is a spring morphism from $\boldsymbol{A'{'}}$
+  to $\boldsymbol{A'{'}{'}}$, then $h(a)\#h(b)=h_2(a\#b)$, meaning that $h(a)\#h(b)$ belongs to
+  ${A'}{'}$.
+\end{proposition}
+\begin{proof}
+  We show that for any $x\in{X}$, $h_2(a\#b)(x)=(h(a)\#h(b))(x)$. Indeed, if $h(b)(x)\neq{0}$, then
+  as
+  \\
+  $h_2(a\#b)h(b)=h_2(a\#b)h_2(b)=h_2(a)=h(a)=(h(a)\#h(b))h(b)$,
+  \\
+  we immediately have that $h_2(a\#b)(x)=(h(a)\#h(b))(x)$. If $h(b)(x)=0$, then $x\in{z}(h_2(b))$
+  and so $f(x)\in{z}(b)$ by Lemma \ref{memdhiff}. This means $(a\#b)(f(x))=0$. Then Lemma
+  \ref{memdhiff} implies $h_2(a\#b)(x)=0$, so $h_2(a\#b)(x)=(h(a)\#h(b))(x)$.
+\end{proof}

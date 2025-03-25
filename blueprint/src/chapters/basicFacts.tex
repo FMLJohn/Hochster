@@ -1,0 +1,37 @@
+\chapter{Basic Facts}
+
+
+\begin{lemma}
+  Let $h:A\rightarrow{B}$ be a homomorphism between commutative rings and suppose
+  $O\subseteq{Spec}(A)$ is quasi-compact and open. Then $Spec(h)^{-1}(O)$ is quasi-compact.
+\end{lemma}
+\begin{proof}
+  Note that if $D_a:=\{p\in{Spec}(A)|a\notin{p}\}$ is a principal open subset of $Spec(A)$, where
+  $a$ is an element of $A$, then
+  \\
+  $Spec(h)^{-1}(D_a)$
+  \\
+  $=\{p\in{Spec}(B)|Spec(h)(p)\in{D_a}\}$
+  \\
+  $=\{p\in{Spec}(B)|a\notin{h}^{-1}(p)\}$
+  \\
+  $=\{p\in{Spec}(B)|h(a)\notin{p}\}$
+  \\
+  $=D_{h(a)}$.
+
+  \
+
+  Now as $O$ is open and quasi-compact, we can find a finite collection $\{D_{a_1},...,D_{a_n}\}$
+  of principal open subsets of $Spec(A)$ such that $O=\cup_{i=1}^n{D_{a_i}}$. Then
+  \\
+  $Spec(h)^{-1}(O)$
+  \\
+  $=Spec(h)^{-1}(\cup_{i=1}^n{D_{a_i}})$
+  \\
+  $=\cup_{i=1}^n{Spec(h)^{-1}(D_{a_i})}$
+  \\
+  $=\cup_{i=1}^n{D_{h(a_i)}}$,
+  \\
+  which is a union of finitely many quasi-compact sets and so is itself quasi-compact (it is
+  well-known that the principal open subsets of a prime spectrum is quasi-compact).
+\end{proof}
