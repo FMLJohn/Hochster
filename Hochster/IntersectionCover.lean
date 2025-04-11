@@ -38,6 +38,10 @@ def IntersectionCover : OpenCover X where
         not_exists, not_and] at hx hS2
       refine hx s ?_ <| hS4 s s.2
       · exact Set.mem_inter (hS2 s.2) <| by rw [← his]; exact Set.mem_range_self i
+    have h6 (s : S) : IsOpen s.1 := by
+      obtain ⟨i, hi1, hi2⟩ := hS2 s.2
+      rw [← hi2, hTU]
+      exact isOpen_generateFrom_of_mem <| Set.mem_image_of_mem U trivial
     sorry
   forall_isOpen := fun i => by
     have := i.2.1

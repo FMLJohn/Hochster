@@ -40,6 +40,50 @@ def Subcover (U V : Cover X) := U ≤ V
 
 variable {X} in
 /--
+The cover we obtain by adding a subset of `X` to a cover.
+-/
+def insert (s : Set X) (U : Cover X) : Cover X where
+  ι := (U.toFun '' ⊤).union {s}
+  toFun := fun i => i.1
+  covers := by
+    ext x
+    have : x ∈ ⋃ i : U.ι, U.toFun i := by
+      rw [U.covers]
+      exact trivial
+    simp only [Set.top_eq_univ, Set.iUnion_coe_set, Set.image_univ, Set.mem_iUnion, exists_prop,
+      Set.mem_univ, iff_true] at this ⊢
+    rcases this with ⟨i, hi⟩
+    use U.toFun i
+    exact ⟨Set.mem_union_left {s} <| Set.mem_range_self i, hi⟩
+
+variable {X} in
+omit [TopologicalSpace X] in
+lemma subcover_insert (s : Set X) (U : Cover X) : Subcover U (U.insert s) := by
+  intro s' hs'
+  simp only [insert, Set.top_eq_univ, Subtype.exists, Set.image_univ, exists_prop,
+    exists_eq_right] at hs' ⊢
+  rcases hs' with ⟨i, hi⟩
+  rw [← hi]
+  exact Set.mem_union_left {s} <| Set.mem_range_self i
+
+variable {X} in
+omit [TopologicalSpace X] in
+lemma le_insert (s : Set X) (U : Cover X) : U ≤ (U.insert s) := subcover_insert s U
+
+variable {X} in
+omit [TopologicalSpace X] in
+lemma lt_insert {s : Set X} {U : Cover X} (hsU : s ∉ U.toFun '' ⊤) : U < (U.insert s) := by
+  rw [lt_iff_le_not_le]
+  constructor
+  · exact le_insert s U
+  · intro hle
+    exact hsU <| by
+      simpa only [Set.top_eq_univ, Set.image_univ] using hle <| by
+        simpa only [insert, Cover.insert, Subtype.exists, exists_prop, exists_eq_right] using
+          Set.mem_union_right _ rfl
+
+variable {X} in
+/--
 Given a collection of covers of `X`, the union of them is again a cover.
 -/
 def iUnion (S : Set (Cover X)) [Nonempty S] : Cover X where
@@ -55,6 +99,53 @@ def iUnion (S : Set (Cover X)) [Nonempty S] : Cover X where
     · exact Set.mem_iUnion.mp <| by rw [(@Classical.ofNonempty S _).1.covers]; exact trivial
 
 end Cover
+
+namespace OpenCover
+
+instance instPreorder : Preorder (OpenCover X) where
+  le := fun U V => { U.toFun i | i : U.ι } ≤ { V.toFun i | i : V.ι }
+  lt := fun U V => { U.toFun i | i : U.ι } < { V.toFun i | i : V.ι }
+  le_refl := fun _ => fun _ s => s
+  le_trans := fun _ _ _ hUV hVW => fun _ s => hVW (hUV s)
+  lt_iff_le_not_le := fun _ _ => Eq.to_iff rfl
+
+variable {X} in
+/--
+The open cover we obtain by adding an open subset of `X` to an open cover.
+-/
+def insert {s : Set X} (hs : IsOpen s) (U : OpenCover X) : OpenCover X where
+  __ := Cover.insert s U.1
+  forall_isOpen := by
+    intro i
+    simp only [Cover.insert]
+    refine' Or.elim ((Set.mem_union i.1 _ _).1 i.2) ?_ ?_
+    · rintro ⟨j, _, hj⟩
+      rw [← hj]
+      exact U.forall_isOpen j
+    · intro h
+      rw [Set.eq_of_mem_singleton h]
+      exact hs
+
+variable {X} in
+lemma le_insert {s : Set X} (hs : IsOpen s) (U : OpenCover X) : U ≤ (U.insert hs) := by
+  intro s' hs'
+  rcases hs' with ⟨i, hi⟩
+  simp only [← hi, OpenCover.insert, Cover.insert, Set.top_eq_univ, Subtype.exists, Set.image_univ,
+    exists_prop, exists_eq_right]
+  exact Set.mem_union_left {s} <| Set.mem_range_self i
+
+lemma lt_insert {s : Set X} (hs : IsOpen s) {U : OpenCover X} (hsU : s ∉ U.toFun '' ⊤) :
+    U < (U.insert hs) := by
+  rw [lt_iff_le_not_le]
+  constructor
+  · exact le_insert hs U
+  · intro hle
+    exact hsU <| by
+      simpa only [Set.top_eq_univ, Set.image_univ] using hle <| by
+        simpa only [insert, Cover.insert, Subtype.exists, exists_prop, exists_eq_right] using
+          Set.mem_union_right _ rfl
+
+end OpenCover
 
 /--
 The type of covers of `X` with no finite subcover.
@@ -246,6 +337,112 @@ lemma max_isMax [Nonempty X] (h : ¬CompactSpace X) : IsMax (Max h) :=
 
 lemma max_not_lt [Nonempty X] (h : ¬CompactSpace X) (U : OpenCoverWithNoFiniteSubcover X) :
     ¬(Max h) < U := IsMax.not_lt <| max_isMax h
+
+lemma exists_finite_subcover_of_not_mem [Nonempty X] (h : ¬CompactSpace X)
+    {s : Set X} (hs : IsOpen s) (hs1 : s ∉ (Max h).toFun '' ⊤) :
+    ∃ V : Cover X, Finite V.ι ∧ Cover.Subcover V ((Max h).insert hs).1 := by
+  by_contra hn
+  let U : OpenCoverWithNoFiniteSubcover X := {
+    ι := (OpenCover.insert hs (Max h).toOpenCover).ι
+    toFun := (OpenCover.insert hs (Max h).toOpenCover).toFun
+    covers := (OpenCover.insert hs (Max h).toOpenCover).covers
+    forall_isOpen := (OpenCover.insert hs (Max h).toOpenCover).forall_isOpen
+    not_exists := hn
+  }
+  exact max_not_lt h U <| Cover.lt_insert hs1
+
+/--
+`finiteCoverOfNotMem h hs hs1 = (exists_finite_subcover_of_not_mem h hs hs1).choose`.
+-/
+noncomputable def finiteCoverOfNotMem [Nonempty X] (h : ¬CompactSpace X)
+    {s : Set X} (hs : IsOpen s) (hs1 : s ∉ (Max h).toFun '' ⊤) :=
+  (exists_finite_subcover_of_not_mem h hs hs1).choose
+
+theorem finiteCoverOfNotMem_ι_finite [Nonempty X] (h : ¬CompactSpace X)
+    {s : Set X} (hs : IsOpen s) (hs1 : s ∉ (Max h).toFun '' ⊤) :
+    Finite (finiteCoverOfNotMem h hs hs1).ι :=
+  (exists_finite_subcover_of_not_mem h hs hs1).choose_spec.1
+
+theorem subcover_finiteCoverOfNotMem_max [Nonempty X] (h : ¬CompactSpace X)
+    {s : Set X} (hs : IsOpen s) (hs1 : s ∉ (Max h).toFun '' ⊤) :
+    Cover.Subcover (finiteCoverOfNotMem h hs hs1) ((Max h).insert hs).1 :=
+  (exists_finite_subcover_of_not_mem h hs hs1).choose_spec.2
+
+open Classical
+
+/--
+The union of `{(Max h).toFun i}` and
+`⋃ s : S, (finiteCoverOfNotMem h (h1 s) (h2 s)).toFun '' ⊤ \ {s.1}` forms a cover of `X`.
+-/
+def UnionCover [Nonempty X] (h : ¬CompactSpace X) {i : (Max h).ι} {S : Set (Set X)}
+    (h1 : ∀ (s : S), IsOpen s.1) (h2 : ∀ (s : S), s.1 ∉ (Max h).toFun '' ⊤)
+    (h3 : ⋂₀ S ⊆ (Max h).toFun i) : Cover X where
+  ι := Set.union {(Max h).toFun i}
+    (⋃ s : S, (finiteCoverOfNotMem h (h1 s) (h2 s)).toFun '' ⊤ \ {s.1})
+  toFun := fun i => i.1
+  covers := by
+    simp only [Set.top_eq_univ, Set.iUnion_coe_set, Set.image_univ]
+    have heq : ⋃ s ∈ Set.union {(Max h).toFun i} (⋃ s : Set X, ⋃ (hs : s ∈ S),
+        Set.range (finiteCoverOfNotMem h (h1 ⟨s, hs⟩) (h2 ⟨s, hs⟩)).toFun \ {s}),
+        s = ((Max h).toFun i).union (⋃ s : S,
+        (⋃ s' : Set.diff ((finiteCoverOfNotMem h (h1 s) (h2 s)).toFun '' ⊤) {s.1}, s')) := by
+      ext x
+      simp only [Set.mem_iUnion, Set.top_eq_univ, Set.iUnion_coe_set, Set.image_univ]
+      constructor
+      · rintro ⟨s, hs1, hs2⟩
+        refine Or.elim ((Set.mem_union s _ _).1 hs1) ?_ ?_
+        · intro hs
+          simp only [Set.mem_singleton_iff] at hs
+          simpa only [hs] using Set.mem_union_left _ hs2
+        · intro hs
+          refine Set.mem_union_right _ ?_
+          simp only [Set.mem_iUnion] at hs ⊢
+          rcases hs with ⟨s', hs', mem⟩
+          exact ⟨s', hs', s, mem, hs2⟩
+      · intro hx
+        simp only [exists_prop]
+        refine Or.elim ((Set.mem_union x _ _).1 hx) ?_ ?_
+        · intro hx
+          exact ⟨(Max h).toFun i, Set.mem_union_left _ rfl, hx⟩
+        · intro hx
+          simp only [Set.mem_iUnion] at hx ⊢
+          obtain ⟨s, hs, s', hs'1, hs'2⟩ := hx
+          use s'
+          constructor
+          · refine Set.mem_union_right _ ?_
+            simpa only [Set.mem_iUnion] using ⟨s, hs, hs'1⟩
+          · exact hs'2
+    rw [heq]
+    refine @Set.eq_univ_of_subset _ ?_ _ ?_ ?_
+    · exact (⋂ s : S, s.1).union
+        (⋃ s : S, (⋃ s' : Set.diff ((finiteCoverOfNotMem h (h1 s) (h2 s)).toFun '' ⊤) {s.1}, s'))
+    · refine Set.union_subset_union_left _ ?_
+      simpa only [Set.sInter_eq_iInter] using h3
+    · change _ ∪ _ = _
+      simp only [Set.iInter_union, Set.top_eq_univ, Set.iUnion_coe_set, Set.image_univ,
+        Set.iInter_coe_set, Set.iInter_eq_univ]
+      intro s hs
+      ext x
+      simp only [Set.mem_union, Set.mem_iUnion, exists_prop, Set.mem_univ, iff_true,
+        Decidable.or_iff_not_imp_left]
+      intro not_mem
+      use s
+      use hs
+      have : x ∈ ⋃ i, (finiteCoverOfNotMem h (h1 ⟨s, hs⟩) (h2 ⟨s, hs⟩)).toFun i := by
+        rw [(finiteCoverOfNotMem h (h1 ⟨s, hs⟩) (h2 ⟨s, hs⟩)).covers]
+        exact trivial
+      simp only [Set.mem_iUnion] at this
+      rcases this with ⟨j, hj⟩
+      use (finiteCoverOfNotMem h (h1 ⟨s, hs⟩) (h2 ⟨s, hs⟩)).toFun j
+      constructor
+      · change _ ∈ _ \ _
+        rw [Set.mem_diff]
+        constructor
+        · exact Set.mem_range_self j
+        · intro hs
+          rw [hs] at hj
+          exact not_mem hj
+      · exact hj
 
 end OpenCoverWithNoFiniteSubcover
 
