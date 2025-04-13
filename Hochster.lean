@@ -1,5 +1,5 @@
-import Hochster.Alexander
+import Hochster.AlexanderSubbasis.IntersectionCover
+import Hochster.AlexanderSubbasis.OCWNFS
+import Hochster.AlexanderSubbasis.Theorem
 import Hochster.Cover
-import Hochster.IntersectionCover
-import Hochster.OCWNFS
 import Hochster.Spectral

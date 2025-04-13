@@ -1,3 +1,4 @@
+import Init.Core
 import Mathlib.Data.Finite.Defs
 import Mathlib.Data.Set.BooleanAlgebra
 import Mathlib.Order.Interval.Set.Infinite
@@ -443,6 +444,40 @@ def UnionCover [Nonempty X] (h : ¬CompactSpace X) {i : (Max h).ι} {S : Set (Se
           rw [hs] at hj
           exact not_mem hj
       · exact hj
+
+theorem unionCover_ι_finite [Nonempty X] (h : ¬CompactSpace X) {i : (Max h).ι} {S : Set (Set X)}
+    (h1 : Finite S) (h2 : ∀ (s : S), IsOpen s.1) (h3 : ∀ (s : S), s.1 ∉ (Max h).toFun '' ⊤)
+    (h4 : ⋂₀ S ⊆ (Max h).toFun i) : Finite (UnionCover h h2 h3 h4).ι := by
+  simp only [UnionCover, Set.top_eq_univ, Set.image_univ]
+  change Set.Finite (_ ∪ _)
+  rw [Set.finite_union]
+  constructor
+  · exact Set.finite_singleton ((Max h).toFun i)
+  · refine Set.finite_iUnion ?_
+    · intro s
+      refine Set.Finite.diff ?_
+      · letI := finiteCoverOfNotMem_ι_finite h (h2 s) (h3 s)
+        exact Set.finite_range ((finiteCoverOfNotMem h (h2 s) (h3 s)).toFun)
+
+lemma subcover_unionCover_max [Nonempty X] (h : ¬CompactSpace X) {i : (Max h).ι} {S : Set (Set X)}
+    (h1 : ∀ (s : S), IsOpen s.1) (h2 : ∀ (s : S), s.1 ∉ (Max h).toFun '' ⊤)
+    (h3 : ⋂₀ S ⊆ (Max h).toFun i) : Cover.Subcover (UnionCover h h1 h2 h3) (Max h).1.1 := by
+  change { (UnionCover ..).toFun i | i : _ } ⊆ _
+  simp only [UnionCover, Set.top_eq_univ, Subtype.exists, Set.image_univ, Set.iUnion_coe_set,
+    exists_prop, exists_eq_right]
+  intro s hs
+  change _ ∈ _ ∪ _ at hs
+  simp only [Set.mem_union, Set.mem_iUnion, Set.mem_diff, exists_and_right] at hs ⊢
+  refine Or.elim hs ?_ ?_
+  · intro hs
+    exact ⟨i, hs.symm⟩
+  · rintro ⟨t, ⟨ht, j, hj⟩, hneq⟩
+    let subcover := subcover_finiteCoverOfNotMem_max h (h1 ⟨t, ht⟩) (h2 ⟨t, ht⟩)
+    change { (finiteCoverOfNotMem ..).toFun i | i : _ } ⊆ _ at subcover
+    simp only [Set.setOf_subset_setOf, forall_exists_index, forall_apply_eq_imp_iff] at subcover
+    rcases subcover j with ⟨k, hk⟩
+    simpa only [← hj, Set.top_eq_univ, Set.image_univ, ← hk] using
+      Decidable.or_iff_not_imp_right.1 k.2 fun hk1 => hneq ((hj.symm.trans hk.symm).trans hk1)
 
 end OpenCoverWithNoFiniteSubcover
 
