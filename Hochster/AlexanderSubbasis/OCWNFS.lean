@@ -1,9 +1,5 @@
-import Init.Core
-import Mathlib.Data.Finite.Defs
-import Mathlib.Data.Set.BooleanAlgebra
 import Mathlib.Order.Interval.Set.Infinite
 import Mathlib.Topology.Compactness.Compact
-import Mathlib.Topology.Defs.Basic
 
 universe u
 variable (X : Type u) [TopologicalSpace X]

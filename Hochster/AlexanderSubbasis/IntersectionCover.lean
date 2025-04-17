@@ -1,5 +1,4 @@
-import Mathlib.Data.Set.Defs
-import Mathlib.Topology.Compactness.Compact
+import Mathlib.Topology.Bases
 
 import Hochster.AlexanderSubbasis.OCWNFS
 

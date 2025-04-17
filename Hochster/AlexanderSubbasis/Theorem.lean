@@ -1,5 +1,3 @@
-import Mathlib.Topology.Compactness.Compact
-
 import Hochster.AlexanderSubbasis.IntersectionCover
 
 open TopologicalSpace
