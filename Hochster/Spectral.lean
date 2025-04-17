@@ -17,8 +17,22 @@ theorem eq_generateFrom_ofSpectralSpace [SpectralSpace X] :
     ConstructibleTopology X =
       generateFrom ({ S : Set X | IsOpen S ∧ IsCompact S } ∪
         { S : Set X | ∃ O : Set X, IsOpen O ∧ IsCompact O ∧ S = Oᶜ }) := by
-  delta ConstructibleTopology IsConstructible BooleanSubalgebra.closure
-  simp only [BooleanSubalgebra.mem_sInf, Set.mem_setOf_eq]
-  sorry
+  delta ConstructibleTopology
+  refine eq_of_le_of_le ?_ ?_
+  · refine le_generateFrom ?_
+    intro S hS
+    refine Or.elim hS ?_ ?_
+    · intro h
+      exact isOpen_generateFrom_of_mem <| IsRetrocompact.isConstructible h.1 <|
+        (QuasiSeparatedSpace.isRetrocompact_iff_isCompact h.1).2 h.2
+    · rintro ⟨O, hO1, hO2, hO3⟩
+      rw [hO3]
+      exact isOpen_generateFrom_of_mem <|
+        isConstructible_compl.mpr <| IsRetrocompact.isConstructible hO1 <|
+          (QuasiSeparatedSpace.isRetrocompact_iff_isCompact hO1).2 hO2
+  · refine le_generateFrom ?_
+    intro S hS
+    simp only [Set.mem_setOf_eq] at hS
+    sorry
 
 end ConstructibleTopology
