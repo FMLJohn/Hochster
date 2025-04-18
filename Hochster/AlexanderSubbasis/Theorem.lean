@@ -41,3 +41,16 @@ theorem alexanderSubbasis :
       exact ⟨j, hj.trans hUiO⟩
     exact (OpenCoverWithNoFiniteSubcover.Max h).not_exists
       ⟨cover, Finite.of_fintype cover.ι, subcover⟩
+
+theorem alexanderSubbasis_closed_version {V : ι → Set X}
+    (hTV : T = generateFrom { (V i)ᶜ | i : ι }) :
+    (∀ s : Set ι, (⋂ i : s, V i = ∅ → ∃ t : Finset s, ⋂ i : t, V i = ∅)) →
+    CompactSpace X := by
+  intro hι
+  have heq : T = generateFrom ((fun i => (V i)ᶜ) '' ⊤) := by
+    simpa only [Set.top_eq_univ, Set.image_univ] using hTV
+  refine alexanderSubbasis heq ?_
+  · intro s hs
+    simp only [← Set.compl_iInter, Set.top_eq_univ, Set.compl_univ_iff] at hs ⊢
+    obtain ⟨t, ht⟩ := hι s hs
+    use t
