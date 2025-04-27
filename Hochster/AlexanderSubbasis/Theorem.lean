@@ -42,6 +42,22 @@ theorem alexanderSubbasis :
     exact (OpenCoverWithNoFiniteSubcover.Max h).not_exists
       ⟨cover, Finite.of_fintype cover.ι, subcover⟩
 
+include hTU in
+theorem alexanderSubbasis_backward_direction :
+    CompactSpace X → ∀ s : Set ι, ⋃ i : s, U i = ⊤ → ∃ t : Finset s, ⋃ i : t, U i = ⊤ := by
+  intro compact s eq_top
+  have forall_isOpen (i : s) : IsOpen (U i) := by
+    rw [hTU]
+    exact TopologicalSpace.isOpen_generateFrom_of_mem <| Set.mem_image_of_mem U trivial
+  let imp := isCompact_iff_finite_subcover.1 CompactSpace.isCompact_univ (fun i : s => U i)
+    forall_isOpen
+  simpa only [Set.univ_subset_iff, Set.iUnion_subtype] using imp (Set.univ_subset_iff.mpr eq_top)
+
+include hTU in
+theorem alexanderSubbasis_iff :
+    CompactSpace X ↔ ∀ s : Set ι, ⋃ i : s, U i = ⊤ → ∃ t : Finset s, ⋃ i : t, U i = ⊤ :=
+  ⟨alexanderSubbasis_backward_direction hTU, alexanderSubbasis hTU⟩
+
 theorem alexanderSubbasis_closed_version {V : ι → Set X}
     (hTV : T = generateFrom { (V i)ᶜ | i : ι }) :
     (∀ s : Set ι, (⋂ i : s, V i = ∅ → ∃ t : Finset s, ⋂ i : t, V i = ∅)) →
@@ -54,3 +70,21 @@ theorem alexanderSubbasis_closed_version {V : ι → Set X}
     simp only [← Set.compl_iInter, Set.top_eq_univ, Set.compl_univ_iff] at hs ⊢
     obtain ⟨t, ht⟩ := hι s hs
     use t
+
+theorem aS_closed_backward_direction {V : ι → Set X}
+    (hTV : T = generateFrom { (V i)ᶜ | i : ι }) :
+    CompactSpace X → (∀ s : Set ι, (⋂ i : s, V i = ∅ → ∃ t : Finset s, ⋂ i : t, V i = ∅)) := by
+  intro compact s empty
+  have forall_isClosed (i : s) : IsClosed (V i) := by
+    have : (V i)ᶜ ∈ { (V i)ᶜ | i : ι } := by use i
+    have := TopologicalSpace.isOpen_generateFrom_of_mem this
+    simpa only [isOpen_compl_iff, hTV] using this
+  have imp := isCompact_iff_finite_subfamily_closed.1 CompactSpace.isCompact_univ
+    (fun (i : s) => V i) forall_isClosed
+  simp only [Set.univ_inter] at imp
+  simpa only [Set.univ_inter, Set.iInter_subtype] using imp empty
+
+theorem AlexanderSubbasis_closed_iff {V : ι → Set X}
+    (hTV : T = generateFrom { (V i)ᶜ | i : ι }) :
+    CompactSpace X ↔ (∀ s : Set ι, (⋂ i : s, V i = ∅ → ∃ t : Finset s, ⋂ i : t, V i = ∅)) :=
+  ⟨aS_closed_backward_direction hTV, alexanderSubbasis_closed_version hTV⟩
