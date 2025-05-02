@@ -1,7 +1,3 @@
-import Mathlib.Order.Interval.Set.Infinite
-import Mathlib.Topology.Bases
-import Mathlib.Topology.Compactness.Compact
-
 import Hochster.AlexanderSubbasis.Theorem
 
 open TopologicalSpace
