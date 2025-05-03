@@ -1,4 +1,4 @@
-import Mathlib.Topology.Irreducible
+import Mathlib.Topology.Sober
 
 import Hochster.FiniteIntersection
 import Hochster.QuasiSeparated
@@ -464,5 +464,46 @@ lemma isIrreducible [Nonempty X] [CompactSpace X] [QuasiSeparatedSpace X] :
       simp only [Subtype.forall] at mem this
       exact hx _ mem this
     exact not_le_of_lt lt le
+
+omit R in
+include hU hV in
+lemma mem_of_isGenericPoint [Nonempty X] [CompactSpace X] [QuasiSeparatedSpace X]
+    {x : X} (hx : IsGenericPoint x (InterOfClosedSets U)) (s : U.carrier) :
+    x ∈ s.1 := by
+  have := U.forall_mem
+  rw [hV] at this
+  refine Or.elim (this s) ?_ ?_
+  · intro hs
+    have : InterOfClosedSets U ⊆ s.1 := by
+      intro x
+      simp only [InterOfClosedSets, Set.mem_sInter, Set.mem_inter_iff, and_imp]
+      intro hx
+      exact hx s s.2 hs
+    exact this <| IsGenericPoint.mem hx
+  · rintro ⟨hs1, hs2⟩
+    by_contra not_mem
+    have neq : InterOfClosedSets U ∩ s ≠ ∅ := by
+      have : { InterOfClosedSets U, s.1 } ⊆ U.carrier := by
+        intro t ht
+        refine Or.elim ht ?_ ?_
+        · intro eq
+          rw [eq]
+          exact mem_carrier hV hU
+        · intro eq
+          rw [eq]
+          exact s.2
+      simpa only [Set.iInter_coe_set, Set.mem_insert_iff, Set.mem_singleton_iff,
+        Set.iInter_iInter_eq_or_left, Set.iInter_iInter_eq_left] using
+          U.finite_inter { InterOfClosedSets U, s.1 } this (Set.instNonemptyElemInsert _ _)
+          (Finite.Set.finite_insert _ _)
+    have le : InterOfClosedSets U ≤ InterOfClosedSets U \ s := by
+      nth_rw 1 [← hx]
+      refine (IsClosed.mem_iff_closure_subset ?_).1 ?_
+      · exact IsClosed.inter (isClosed U) (isClosed_compl_iff.mpr hs1)
+      · exact ⟨IsGenericPoint.mem hx, not_mem⟩
+    have lt : InterOfClosedSets U \ s < InterOfClosedSets U := by
+      simp only [Set.lt_eq_ssubset, Set.diff_ssubset_left_iff]
+      exact Set.nonempty_iff_ne_empty.mpr neq
+    exact not_lt_of_le le lt
 
 end InterOfClosedSets

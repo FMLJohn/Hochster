@@ -3,5 +3,5 @@ import Hochster.AlexanderSubbasis.OCWNFS
 import Hochster.AlexanderSubbasis.Theorem
 import Hochster.Cover
 import Hochster.FiniteIntersection
+import Hochster.PatchTopology
 import Hochster.QuasiSeparated
-import Hochster.Spectral
