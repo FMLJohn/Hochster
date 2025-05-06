@@ -102,3 +102,93 @@ lemma compactSpace_of_spectralSpace [SpectralSpace X] : @CompactSpace X (PatchTo
     simp only [Set.finite_empty, Set.Finite.isCompact]
 
 end PatchTopology
+
+open PatchTopology
+
+variable {X} in
+lemma mem_patch_closure_iff_mem_pt_closure
+    [SpectralSpace X] {Y : Set X} (hY : @IsClosed X (PatchTopology X) Y) (x : X) :
+    x ∈ closure Y ↔ ∃ y : Y, x ∈ closure {y.1} := by
+  constructor
+  · intro hxY
+    let ι := { S : Set X | @IsClosed X (PatchTopology X) S }
+    let V := fun i : ι => i.1
+    have hV : PatchTopology X = generateFrom { (V i)ᶜ | i : ι } := by
+      simp only [Set.coe_setOf, Subtype.exists, exists_prop, ι, V]
+      have (s : Set X) : (∃ t, @IsClosed X (PatchTopology X) t ∧ tᶜ = s) ↔
+          @IsOpen X (PatchTopology X) s := by
+        constructor
+        · rintro ⟨t, ht1, ht2⟩
+          simp only [← ht2, isOpen_compl_iff]
+          exact ht1
+        · intro hs
+          exact ⟨sᶜ, (@isClosed_compl_iff _ (PatchTopology X) _).mpr hs, compl_compl s⟩
+      simp_rw [this]
+      exact (generateFrom_setOf_isOpen (PatchTopology X)).symm
+    let ficss : FiniteInterClosedSubbasisSet V := {
+      carrier := {Y} ∪ { s : Set X | IsOpen s ∧ IsCompact s ∧ x ∈ s }
+      forall_mem := by
+        rintro ⟨s, hs⟩
+        refine Or.elim hs ?_ ?_
+        · simp only [Subtype.exists, exists_prop, exists_eq_right, V]
+          intro hsY
+          rw [hsY]
+          exact hY
+        · simp only [Set.mem_setOf_eq, Subtype.exists, eq_generateFrom_of_SpectralSpace,
+            exists_prop, exists_eq_right, and_imp, ι, V]
+          intro hs1 hs2 hxs
+          rw [← @isOpen_compl_iff]
+          exact isOpen_generateFrom_of_mem ⟨s, Or.intro_right _ ⟨hs1, hs2⟩, rfl⟩
+      finite_inter := by
+        intro T' subset nonempty finite
+        by_cases hYT' : Y ∈ T'
+        · have eq : ⋂ t : T', t.1 =
+              Y ∩ ⋂ t : (T' ∩ { s | IsOpen s ∧ IsCompact s ∧ x ∈ s } : Set (Set X)), t.1 := by
+            ext
+            simp only [Set.iInter_coe_set, Set.mem_iInter, Set.mem_inter_iff, Set.mem_setOf_eq,
+              and_imp]
+            constructor
+            · intro forall_mem
+              exact ⟨forall_mem Y hYT', fun s hsT' _ _ _ => forall_mem s hsT'⟩
+            · rintro ⟨hxY', forall_imp⟩ s hsT'
+              by_cases hsY : s = Y
+              · rw [hsY]
+                exact hxY'
+              · have := subset hsT'
+                simp only [Set.singleton_union, Set.mem_insert_iff, hsY, false_or] at this
+                obtain ⟨hs1, hs2, hxs⟩ := this
+                exact forall_imp s hsT' hs1 hs2 hxs
+          have is_open : IsOpen (⋂ t : (T' ∩ { s | IsOpen s ∧ IsCompact s ∧ x ∈ s } : Set (Set X)),
+              t.1) := isOpen_iInter_of_finite fun ⟨_, _, h, _, _⟩ => h
+          have mem : x ∈ ⋂ t : (T' ∩ { s | IsOpen s ∧ IsCompact s ∧ x ∈ s } : Set (Set X)),
+              t.1 := by
+            simp only [Set.iInter_coe_set, Set.mem_inter_iff, Set.mem_setOf_eq, Set.mem_iInter,
+              and_imp, imp_self, implies_true]
+          rw [eq, Set.inter_comm]
+          exact Set.nonempty_iff_ne_empty.mp <| mem_closure_iff.1 hxY _ is_open mem
+        · have : x ∈ ⋂ t : T', t.1 := by
+            simp only [Set.iInter_coe_set, Set.mem_iInter]
+            intro s hsT'
+            have := subset hsT'
+            have neq : s ≠ Y := by
+              intro hsY
+              rw [← hsY] at hYT'
+              exact hYT' hsT'
+            simp only [Set.singleton_union, Set.mem_insert_iff, neq, false_or] at this
+            exact this.2.2
+          exact Set.nonempty_iff_ne_empty'.mp ⟨x, this⟩ }
+    haveI : Nonempty X := ⟨x⟩
+    have nonempty := Set.nonempty_iff_ne_empty'.mpr <| @forall_of_CompactSpace _ _
+      (PatchTopology X) V hV _ (compactSpace_of_spectralSpace X) ficss
+    simp only [Set.singleton_union, Set.mem_setOf_eq, Set.iInter_coe_set, Set.mem_insert_iff,
+      Set.iInter_iInter_eq_or_left, nonempty_subtype, Set.mem_inter_iff, Set.mem_iInter, and_imp,
+      ficss] at nonempty
+    obtain ⟨y, hyY, forall_imp⟩ := nonempty
+    use ⟨y, hyY⟩
+    simp only [mem_closure_iff, Set.inter_singleton_nonempty]
+    intro O hO hxO
+    obtain ⟨o, ⟨ho1, ho2⟩, hxo, hoO⟩ := (IsTopologicalBasis.isOpen_iff
+      (inferInstance : SpectralSpace X).isTopologicalBasis).1 hO x hxO
+    exact hoO (forall_imp o ho1 ho2 hxo)
+  · rintro ⟨y, hy⟩
+    exact closure_mono (fun _ h => by rw [h]; exact y.2) hy
