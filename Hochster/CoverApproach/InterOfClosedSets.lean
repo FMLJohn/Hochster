@@ -1,7 +1,7 @@
 import Mathlib.Topology.Sober
 
-import Hochster.FiniteIntersection
-import Hochster.QuasiSeparated
+import Hochster.CoverApproach.FiniteIntersection
+import Hochster.CoverApproach.QuasiSeparated
 
 open FiniteInterClosedSubbasisSet QuasiSeparatedSpace TopologicalSpace
 
