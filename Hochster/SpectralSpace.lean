@@ -94,7 +94,7 @@ lemma TopologicalSpace.generateFrom_booleanSubalgebra_closure
       (Set.compl_image_latticeClosure_eq_of_compl_image_eq_self hS2) isSublattice_latticeClosure ▸
         generateFrom_latticeClosure S
 
-variable {X : Type*} [TopologicalSpace X] [CompactSpace X] [QuasiSeparatedSpace X]
+variable (X : Type*) [TopologicalSpace X] [CompactSpace X] [QuasiSeparatedSpace X]
 
 lemma TopologicalSpace.generateFrom_isConstructible_eq_generateFrom_union_compl_image :
     generateFrom { s : Set X | IsConstructible s } =
