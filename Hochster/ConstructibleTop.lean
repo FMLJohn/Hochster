@@ -189,9 +189,9 @@ lemma instTopologicalSpace_le (X : Type*) [T : TopologicalSpace X]
     le_generateFrom fun s hs => isOpen_generateFrom_of_mem <|
       PrespectralSpace.isTopologicalBasis (X := X).eq_generateFrom ▸ Or.intro_left _ hs
 
-lemma wefwefwef {X Y : Type*} [TopologicalSpace X] [SpectralSpace X]
-    [TopologicalSpace Y] [SpectralSpace Y] {f : X → Y}
-    (hf1 : IsEmbedding f) (hf2 : IsSpectralMap f) :
+lemma instTopologicalSpace_eq_induced_of_isEmbedding_isSpectralMap {X Y : Type*}
+    [TopologicalSpace X] [SpectralSpace X] [TopologicalSpace Y] [SpectralSpace Y]
+    {f : X → Y} (hf1 : IsEmbedding f) (hf2 : IsSpectralMap f) :
     instTopologicalSpace X = induced f (instTopologicalSpace Y) := by
   unfold instTopologicalSpace
   rw [generateFrom_isConstructible_eq_generateFrom_union_compl_image X,
@@ -204,10 +204,12 @@ lemma wefwefwef {X Y : Type*} [TopologicalSpace X] [SpectralSpace X]
     · exact hts ▸ hut ▸ (isOpen_generateFrom_of_mem <|
         Or.intro_right _ ⟨f ⁻¹' u, ⟨IsOpen.preimage hf1.continuous hu1,
           hf2.isCompact_preimage_of_isOpen hu1 hu2⟩, rfl⟩)
-  · let af := induced_generateFrom_eq
-      (b := { s | IsOpen s ∧ IsCompact s } ∪ compl '' { s | IsOpen s ∧ IsCompact s }) (f := f)
-    refine Or.elim hs ?_ ?_
-    · sorry
-    · sorry
+  · refine isOpen_generateFrom_of_mem <| Or.elim hs ?_ ?_
+    · intro ⟨hs1, hs2⟩
+      obtain ⟨o, ho1, ho2, hsfo⟩ := SpectralSpace.exists_of_isOpen_isCompact_isEmbedding hf1 hs1 hs2
+      exact ⟨o, Or.intro_left _ ⟨ho1, ho2⟩, hsfo.symm⟩
+    · intro ⟨o, ⟨ho1, ho2⟩, hos⟩
+      obtain ⟨t, ht1, ht2, hoft⟩ := SpectralSpace.exists_of_isOpen_isCompact_isEmbedding hf1 ho1 ho2
+      exact ⟨tᶜ, Or.intro_right _ ⟨t, ⟨ht1, ht2⟩, rfl⟩, Set.preimage_compl.symm ▸ hoft ▸ hos⟩
 
 end ConstructibleTop
