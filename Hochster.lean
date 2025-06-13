@@ -6,5 +6,4 @@ import Hochster.CoverApproach.FiniteIntersection
 import Hochster.CoverApproach.InterOfClosedSets
 import Hochster.CoverApproach.PatchTopology
 import Hochster.CoverApproach.QuasiSeparated
-import Hochster.Hom
 import Hochster.SpectralSpace

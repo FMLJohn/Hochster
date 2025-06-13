@@ -306,6 +306,37 @@ lemma Set.Finite.sInter_ne_empty_of_finiteInter_finiteInter_of_subset_union
       (Set.Finite.sInter_mem_of_finiteInter hT (Set.Finite.inter_of_left hU T)
         Set.inter_subset_right)
 
+lemma SpectralSpace.mem_patch_closure_iff_mem_pt_closure {X : Type*} [TopologicalSpace X]
+    [SpectralSpace X] {Y : Set X} (hY : IsClosed (X := ConstructibleTop X) Y) (x : X) :
+    x ∈ closure Y ↔ ∃ y ∈ Y, x ∈ closure {y} := by
+  refine ⟨fun hxY => ?_, fun ⟨y, hyY, hxy⟩ => closure_mono (Set.singleton_subset_iff.2 hyY) hxy⟩
+  · have : (Y ∩ ⋂₀ { s : Set X | IsOpen s ∧ IsCompact s ∧ x ∈ s }).Nonempty := by
+      by_contra h
+      let ι := { s : Set X | IsOpen s ∧ IsCompact s ∧ x ∈ s }
+      let t : ι → Set X := fun i => i.1
+      have hιt : ∀ i : ι, IsClosed (X := ConstructibleTop X) (t i) := fun ⟨i, hiι⟩ =>
+        ⟨ConstructibleTop.instTopologicalSpace_eq_generateFrom_isOpen_isCompact X ▸
+          isOpen_generateFrom_of_mem <| Or.intro_right _ ⟨i, ⟨hiι.1, hiι.2.1⟩, rfl⟩⟩
+      have := (isCompact_iff_finite_subfamily_closed (X := ConstructibleTop X)).1
+        (IsClosed.isCompact hY) t hιt
+      simp only [t, ← Set.sInter_eq_iInter] at this
+      obtain ⟨U', hYU'⟩ := this (Set.not_nonempty_iff_eq_empty.1 h)
+      let U : Set (Set X) := Subtype.val '' U'.toSet
+      have hU1 : U.Finite := U.toFinite
+      have hU2 : U ⊆ { s : Set X | IsOpen s ∧ IsCompact s ∧ x ∈ s } :=
+        Subtype.coe_image_subset { s | IsOpen s ∧ IsCompact s ∧ x ∈ s } U'
+      have hx : FiniteInter { s : Set X | IsOpen s ∧ IsCompact s ∧ x ∈ s } :=
+        ⟨⟨isOpen_univ, CompactSpace.isCompact_univ, trivial⟩,
+          fun s ⟨hs1, hs2, hxs⟩ t ⟨ht1, ht2, hxt⟩ =>
+          ⟨IsOpen.inter hs1 ht1, IsCompact.inter_of_isOpen hs2 ht2 hs1 ht1, Set.mem_inter hxs hxt⟩⟩
+      obtain ⟨hU3, hU4, hxU⟩ := Set.Finite.sInter_mem_of_finiteInter hx hU1 hU2
+      exact Set.nonempty_iff_ne_empty.1 (Set.inter_comm _ _ ▸
+        ((mem_closure_iff PrespectralSpace.isTopologicalBasis).1 hxY) (⋂₀ U) ⟨hU3, hU4⟩ hxU)
+        ((Set.sInter_eq_biInter ▸ Eq.symm Set.biInter_image) ▸ hYU')
+    obtain ⟨y, hyY, hyx⟩ := this
+    exact ⟨y, hyY, (mem_closure_iff PrespectralSpace.isTopologicalBasis).2
+      fun s ⟨hs1, hs2⟩ hxs => Set.inter_singleton_nonempty.2 (hyx s ⟨hs1, hs2, hxs⟩)⟩
+
 lemma SpectralSpace.exist_open_disjoint_or_mem_pt_closure
     {X : Type*} [TopologicalSpace X] [SpectralSpace X] (x y : X) :
     (∃ O1 O2, IsOpen O1 ∧ IsOpen O2 ∧ x ∈ O1 ∧ y ∈ O2 ∧ Disjoint O1 O2) ∨
@@ -329,7 +360,7 @@ lemma SpectralSpace.exist_open_disjoint_or_mem_pt_closure
       simp only [Set.univ_inter, t, ← Set.sInter_eq_iInter] at this
       obtain ⟨U', hU'⟩ := this (Set.not_nonempty_iff_eq_empty.1 h')
       let U : Set (Set X) := Subtype.val '' U'.toSet
-      have hU1 : U.Finite := Set.toFinite U
+      have hU1 : U.Finite := U.toFinite
       have hU2 : U ⊆ { s : Set X | IsOpen s ∧ IsCompact s ∧ x ∈ s } ∪
           { s | IsOpen s ∧ IsCompact s ∧ y ∈ s } :=
         Subtype.coe_image_subset ({ s | IsOpen s ∧ IsCompact s ∧ x ∈ s } ∪
