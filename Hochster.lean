@@ -1,9 +1,8 @@
 import Hochster.AlexanderSubbasis.IntersectionCover
 import Hochster.AlexanderSubbasis.OCWNFS
 import Hochster.AlexanderSubbasis.Theorem
-import Hochster.ConstructibleTop
 import Hochster.CoverApproach.FiniteIntersection
 import Hochster.CoverApproach.InterOfClosedSets
 import Hochster.CoverApproach.PatchTopology
 import Hochster.CoverApproach.QuasiSeparated
-import Hochster.SpectralSpace
+import Hochster.Section2
