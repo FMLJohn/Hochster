@@ -1,6 +1,6 @@
 import Mathlib.Topology.Spectral.Basic
 
-import Hochster.CoverApproach.InterOfClosedSets
+import Hochster.Section2Complicated.InterOfClosedSets
 
 open Classical FiniteInterClosedSubbasisSet InterOfClosedSets TopologicalSpace Topology
 

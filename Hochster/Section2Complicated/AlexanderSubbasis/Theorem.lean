@@ -1,4 +1,4 @@
-import Hochster.AlexanderSubbasis.IntersectionCover
+import Hochster.Section2Complicated.AlexanderSubbasis.IntersectionCover
 
 open TopologicalSpace
 
