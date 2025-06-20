@@ -188,7 +188,7 @@ lemma Ultrafilter.sInter_ne_empty_of_isClosed_mem {X : Type*}
   have := isCompact_iff_finite_subfamily_closed.1 CompactSpace.isCompact_univ t (fun i => i.2.1)
   simp only [Set.univ_inter] at this
   obtain ⟨u, hu⟩ := this (Set.sInter_eq_iInter.symm.trans h)
-  exact empty_not_mem <| hu ▸ (Filter.biInter_finset_mem u).2 fun i _ => i.2.2
+  exact empty_notMem <| hu ▸ (Filter.biInter_finset_mem u).2 fun i _ => i.2.2
 
 lemma Filter.inter_sInter_nonempty_of_isCompact_isClosed_mem {X : Type*} [TopologicalSpace X]
     {F : Filter X} [F.NeBot] {s : Set X} (hs : IsCompact s) (hsF : s ∈ F) :
@@ -305,11 +305,11 @@ instance compactSpace_of_spectralSpace (X : Type*) [TopologicalSpace X] [Spectra
     refine Or.elim ht ?_ ?_
     · rintro ⟨ht1, ht2⟩
       exact ((Set.sInter_subset_of_mem (Set.mem_sep (isClosed_compl_iff.mpr ht1)
-        (Ultrafilter.compl_mem_iff_not_mem.mpr htF))) (IsGenericPoint.mem hx)) hxt
+        (Ultrafilter.compl_mem_iff_notMem.mpr htF))) (IsGenericPoint.mem hx)) hxt
     · rintro ⟨o, ⟨ho1, ho2⟩, hot⟩
       exact (hot ▸ hxt) ((singleton_closure_inter_open_nonempty_iff x ho1).1
         (Set.inter_comm _ _ ▸ hx ▸ Filter.inter_sInter_nonempty_of_isCompact_isClosed_mem ho2
-          (Ultrafilter.compl_not_mem_iff.mp (hot ▸ htF))))
+          (Ultrafilter.compl_notMem_iff.mp (hot ▸ htF))))
   obtain ⟨t, hxt, ht, htF⟩ := h1 x
   exact htF (h2 t ht hxt)
 
