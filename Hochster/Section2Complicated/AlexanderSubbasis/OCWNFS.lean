@@ -27,7 +27,6 @@ instance instPreorder : Preorder (Cover X) where
   lt := fun U V => { U.toFun i | i : U.ι } < { V.toFun i | i : V.ι }
   le_refl := fun _ => fun _ s => s
   le_trans := fun _ _ _ hUV hVW => fun _ s => hVW (hUV s)
-  lt_iff_le_not_le := fun _ _ => Eq.to_iff rfl
 
 variable {X} in
 /--
@@ -70,7 +69,7 @@ lemma le_insert (s : Set X) (U : Cover X) : U ≤ (U.insert s) := subcover_inser
 variable {X} in
 omit [TopologicalSpace X] in
 lemma lt_insert {s : Set X} {U : Cover X} (hsU : s ∉ U.toFun '' ⊤) : U < (U.insert s) := by
-  rw [lt_iff_le_not_le]
+  rw [lt_iff_le_not_ge]
   constructor
   · exact le_insert s U
   · intro hle
@@ -104,7 +103,6 @@ instance instPreorder : Preorder (OpenCover X) where
   lt := fun U V => { U.toFun i | i : U.ι } < { V.toFun i | i : V.ι }
   le_refl := fun _ => fun _ s => s
   le_trans := fun _ _ _ hUV hVW => fun _ s => hVW (hUV s)
-  lt_iff_le_not_le := fun _ _ => Eq.to_iff rfl
 
 variable {X} in
 /--
@@ -133,7 +131,7 @@ lemma le_insert {s : Set X} (hs : IsOpen s) (U : OpenCover X) : U ≤ (U.insert 
 
 lemma lt_insert {s : Set X} (hs : IsOpen s) {U : OpenCover X} (hsU : s ∉ U.toFun '' ⊤) :
     U < (U.insert hs) := by
-  rw [lt_iff_le_not_le]
+  rw [lt_iff_le_not_ge]
   constructor
   · exact le_insert hs U
   · intro hle
@@ -155,7 +153,6 @@ instance CoverWithNoFiniteSubcover.instPreorder : Preorder (CoverWithNoFiniteSub
   lt := fun U V => { U.toFun i | i : U.ι } < { V.toFun i | i : V.ι }
   le_refl := fun _ => fun _ s => s
   le_trans := fun _ _ _ hUV hVW => fun _ s => hVW (hUV s)
-  lt_iff_le_not_le := fun _ _ => Eq.to_iff rfl
 
 /--
 The type of open covers of `X` with no finite subcover.
@@ -169,7 +166,6 @@ instance instPreorder : Preorder (OpenCoverWithNoFiniteSubcover X) where
   lt := fun U V => { U.toFun i | i : U.ι } < { V.toFun i | i : V.ι }
   le_refl := fun _ => fun _ s => s
   le_trans := fun _ _ _ hUV hVW => fun _ s => hVW (hUV s)
-  lt_iff_le_not_le := fun _ _ => Eq.to_iff rfl
 
 variable {X}
 
@@ -287,7 +283,7 @@ def chainIUnion [Nonempty X] {C : Set (OpenCoverWithNoFiniteSubcover X)} [Nonemp
           intro U
           obtain ⟨W, hW, hW1, hW2⟩ := h U U.2
           use ⟨W, hW⟩
-          exact lt_of_le_not_le hW1 hW2
+          exact lt_of_le_not_ge hW1 hW2
       exact not_finite ((fun i => (hV2 i).choose) '' ⊤)
     have exists_le : ∃ U ∈ C, V ≤ U.1.1 := by
       use exists_isMax.choose

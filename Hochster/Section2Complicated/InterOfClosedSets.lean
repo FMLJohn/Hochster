@@ -79,7 +79,7 @@ lemma sInter_of_oc_sets_mem [QuasiSeparatedSpace X] {S : Set (Set X)} (hS1 : S �
         have finite' : Finite (S' ∩ U.carrier ∪ S : Set (Set X)) :=
           Set.Finite.union (Set.Finite.inter_of_left finite U.carrier) hS4
         exact U.finite_inter _ subset' nonempty' finite'
-      · exact U.finite_inter S' ((Set.subset_insert_iff_of_not_mem hSs').1 subset) nonempty finite }
+      · exact U.finite_inter S' ((Set.subset_insert_iff_of_notMem hSs').1 subset) nonempty finite }
   by_contra hSU
   have lt : U < ficss := by
     refine lt_of_le_of_ne ?_ ?_
@@ -88,7 +88,7 @@ lemma sInter_of_oc_sets_mem [QuasiSeparatedSpace X] {S : Set (Set X)} (hS1 : S �
     · intro eq
       rw [eq] at hSU
       exact hSU <| Set.mem_insert (⋂ s ∈ S, s) U.carrier
-  exact (not_le_of_lt <| lt) (hU <| le_of_lt lt)
+  exact (not_le_of_gt <| lt) (hU <| le_of_lt lt)
 
 /--
 The intersection of all elements in `U.carrier` which are closed in terms of `T`.
@@ -244,7 +244,7 @@ def FICSSOfInsert [Nonempty X] [CompactSpace X] [QuasiSeparatedSpace X] :
           ⟨_, this⟩
     · have : T' ⊆ U.carrier := by
         simp only [Set.union_singleton] at subset
-        exact (Set.subset_insert_iff_of_not_mem hT').mp subset
+        exact (Set.subset_insert_iff_of_notMem hT').mp subset
       exact U.finite_inter T' this nonempty finite
 
 omit R in
@@ -261,7 +261,7 @@ lemma mem_carrier [Nonempty X] [CompactSpace X] [QuasiSeparatedSpace X] :
         Set.mem_union_right U.carrier rfl
       rw [← eq] at this
       exact h this
-  exact (not_le_of_lt <| this) (hU <| le_of_lt this)
+  exact (not_le_of_gt <| this) (hU <| le_of_lt this)
 
 omit R in
 include hU hV in
@@ -397,7 +397,7 @@ def FICSSOfUnionEq [Nonempty X] [CompactSpace X] [QuasiSeparatedSpace X]
           <| (exists_forall_inter_of_union_eq hV hU h).choose_spec ⟨_, this⟩
     · have : T' ⊆ U.carrier := by
         simp only [Set.union_singleton] at subset
-        exact (Set.subset_insert_iff_of_not_mem hT').mp subset
+        exact (Set.subset_insert_iff_of_notMem hT').mp subset
       exact U.finite_inter T' this nonempty finite
 
 omit R in
@@ -432,7 +432,7 @@ lemma isIrreducible [Nonempty X] [CompactSpace X] [QuasiSeparatedSpace X] :
         · intro eq
           simp_rw [congrArg carrier eq, FICSSOfUnionEq] at h
           simp only [Set.union_singleton, Set.mem_insert_iff, true_or, not_true_eq_false] at h
-      exact not_le_of_lt lt <| hU <| le_of_lt lt
+      exact not_le_of_gt lt <| hU <| le_of_lt lt
     have lt : (exists_forall_inter_of_union_eq hV hU eq_union.symm).choose.1 <
         InterOfClosedSets U := by
       refine Or.elim (exists_forall_inter_of_union_eq hV hU eq_union.symm).choose.2 ?_ ?_
@@ -463,7 +463,7 @@ lemma isIrreducible [Nonempty X] [CompactSpace X] [QuasiSeparatedSpace X] :
           exact IsClosed.inter (isClosed U) closed2
       simp only [Subtype.forall] at mem this
       exact hx _ mem this
-    exact not_le_of_lt lt le
+    exact not_le_of_gt lt le
 
 omit R in
 include hU hV in
@@ -504,6 +504,6 @@ lemma mem_of_isGenericPoint [Nonempty X] [CompactSpace X] [QuasiSeparatedSpace X
     have lt : InterOfClosedSets U \ s < InterOfClosedSets U := by
       simp only [Set.lt_eq_ssubset, Set.diff_ssubset_left_iff]
       exact Set.nonempty_iff_ne_empty.mpr neq
-    exact not_lt_of_le le lt
+    exact not_lt_of_ge le lt
 
 end InterOfClosedSets

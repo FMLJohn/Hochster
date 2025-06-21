@@ -419,20 +419,36 @@ lemma IsSpectralMap.isClosed_range {X Y : Type*}
   IsCompact.isClosed <| isCompact_range (X := ConstructibleTop X) (Y := ConstructibleTop Y) <|
     IsSpectralMap.continuous_of_spectralSpace_constructibleTop hf
 
-lemma isSpectralMap_iff_isClosed_constructibleTop_range {X Y : Type*}
-    [S : TopologicalSpace X] [SpectralSpace X] [T : TopologicalSpace Y] [SpectralSpace Y]
-    {f : X → Y} (hf : IsEmbedding f) :
-    IsSpectralMap f ↔ IsClosed (X := ConstructibleTop Y) (Set.range f) := by
-  refine ⟨fun h => h.isClosed_range, fun h => ⟨hf.continuous, fun s hs1 hs2 => ?_⟩⟩
-  · have h1 : IsClosed (X := ConstructibleTop Y) s :=
-      ⟨ConstructibleTop.instTopologicalSpace_eq_generateFrom_isOpen_isCompact Y ▸
-        isOpen_generateFrom_of_mem <| Or.intro_right _ ⟨s, ⟨hs1, hs2⟩, rfl⟩⟩
-    have h2 : IsCompact (s ∩ Set.range f) :=
-      ((IsClosed.isCompact h).inter_left h1).of_le_of_isCompact
-        (S := ConstructibleTop.instTopologicalSpace Y) (T := T)
-          (ConstructibleTop.instTopologicalSpace_le Y)
-    exact Set.preimage_inter_range.symm ▸ hf.isCompact_iff.2
-      ((Set.image_preimage_eq_of_subset Set.inter_subset_right).symm ▸ h2)
+lemma compactSpace_of_isEmbedding_of_isClosed_constructibleTop_range
+    {X Y : Type*} [TopologicalSpace X] [T : TopologicalSpace Y] [SpectralSpace Y]
+    {f : X → Y} (hf : IsEmbedding f) (hfX : IsClosed (X := ConstructibleTop Y) (Set.range f)) :
+    CompactSpace X :=
+  ⟨(IsEmbedding.isCompact_iff hf).2
+    (Set.image_univ ▸ IsCompact.of_le_of_isCompact (S := ConstructibleTop.instTopologicalSpace Y)
+      (T := T) (ConstructibleTop.instTopologicalSpace_le Y) (IsClosed.isCompact hfX))⟩
+
+lemma quasiSober_of_isEmbedding_of_isClosed_constructibleTop_range
+    {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y] [SpectralSpace Y]
+    {f : X → Y} (hf : IsEmbedding f) (hfX : IsClosed (X := ConstructibleTop Y) (Set.range f)) :
+    QuasiSober X := by
+  constructor
+  · intro S hS1 hS2
+    sorry
+
+-- lemma isSpectralMap_iff_isClosed_constructibleTop_range {X Y : Type*}
+--     [S : TopologicalSpace X] [SpectralSpace X] [T : TopologicalSpace Y] [SpectralSpace Y]
+--     {f : X → Y} (hf : IsEmbedding f) :
+--     IsSpectralMap f ↔ IsClosed (X := ConstructibleTop Y) (Set.range f) := by
+--   refine ⟨fun h => h.isClosed_range, fun h => ⟨hf.continuous, fun s hs1 hs2 => ?_⟩⟩
+--   · have h1 : IsClosed (X := ConstructibleTop Y) s :=
+--       ⟨ConstructibleTop.instTopologicalSpace_eq_generateFrom_isOpen_isCompact Y ▸
+--         isOpen_generateFrom_of_mem <| Or.intro_right _ ⟨s, ⟨hs1, hs2⟩, rfl⟩⟩
+--     have h2 : IsCompact (s ∩ Set.range f) :=
+--       ((IsClosed.isCompact h).inter_left h1).of_le_of_isCompact
+--         (S := ConstructibleTop.instTopologicalSpace Y) (T := T)
+--           (ConstructibleTop.instTopologicalSpace_le Y)
+--     exact Set.preimage_inter_range.symm ▸ hf.isCompact_iff.2
+--       ((Set.image_preimage_eq_of_subset Set.inter_subset_right).symm ▸ h2)
 
 end CommentsBetweenThm1AndCorollaries
 
