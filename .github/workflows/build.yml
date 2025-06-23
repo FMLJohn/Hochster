@@ -1,4 +1,4 @@
-name: Build Hochster
+name: Build project
 
 on:
   push:
@@ -6,6 +6,10 @@ on:
       - main
     paths:
       - '**/*.lean'
+      - '**/blueprint.yml'
+      - 'blueprint/**'
+      - 'docs/**'
+      - 'scripts/**'
       - 'lean-toolchain'
       - 'lakefile.toml'
       - 'lake-manifest.json'
@@ -14,6 +18,10 @@ on:
       - main
     paths:
       - '**/*.lean'
+      - '**/blueprint.yml'
+      - 'blueprint/**'
+      - 'docs/**'
+      - 'scripts/**'
       - 'lean-toolchain'
       - 'lakefile.toml'
       - 'lake-manifest.json'
@@ -29,6 +37,8 @@ permissions:
   contents: read          # Read access to repository contents
   pages: write            # Write access to GitHub Pages
   id-token: write         # Write access to ID tokens
+  issues: write           # Write access to issues
+  pull-requests: write    # Write access to pull requests
 
 jobs:
   build_project:
@@ -36,23 +46,15 @@ jobs:
     name: Build project
     steps:
       - name: Checkout project
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0 # Fetch all history for all branches and tags
 
-      - name: Install elan
-        run: curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y
+      - name: Build the project
+        uses: leanprover/lean-action@f807b338d95de7813c5c50d018f1c23c9b93b4ec # v1.2.0
 
-      - name: Get Mathlib cache
-        run: ~/.elan/bin/lake exe cache get || true
-
-      - name: Cache build artifacts
-        uses: actions/cache@v4
+      - name: Compile blueprint and documentation
+        uses: leanprover-community/docgen-action@b210116d3e6096c0c7146f7a96a6d56b6884fef5 # 2025-06-12
         with:
-          path: |
-            .lake/build
-          key: LakeBuild-${{ runner.os }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}
-          restore-keys: LakeBuild-
-
-      - name: Build project
-        run: ~/.elan/bin/lake build Hochster
+          blueprint: true
+          homepage: home_page
