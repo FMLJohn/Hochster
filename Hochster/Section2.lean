@@ -1,3 +1,4 @@
+import Mathlib.Data.Set.Operations
 import Mathlib.Topology.Constructible
 import Mathlib.Topology.Spectral.Basic
 
@@ -383,6 +384,10 @@ lemma IsSpectralMap.continuous_of_spectralSpace_constructibleTop {X Y : Type*}
       exact isOpen_generateFrom_of_mem <| Or.intro_right _ <| hos ▸
         ⟨f ⁻¹' o, ⟨hf.1.isOpen_preimage o ho1, hf.2 ho1 ho2⟩, rfl⟩
 
+lemma IsClosed.of_le_of_isClosed {X : Type*} [S : TopologicalSpace X] [T : TopologicalSpace X]
+    (hST : S ≤ T) {s : Set X} (hs : @IsClosed _ T s) : @IsClosed _ S s :=
+  (@isOpen_compl_iff _ _ S).1 (hST sᶜ hs.isOpen_compl)
+
 lemma IsCompact.of_le_of_isCompact {X : Type*} [S : TopologicalSpace X] [T : TopologicalSpace X]
     (hST : S ≤ T) {s : Set X} (hs : @IsCompact _ S s) : @IsCompact _ T s := by
   refine isCompact_iff_finite_subcover.2 ?_
@@ -428,11 +433,47 @@ lemma compactSpace_of_isEmbedding_of_isClosed_constructibleTop_range
       (T := T) (ConstructibleTop.instTopologicalSpace_le Y) (IsClosed.isCompact hfX))⟩
 
 lemma quasiSober_of_isEmbedding_of_isClosed_constructibleTop_range
-    {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y] [SpectralSpace Y]
+    {X Y : Type*} [TopologicalSpace X] [T : TopologicalSpace Y] [SpectralSpace Y]
     {f : X → Y} (hf : IsEmbedding f) (hfX : IsClosed (X := ConstructibleTop Y) (Set.range f)) :
     QuasiSober X := by
-  constructor
-  · intro S hS1 hS2
+  refine ⟨fun {s} hs1 hs2 => ?_⟩
+  · have h1 : IsCompact (X := ConstructibleTop Y) (s.image f) := by
+      obtain ⟨t, ht, hfts⟩ := isClosed_induced_iff.1 (hf.eq_induced ▸ hs2)
+      refine hfts ▸ Set.image_preimage_eq_inter_range ▸
+        (IsClosed.isCompact <| IsClosed.inter ?_ hfX)
+      · exact IsClosed.of_le_of_isClosed (S := ConstructibleTop.instTopologicalSpace Y)
+          (T := T) (ConstructibleTop.instTopologicalSpace_le Y) ht
+    have h2 := hf.eq_induced ▸ IsTopologicalBasis.induced f (PrespectralSpace.isTopologicalBasis)
+    let ι := { t : Set Y | IsOpen t ∧ IsCompact t ∧ t ∩ f '' s ≠ ∅ }
+    let t : ι → Set Y := fun i => i.1
+    have h3 : ∀ u : Finset ι, f '' s ∩ ⋂ i ∈ u, t i ≠ ∅ := by
+      intro u
+      let U := u.image (fun i : ι => f ⁻¹' i)
+      have hsU : (s ∩ ⋂₀ U).Nonempty :=
+        isIrreducible_iff_sInter.1 hs1 U (fun t htU => (Finset.mem_image.1 htU).choose_spec.2 ▸
+          IsOpen.preimage hf.continuous (Finset.mem_image.1 htU).choose.2.1)
+          (fun t htU => (Finset.mem_image.1 htU).choose_spec.2 ▸ Set.image_nonempty.mp
+            (Set.nonempty_iff_ne_empty.2 (Set.image_inter_preimage _ _ _ ▸
+              Set.inter_comm _ _ ▸ (Finset.mem_image.1 htU).choose.2.2.2)))
+      have hfsU : (f '' s ∩ ⋂ s ∈ U, f '' s).Nonempty :=
+        Set.Nonempty.mono (Set.inter_subset_inter_right (f '' s) (U.toSet.image_sInter_subset f))
+        (Set.image_inter hf.injective ▸ Set.Nonempty.image f hsU)
+      have hfstU : ⋂ s ∈ U, f '' s ⊆ ⋂ i ∈ u, t i := by
+        simp only [Set.iInter_coe_set, Set.subset_iInter_iff]
+        intro r ⟨hr1, hr2, hrfs⟩ hru
+        refine Set.iInter_subset_of_subset (f ⁻¹' r) ?_
+        · intro y hy
+          simp only [Set.mem_iInter] at hy
+          obtain ⟨x, hfxr, hfxy⟩ := hy <| Finset.mem_image.mpr (by use ⟨r, hr1, hr2, hrfs⟩)
+          exact hfxy ▸ hfxr
+      exact Set.nonempty_iff_ne_empty.mp <| Set.Nonempty.mono
+        (Set.inter_subset_inter_right (f '' s) hfstU) hfsU
+    have h4 : (f '' s ∩ ⋂ i, t i).Nonempty := Set.nonempty_iff_ne_empty.mpr <|
+      (not_imp_not.2 <| isCompact_iff_finite_subfamily_closed.1 h1 t
+        (fun i => isOpen_compl_iff.1 <|
+          ConstructibleTop.instTopologicalSpace_eq_generateFrom_isOpen_isCompact Y ▸
+            isOpen_generateFrom_of_mem <| Or.intro_right _ ⟨i, ⟨i.2.1, i.2.2.1⟩, rfl⟩))
+      (not_exists.2 h3)
     sorry
 
 -- lemma isSpectralMap_iff_isClosed_constructibleTop_range {X Y : Type*}
