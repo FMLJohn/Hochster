@@ -22,9 +22,7 @@ structure SpringCat where
 
 namespace SpringCat
 
-instance (𝔸 : SpringCat) : TopologicalSpace 𝔸.X := 𝔸.tX
-
-instance (𝔸 : SpringCat) : CommRing 𝔸.A := 𝔸.commRing
+attribute [instance] SpringCat.tX SpringCat.commRing SpringCat.isReduced
 
 @[ext]
 structure Hom (𝔸 𝔹 : SpringCat) where
@@ -48,6 +46,37 @@ instance : Category SpringCat where
   comp_id _ := rfl
   assoc _ _ _ := rfl
 
-end SpringCat
+def isAffine (𝔸 : SpringCat) := Set.range 𝔸.f = ⊤
 
-def IsAffine (𝔸 : SpringCat) := Set.range 𝔸.f = ⊤
+def inclusionRingHom (𝔸 : SpringCat) :
+    𝔸.A →+* Π x : 𝔸.X, 𝔸.A ⧸ (𝔸.f x).asIdeal where
+  toFun := fun a x => Ideal.Quotient.mk (𝔸.f x).asIdeal a
+  map_one' := by ext; simp
+  map_mul' := fun _ _ => by ext; simp
+  map_zero' := by ext; simp
+  map_add' := fun _ _ => by ext; simp
+
+lemma inclusionRingHom_injective (𝔸 : SpringCat) :
+    Function.Injective 𝔸.inclusionRingHom := by
+  refine (RingHom.injective_iff_ker_eq_bot _).2 ?_
+  · ext a
+    simp only [inclusionRingHom, mem_ker, coe_mk, MonoidHom.coe_mk, OneHom.coe_mk]
+    refine ⟨fun ha => by_contra fun hna => ?_, fun ha => ha ▸ rfl⟩
+    · have h1 (x : 𝔸.X) : (Ideal.Quotient.mk (𝔸.f x).asIdeal) a = 0 := by
+        change (fun x => (Ideal.Quotient.mk (𝔸.f x).asIdeal) a) x = 0
+        exact ha ▸ rfl
+      have h2 : ∃ p : PrimeSpectrum 𝔸.A, a ∉ p.asIdeal := by
+        have : a ∉ sInf { I : Ideal 𝔸.A | I.IsPrime } :=
+          (nilradical_eq_sInf 𝔸.A ▸ nilradical_eq_zero 𝔸.A) ▸ hna
+        simp only [Submodule.mem_sInf, not_forall] at this
+        obtain ⟨I, hI, haI⟩ := this
+        use ⟨I, hI⟩
+      obtain ⟨p, hap⟩ := h2
+      obtain ⟨q, hqa, x, hfxq⟩ := Dense.inter_open_nonempty (𝔸.range_dense)
+        (PrimeSpectrum.basicOpen a).carrier (PrimeSpectrum.basicOpen a).is_open'
+        (Set.nonempty_of_mem hap)
+      have h3 : (Ideal.Quotient.mk (𝔸.f x).asIdeal) a ≠ 0 :=
+        hfxq ▸ fun hqa0 => hqa <| Ideal.Quotient.eq_zero_iff_mem.1 hqa0
+      exact h3 <| h1 x
+
+end SpringCat
