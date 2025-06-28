@@ -5,7 +5,7 @@ import Mathlib.RingTheory.Spectrum.Prime.Topology
 
 import Hochster.Section2
 
-open CategoryTheory PrimeSpectrum RingHom Topology
+open CategoryTheory PrimeSpectrum RingHom TopologicalSpace Topology
 
 universe u
 
@@ -83,3 +83,17 @@ lemma inclusionRingHom_injective (𝔸 : SpringCat) :
       exact h3 <| h1 x
 
 end SpringCat
+
+structure SpringLike (X A : Type*) where
+  tX : TopologicalSpace X
+  spectralSpace : SpectralSpace X
+  commRing : CommRing A
+  i : X → Type*
+  forall_commRing (x : X) : CommRing (i x)
+  forall_isDomain (x : X) : IsDomain (i x)
+  h : A →+* Π x : X, i x
+  injective : Function.Injective h
+  forall_eq_top (x : X) : { h a x | a : A } = ⊤
+  forall_isOpen (a : A) : IsOpen { x : X | h a x ≠ 0 }
+  forall_isCompact (a : A) : IsCompact { x : X | h a x ≠ 0 }
+  isTopologicalBasis : IsTopologicalBasis { { x : X | h a x ≠ 0 } | a : A }
