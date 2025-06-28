@@ -48,6 +48,9 @@ instance : Category SpringCat where
 
 def isAffine (𝔸 : SpringCat) := Set.range 𝔸.f = ⊤
 
+instance (𝔸 : SpringCat) : SpectralSpace 𝔸.X :=
+  spectralSpace_of_isEmbedding_of_isClosed_constructibleTop_range 𝔸.isEmbedding 𝔸.range_isClosed
+
 def inclusionRingHom (𝔸 : SpringCat) :
     𝔸.A →+* Π x : 𝔸.X, 𝔸.A ⧸ (𝔸.f x).asIdeal where
   toFun := fun a x => Ideal.Quotient.mk (𝔸.f x).asIdeal a
