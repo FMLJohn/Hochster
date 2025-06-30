@@ -7,12 +7,10 @@ import Hochster.Section2
 
 open CategoryTheory PrimeSpectrum RingHom TopologicalSpace Topology
 
-universe u
-
 structure SpringCat where
-  X : Type u
+  X : Type*
   tX : TopologicalSpace X
-  A : Type u
+  A : Type*
   commRing : CommRing A
   isReduced : IsReduced A
   f : X → PrimeSpectrum A
@@ -84,10 +82,8 @@ lemma inclusionRingHom_injective (𝔸 : SpringCat) :
 
 end SpringCat
 
-structure SpringLike (X A : Type*) where
-  tX : TopologicalSpace X
+structure SpringLike (X A : Type*) [TopologicalSpace X] [CommRing A] where
   spectralSpace : SpectralSpace X
-  commRing : CommRing A
   i : X → Type*
   forall_commRing (x : X) : CommRing (i x)
   forall_isDomain (x : X) : IsDomain (i x)
@@ -97,3 +93,102 @@ structure SpringLike (X A : Type*) where
   forall_isOpen (a : A) : IsOpen { x : X | h a x ≠ 0 }
   forall_isCompact (a : A) : IsCompact { x : X | h a x ≠ 0 }
   isTopologicalBasis : IsTopologicalBasis { { x : X | h a x ≠ 0 } | a : A }
+
+instance Pi.isReduced_of_forall_isReduced {α : Type*} (i : α → Type*)
+    [∀ a : α, Zero (i a)] [∀ a : α, Pow (i a) ℕ] [∀ a : α, IsReduced (i a)] :
+    IsReduced (Π a : α, i a) :=
+  (isReduced_iff _).2 fun f ⟨n, hfn⟩ => by
+    ext a; exact (isReduced_iff _).1 inferInstance (f a) ⟨n, Pi.pow_apply f n a ▸ hfn ▸ rfl⟩
+
+namespace SpringLike
+
+attribute [instance] SpringLike.forall_commRing SpringLike.forall_isDomain
+
+lemma isReduced {X A : Type*} [TopologicalSpace X] [CommRing A] (hXA : SpringLike X A) :
+    IsReduced A :=
+  (isReduced_iff A).2 fun a ha => ((RingHom.ker_eq_bot_iff_eq_zero hXA.h).1 <|
+    (RingHom.injective_iff_ker_eq_bot hXA.h).1 hXA.injective) a
+      (isNilpotent_iff_eq_zero.1 <| IsNilpotent.map ha hXA.h)
+
+/--
+Given any topological space `X` and commutative ring `A` with `hXA : SpringLike X A`, if we pick an
+arbitrary `x : X`, then there is an ideal of `A` corresponding to `x`, that is,
+`{ a : A | hXA.h a x = 0 }`.
+-/
+def matchingIdeal {X A : Type*} [TopologicalSpace X] [CommRing A] (hXA : SpringLike X A) (x : X) :
+    Ideal A where
+  carrier := { a : A | hXA.h a x = 0 }
+  add_mem' := fun ha hb => Set.mem_setOf_eq ▸ map_add hXA.h .. ▸ Pi.add_apply (hXA.h _) .. ▸
+    ha ▸ hb ▸ add_zero (hXA.h _ x)
+  zero_mem' := Set.mem_setOf_eq ▸ map_zero hXA.h ▸ rfl
+  smul_mem' := fun c a ha => Set.mem_setOf_eq ▸ smul_eq_mul c a ▸ map_mul hXA.h .. ▸
+    Pi.mul_apply (hXA.h _) .. ▸ mul_eq_zero_of_right (hXA.h c x) ha
+
+lemma mem_matchingIdeal_iff_eq_zero {X A : Type*} [TopologicalSpace X] [CommRing A]
+    (hXA : SpringLike X A) (x : X) (a : A) :
+    a ∈ matchingIdeal hXA x ↔ hXA.h a x = 0 := by
+  simp [matchingIdeal]
+
+lemma fun_matchingIdeal_injective {X A : Type*}
+    [TopologicalSpace X] [CommRing A] (hXA : SpringLike X A) :
+    Function.Injective fun x : X => matchingIdeal hXA x := by
+  intro x y hxy
+  simp only [matchingIdeal, Submodule.mk.injEq, AddSubmonoid.mk.injEq,
+    AddSubsemigroup.mk.injEq] at hxy
+  have (a : A) : x ∈ { x : X | hXA.h a x ≠ 0 } ↔ y ∈ { x : X | hXA.h a x ≠ 0 } :=
+    not_iff_not.2 (Set.ext_iff.1 hxy a)
+  exact (@IsTopologicalBasis.eq_iff X _ hXA.spectralSpace.toT0Space _ hXA.isTopologicalBasis).2
+    fun s ⟨a, has⟩ => has ▸ this a
+
+lemma matchingIdeal_isPrime {X A : Type*} [TopologicalSpace X] [CommRing A]
+    (hXA : SpringLike X A) (x : X) :
+    (matchingIdeal hXA x).IsPrime where
+  ne_top' := (Ideal.ne_top_iff_one _).2 fun h1x => by simp only [matchingIdeal, Submodule.mem_mk,
+    AddSubmonoid.mem_mk, AddSubsemigroup.mem_mk, Set.mem_setOf_eq, map_one, Pi.one_apply,
+    one_ne_zero] at h1x
+  mem_or_mem' := fun hab => by simpa only [matchingIdeal, Submodule.mem_mk, AddSubmonoid.mem_mk,
+    AddSubsemigroup.mem_mk, Set.mem_setOf_eq, map_mul, Pi.mul_apply, mul_eq_zero] using hab
+
+end SpringLike
+
+lemma TopologicalSpace.eq_of_isTopologicalBasis_of_isTopologicalBasis {X : Type*}
+    [S : TopologicalSpace X] [T : TopologicalSpace X] {U : Set (Set X)}
+    (hSU : IsTopologicalBasis (t := S) U) (hTU : IsTopologicalBasis (t := T) U) :
+    S = T :=
+  hSU.eq_generateFrom (t := S) ▸ hTU.eq_generateFrom (t := T) ▸ rfl
+
+namespace SpringLike
+
+lemma isEmbedding_fun_matchingIdeal {X A : Type*}
+    [TopologicalSpace X] [CommRing A] (hXA : SpringLike X A) :
+    IsEmbedding fun x : X =>
+      (⟨matchingIdeal hXA x, matchingIdeal_isPrime hXA x⟩ : PrimeSpectrum A) where
+  eq_induced := by
+    have h1 := IsTopologicalBasis.induced (fun x : X =>
+      ⟨matchingIdeal hXA x, matchingIdeal_isPrime hXA x⟩) (isTopologicalBasis_basic_opens (R := A))
+    have h2 : (Set.preimage (fun x =>
+        (⟨hXA.matchingIdeal x, matchingIdeal_isPrime hXA x⟩ : PrimeSpectrum A)) ''
+          Set.range fun a => { x | a ∉ x.asIdeal }) = { { x | hXA.h a x ≠ 0 } | a : A } := by
+      ext
+      simp only [matchingIdeal, Set.mem_image, Set.mem_range, exists_exists_eq_and,
+        Set.preimage_setOf_eq, Submodule.mem_mk, AddSubmonoid.mem_mk, AddSubsemigroup.mem_mk,
+        Set.mem_setOf_eq]
+    exact eq_of_isTopologicalBasis_of_isTopologicalBasis
+      (T := induced (fun x => ⟨hXA.matchingIdeal x, matchingIdeal_isPrime hXA x⟩) zariskiTopology)
+        hXA.isTopologicalBasis (h2 ▸ h1)
+  injective := fun x y hxy =>
+    fun_matchingIdeal_injective hXA (PrimeSpectrum.mk.injEq (hXA.matchingIdeal x) _ _ _ ▸ hxy)
+
+def spring {X A : Type*} [TopologicalSpace X] [CommRing A] (hXA : SpringLike X A) :
+    SpringCat where
+  X := X
+  tX := inferInstance
+  A := A
+  commRing := inferInstance
+  isReduced := hXA.isReduced
+  f := fun x => ⟨matchingIdeal hXA x, matchingIdeal_isPrime hXA x⟩
+  isEmbedding := isEmbedding_fun_matchingIdeal hXA
+  range_dense := sorry
+  range_isClosed := sorry
+
+end SpringLike
