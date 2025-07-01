@@ -188,7 +188,16 @@ def spring {X A : Type*} [TopologicalSpace X] [CommRing A] (hXA : SpringLike X A
   isReduced := hXA.isReduced
   f := fun x => ⟨matchingIdeal hXA x, matchingIdeal_isPrime hXA x⟩
   isEmbedding := isEmbedding_fun_matchingIdeal hXA
-  range_dense := sorry
+  range_dense := by
+    refine (IsTopologicalBasis.dense_iff isTopologicalBasis_basic_opens).2 fun o ⟨a, ha⟩ ho => ?_
+    · have : a ≠ 0 := fun h => by
+        have := (h ▸ ha) ▸ ho
+        simp only [basicOpen, Submodule.zero_mem, not_true_eq_false, Set.setOf_false,
+          Opens.mk_empty, Opens.coe_bot, Set.not_nonempty_empty] at this
+      obtain ⟨x, hax⟩ := Function.ne_iff.1 ((map_ne_zero_iff hXA.h hXA.injective).2 this)
+      refine ⟨⟨hXA.matchingIdeal x, hXA.matchingIdeal_isPrime x⟩, ha ▸ ?_⟩
+      · simpa only [Set.mem_inter_iff, Set.mem_compl_iff, mem_zeroLocus, Set.singleton_subset_iff,
+          Set.mem_range, exists_apply_eq_apply, and_true] using hax
   range_isClosed := sorry
 
 end SpringLike
