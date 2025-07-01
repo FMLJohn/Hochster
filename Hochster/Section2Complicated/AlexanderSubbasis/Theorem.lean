@@ -35,7 +35,7 @@ theorem alexanderSubbasis :
     have subcover : cover.Subcover (OpenCoverWithNoFiniteSubcover.Max h).1.1 := by
       change { cover.toFun i | i : cover.ι } ⊆ _
       simp only [cover, s, IntersectionCover, Set.top_eq_univ, Subtype.exists, Set.image_univ,
-        Subtype.range_coe_subtype, Set.setOf_subset_setOf, forall_exists_index, and_imp]
+        Subtype.range_coe_subtype, Set.setOf_subset_setOf, forall_exists_index]
       intro O _ hxi _ hUiO
       rcases hxi with ⟨_, j, hj⟩
       exact ⟨j, hj.trans hUiO⟩

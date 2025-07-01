@@ -5,6 +5,7 @@ import Hochster.Section2
 
 open CategoryTheory PrimeSpectrum RingHom TopologicalSpace Topology
 
+@[ext]
 structure SpringCat where
   X : Type*
   tX : TopologicalSpace X
@@ -252,3 +253,15 @@ def spring {X A : Type*} [TopologicalSpace X] [CommRing A] (hXA : SpringLike X A
     IsSpectralMap.isClosed_range hXA.isSpectralMap_fun_matchingIdeal
 
 end SpringLike
+
+lemma SpringCat.springLike_spring_cancel (𝔸 : SpringCat) :
+    𝔸.springLike.spring = 𝔸 := by
+  ext
+  · rfl
+  · rfl
+  · rfl
+  · rfl
+  · refine heq_eq_eq _ _ ▸ ?_
+    · ext x a
+      simp [springLike, SpringLike.spring, SpringLike.matchingIdeal, inclusionRingHom,
+        Ideal.Quotient.eq_zero_iff_mem]
