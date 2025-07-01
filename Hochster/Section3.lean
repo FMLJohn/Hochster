@@ -18,9 +18,23 @@ structure SpringCat where
   range_dense : Dense (Set.range f)
   range_isClosed : IsClosed (X := ConstructibleTop (PrimeSpectrum A)) (Set.range f)
 
+structure SpringLike (X A : Type*) [TopologicalSpace X] [CommRing A] where
+  spectralSpace : SpectralSpace X
+  i : X → Type*
+  forall_commRing (x : X) : CommRing (i x)
+  forall_isDomain (x : X) : IsDomain (i x)
+  h : A →+* Π x : X, i x
+  injective : Function.Injective h
+  forall_eq_top (x : X) : { h a x | a : A } = ⊤
+  forall_isOpen (a : A) : IsOpen { x : X | h a x ≠ 0 }
+  forall_isCompact (a : A) : IsCompact { x : X | h a x ≠ 0 }
+  isTopologicalBasis : IsTopologicalBasis { { x : X | h a x ≠ 0 } | a : A }
+
 namespace SpringCat
 
 attribute [instance] SpringCat.tX SpringCat.commRing SpringCat.isReduced
+
+def isAffine (𝔸 : SpringCat) := Set.range 𝔸.f = ⊤
 
 @[ext]
 structure Hom (𝔸 𝔹 : SpringCat) where
@@ -44,10 +58,12 @@ instance : Category SpringCat where
   comp_id _ := rfl
   assoc _ _ _ := rfl
 
-def isAffine (𝔸 : SpringCat) := Set.range 𝔸.f = ⊤
-
 instance (𝔸 : SpringCat) : SpectralSpace 𝔸.X :=
   spectralSpace_of_isEmbedding_of_isClosed_constructibleTop_range 𝔸.isEmbedding 𝔸.range_isClosed
+
+lemma isSpectralMap_f (𝔸 : SpringCat) : IsSpectralMap 𝔸.f :=
+  ((spectralSpace_and_isSpectralMap_iff_isClosed_constructibleTop_range 𝔸.isEmbedding).2
+    𝔸.range_isClosed).2
 
 def inclusionRingHom (𝔸 : SpringCat) :
     𝔸.A →+* Π x : 𝔸.X, 𝔸.A ⧸ (𝔸.f x).asIdeal where
@@ -80,19 +96,39 @@ lemma inclusionRingHom_injective (𝔸 : SpringCat) :
         hfxq ▸ fun hqa0 => hqa <| Ideal.Quotient.eq_zero_iff_mem.1 hqa0
       exact h3 <| h1 x
 
-end SpringCat
+/--
+For any spring `𝔸`, we have `SpringLike 𝔸.X 𝔸.A`.
+-/
+def springLike (𝔸 : SpringCat) : SpringLike 𝔸.X 𝔸.A where
+  spectralSpace := inferInstance
+  i := fun x => 𝔸.A ⧸ (𝔸.f x).asIdeal
+  forall_commRing := inferInstance
+  forall_isDomain := inferInstance
+  h := 𝔸.inclusionRingHom
+  injective := 𝔸.inclusionRingHom_injective
+  forall_eq_top := fun _ => by
+    ext
+    simpa only [Set.top_eq_univ, Set.mem_univ, iff_true] using Quotient.exists_rep _
+  forall_isOpen := fun a => by
+    simpa only [inclusionRingHom, coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, ne_eq,
+      Ideal.Quotient.eq_zero_iff_mem] using
+        𝔸.isEmbedding.eq_induced ▸ (isTopologicalBasis_basic_opens (R := 𝔸.A)).eq_generateFrom ▸
+          induced_generateFrom_eq ▸ isOpen_generateFrom_of_mem ⟨basicOpen a, ⟨a, rfl⟩, rfl⟩
+  forall_isCompact := fun a => by
+    have : { x | a ∉ (𝔸.f x).asIdeal } = 𝔸.f ⁻¹' basicOpen a := rfl
+    simpa only [inclusionRingHom, coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, ne_eq,
+      Ideal.Quotient.eq_zero_iff_mem] using
+        this ▸ (isSpectralMap_f 𝔸).2 isOpen_basicOpen (isCompact_basicOpen a)
+  isTopologicalBasis := by
+    have : Set.preimage 𝔸.f '' Set.range (fun a => { x | a ∉ x.asIdeal }) =
+        { x | ∃ a, { x | 𝔸.inclusionRingHom a x ≠ 0 } = x } := by
+      ext
+      simp only [Set.mem_image, Set.mem_range, exists_exists_eq_and, Set.preimage_setOf_eq,
+        inclusionRingHom, coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, ne_eq,
+        Ideal.Quotient.eq_zero_iff_mem, Set.mem_setOf_eq]
+    exact this ▸ 𝔸.isEmbedding.eq_induced ▸ isTopologicalBasis_basic_opens.induced 𝔸.f
 
-structure SpringLike (X A : Type*) [TopologicalSpace X] [CommRing A] where
-  spectralSpace : SpectralSpace X
-  i : X → Type*
-  forall_commRing (x : X) : CommRing (i x)
-  forall_isDomain (x : X) : IsDomain (i x)
-  h : A →+* Π x : X, i x
-  injective : Function.Injective h
-  forall_eq_top (x : X) : { h a x | a : A } = ⊤
-  forall_isOpen (a : A) : IsOpen { x : X | h a x ≠ 0 }
-  forall_isCompact (a : A) : IsCompact { x : X | h a x ≠ 0 }
-  isTopologicalBasis : IsTopologicalBasis { { x : X | h a x ≠ 0 } | a : A }
+end SpringCat
 
 instance Pi.isReduced_of_forall_isReduced {α : Type*} (i : α → Type*)
     [∀ a : α, Zero (i a)] [∀ a : α, Pow (i a) ℕ] [∀ a : α, IsReduced (i a)] :
