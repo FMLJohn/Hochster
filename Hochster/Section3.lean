@@ -126,12 +126,12 @@ def matchingIdeal {X A : Type*} [TopologicalSpace X] [CommRing A] (hXA : SpringL
 
 lemma mem_matchingIdeal_iff_eq_zero {X A : Type*} [TopologicalSpace X] [CommRing A]
     (hXA : SpringLike X A) (x : X) (a : A) :
-    a ∈ matchingIdeal hXA x ↔ hXA.h a x = 0 := by
+    a ∈ hXA.matchingIdeal x ↔ hXA.h a x = 0 := by
   simp [matchingIdeal]
 
 lemma fun_matchingIdeal_injective {X A : Type*}
     [TopologicalSpace X] [CommRing A] (hXA : SpringLike X A) :
-    Function.Injective fun x : X => matchingIdeal hXA x := by
+    Function.Injective fun x : X => hXA.matchingIdeal x := by
   intro x y hxy
   simp only [matchingIdeal, Submodule.mk.injEq, AddSubmonoid.mk.injEq,
     AddSubsemigroup.mk.injEq] at hxy
@@ -142,7 +142,7 @@ lemma fun_matchingIdeal_injective {X A : Type*}
 
 lemma matchingIdeal_isPrime {X A : Type*} [TopologicalSpace X] [CommRing A]
     (hXA : SpringLike X A) (x : X) :
-    (matchingIdeal hXA x).IsPrime where
+    (hXA.matchingIdeal x).IsPrime where
   ne_top' := (Ideal.ne_top_iff_one _).2 fun h1x => by simp only [matchingIdeal, Submodule.mem_mk,
     AddSubmonoid.mem_mk, AddSubsemigroup.mem_mk, Set.mem_setOf_eq, map_one, Pi.one_apply,
     one_ne_zero] at h1x
@@ -162,10 +162,10 @@ namespace SpringLike
 lemma isEmbedding_fun_matchingIdeal {X A : Type*}
     [TopologicalSpace X] [CommRing A] (hXA : SpringLike X A) :
     IsEmbedding fun x : X =>
-      (⟨matchingIdeal hXA x, matchingIdeal_isPrime hXA x⟩ : PrimeSpectrum A) where
+      (⟨hXA.matchingIdeal x, hXA.matchingIdeal_isPrime x⟩ : PrimeSpectrum A) where
   eq_induced := by
     have h1 := IsTopologicalBasis.induced (fun x : X =>
-      ⟨matchingIdeal hXA x, matchingIdeal_isPrime hXA x⟩) (isTopologicalBasis_basic_opens (R := A))
+      ⟨hXA.matchingIdeal x, hXA.matchingIdeal_isPrime x⟩) (isTopologicalBasis_basic_opens (R := A))
     have h2 : (Set.preimage (fun x =>
         (⟨hXA.matchingIdeal x, matchingIdeal_isPrime hXA x⟩ : PrimeSpectrum A)) ''
           Set.range fun a => { x | a ∉ x.asIdeal }) = { { x | hXA.h a x ≠ 0 } | a : A } := by
@@ -179,6 +179,22 @@ lemma isEmbedding_fun_matchingIdeal {X A : Type*}
   injective := fun x y hxy =>
     fun_matchingIdeal_injective hXA (PrimeSpectrum.mk.injEq (hXA.matchingIdeal x) _ _ _ ▸ hxy)
 
+lemma isSpectralMap_fun_matchingIdeal {X A : Type*}
+    [TopologicalSpace X] [CommRing A] (hXA : SpringLike X A) :
+    IsSpectralMap fun x : X =>
+      (⟨hXA.matchingIdeal x, hXA.matchingIdeal_isPrime x⟩ : PrimeSpectrum A) where
+  isOpen_preimage := hXA.isEmbedding_fun_matchingIdeal.continuous.1
+  isCompact_preimage_of_isOpen := by
+    intro o ho1 ho2
+    obtain ⟨s, hs, hos⟩ := (isCompact_open_iff_eq_finite_iUnion_of_isTopologicalBasis _
+      isTopologicalBasis_basic_opens isCompact_basicOpen o).1 ⟨ho2, ho1⟩
+    exact hos ▸ by simpa only [Set.preimage_iUnion] using
+      hs.isCompact_biUnion fun a _ => hXA.forall_isCompact a
+
+/--
+Given a topological space `X` and a commutative ring `A` with `hXA : SpringLike X A`, we obtain a
+spring whose underlying space and ring are `X` and `A` respectively.
+-/
 def spring {X A : Type*} [TopologicalSpace X] [CommRing A] (hXA : SpringLike X A) :
     SpringCat where
   X := X
@@ -198,6 +214,7 @@ def spring {X A : Type*} [TopologicalSpace X] [CommRing A] (hXA : SpringLike X A
       refine ⟨⟨hXA.matchingIdeal x, hXA.matchingIdeal_isPrime x⟩, ha ▸ ?_⟩
       · simpa only [Set.mem_inter_iff, Set.mem_compl_iff, mem_zeroLocus, Set.singleton_subset_iff,
           Set.mem_range, exists_apply_eq_apply, and_true] using hax
-  range_isClosed := sorry
+  range_isClosed := letI := hXA.spectralSpace
+    IsSpectralMap.isClosed_range hXA.isSpectralMap_fun_matchingIdeal
 
 end SpringLike
