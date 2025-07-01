@@ -1,6 +1,4 @@
-import Mathlib.Algebra.Ring.Defs
 import Mathlib.CategoryTheory.Category.Basic
-import Mathlib.RingTheory.Nilpotent.Defs
 import Mathlib.RingTheory.Spectrum.Prime.Topology
 
 import Hochster.Section2
