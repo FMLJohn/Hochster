@@ -266,6 +266,14 @@ lemma SpringCat.springLike_spring_cancel (𝔸 : SpringCat) :
       simp [springLike, SpringLike.spring, SpringLike.matchingIdeal, inclusionRingHom,
         Ideal.Quotient.eq_zero_iff_mem]
 
+lemma PrimeSpectrum.ConstructibleTop.isTopologicalBasis_inter_iInter (A : Type*) [CommSemiring A] :
+    IsTopologicalBasis (α := ConstructibleTop (PrimeSpectrum A))
+      { s | ∃ a : A, ∃ B : Set A, B.Finite ∧
+        s = { p | a ∉ p.asIdeal } ∩ ⋂ b ∈ B, { p | b ∈ p.asIdeal } } where
+  exists_subset_inter := sorry
+  sUnion_eq := sorry
+  eq_generateFrom := sorry
+
 lemma SpringLike.spring_isAffine_iff_forall_mem_radical_of_subset
     {X A : Type*} [TopologicalSpace X] [CommRing A] (hXA : SpringLike X A) :
     hXA.spring.isAffine ↔
