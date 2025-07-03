@@ -265,3 +265,18 @@ lemma SpringCat.springLike_spring_cancel (𝔸 : SpringCat) :
     · ext x a
       simp [springLike, SpringLike.spring, SpringLike.matchingIdeal, inclusionRingHom,
         Ideal.Quotient.eq_zero_iff_mem]
+
+lemma SpringLike.spring_isAffine_iff_forall_mem_radical_of_subset
+    {X A : Type*} [TopologicalSpace X] [CommRing A] (hXA : SpringLike X A) :
+    hXA.spring.isAffine ↔
+      ∀ a : A, ∀ B : Set A, B.Finite →
+        ⋂ b ∈ B, { x : X | hXA.h b x = 0 } ⊆ { x : X | hXA.h a x = 0 } →
+          a ∈ (Ideal.span B).radical := by
+  refine ⟨fun h a B hB hBa => ?_, ?_⟩
+  · exact Ideal.radical_eq_sInf (Ideal.span B) ▸ Ideal.mem_sInf.2 fun {I} ⟨hIB, hI⟩ => by
+      obtain ⟨x, hxI⟩ := le_of_eq h.symm (Set.mem_univ ⟨I, hI⟩)
+      simp only [SpringLike.spring, PrimeSpectrum.mk.injEq] at hxI
+      exact hxI ▸ (SpringLike.mem_matchingIdeal_iff_eq_zero ..).2 <| hBa <|
+        Set.mem_biInter fun b hbB => (SpringLike.mem_matchingIdeal_iff_eq_zero ..).1 <|
+          hxI ▸ hIB <| Ideal.subset_span hbB
+  · sorry
