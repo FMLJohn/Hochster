@@ -3,7 +3,7 @@ import Mathlib.RingTheory.Spectrum.Prime.Topology
 
 import Hochster.Section2
 
-open CategoryTheory PrimeSpectrum RingHom TopologicalSpace Topology
+open CategoryTheory ConstructibleTop PrimeSpectrum RingHom TopologicalSpace Topology
 
 @[ext]
 structure SpringCat where
@@ -262,17 +262,59 @@ lemma SpringCat.springLike_spring_cancel (𝔸 : SpringCat) :
   · rfl
   · rfl
   · refine heq_eq_eq _ _ ▸ ?_
-    · ext x a
+    · ext _ _
       simp [springLike, SpringLike.spring, SpringLike.matchingIdeal, inclusionRingHom,
         Ideal.Quotient.eq_zero_iff_mem]
+
+lemma PrimeSpectrum.zeroLocus_singleton_eq {R : Type*} [CommSemiring R] (r : R) :
+    zeroLocus {r} = { p | r ∈ p.asIdeal } := by
+  simp [zeroLocus]
 
 lemma PrimeSpectrum.ConstructibleTop.isTopologicalBasis_inter_iInter (A : Type*) [CommSemiring A] :
     IsTopologicalBasis (α := ConstructibleTop (PrimeSpectrum A))
       { s | ∃ a : A, ∃ B : Set A, B.Finite ∧
         s = { p | a ∉ p.asIdeal } ∩ ⋂ b ∈ B, { p | b ∈ p.asIdeal } } where
-  exists_subset_inter := sorry
-  sUnion_eq := sorry
-  eq_generateFrom := sorry
+  exists_subset_inter := fun s ⟨a1, B1, hB1, haBs⟩ t ⟨a2, B2, hB2, haBt⟩ x hxst => by
+    have ha12 : IsOpen ({ p : PrimeSpectrum A | a1 ∉ p.asIdeal } ∩ { p | a2 ∉ p.asIdeal }) :=
+      isOpen_basicOpen.inter isOpen_basicOpen
+    have hxa12 : x ∈ { p : PrimeSpectrum A | a1 ∉ p.asIdeal } ∩ { p | a2 ∉ p.asIdeal } :=
+      Set.mem_inter (Set.mem_of_mem_inter_left <| Set.inter_assoc .. ▸ haBs ▸ hxst)
+        (Set.mem_of_mem_inter_left <| Set.inter_assoc .. ▸ Set.inter_comm .. ▸ haBt ▸ hxst)
+    obtain ⟨o, ⟨r, hr⟩, hxo, hoa12⟩ := isTopologicalBasis_basic_opens.isOpen_iff.1 ha12 x hxa12
+    refine ⟨o ∩ ⋂ b ∈ B1 ∪ B2, { p | b ∈ p.asIdeal }, ⟨r, B1 ∪ B2, hB1.union hB2, hr ▸ rfl⟩, ?_, ?_⟩
+    · exact Set.mem_inter hxo (Set.biInter_union .. ▸ Set.mem_inter
+        (Set.mem_of_mem_inter_right <| Set.inter_assoc .. ▸ Set.inter_comm .. ▸ haBs ▸ hxst)
+        (Set.mem_of_mem_inter_right <| Set.inter_assoc .. ▸ haBt ▸ hxst))
+    · exact haBs ▸ haBt ▸ Set.biInter_union .. ▸ Set.inter_inter_inter_comm .. ▸
+        Set.inter_subset_inter_left _ hoa12
+  sUnion_eq := by
+    ext x
+    simp only [Set.mem_univ, iff_true]
+    exact ⟨(basicOpen 1).1, ⟨1, ∅, Set.finite_empty, Set.biInter_empty _ ▸ Set.inter_univ _ ▸ rfl⟩,
+      basicOpen_one (R := A) ▸ Set.mem_univ x⟩
+  eq_generateFrom := by
+    have : generateFrom { s : Set (PrimeSpectrum A) | ∃ a : A, ∃ B : Set A, B.Finite ∧
+        s = { p | a ∉ p.asIdeal } ∩ ⋂ b ∈ B, { p | b ∈ p.asIdeal } } ≤ zariskiTopology :=
+      (isTopologicalBasis_basic_opens (R := A)).eq_generateFrom ▸
+        le_generateFrom fun s ⟨a, has⟩ => has ▸ isOpen_generateFrom_of_mem
+          ⟨a, ⟨∅, Set.finite_empty, Set.biInter_empty _ ▸ Set.inter_univ _ ▸ rfl⟩⟩
+    refine instTopologicalSpace_eq_generateFrom_isOpen_isCompact_union_compl_image (PrimeSpectrum A)
+      ▸ eq_of_le_of_le ?_ ?_
+    · exact le_generateFrom fun s ⟨a, B, hB, hsaB⟩ =>
+        hsaB ▸ @IsOpen.inter _ (generateFrom _) _ _
+          (isOpen_generateFrom_of_mem <| Or.intro_left _ ⟨isOpen_basicOpen, isCompact_basicOpen a⟩)
+          (@hB.isOpen_biInter _ _ (generateFrom _) _ _ fun b hbB =>
+            isOpen_generateFrom_of_mem <| Or.intro_right _
+              ⟨basicOpen b, ⟨isOpen_basicOpen, isCompact_basicOpen b⟩, compl_eq_comm.mp rfl⟩)
+    · refine le_generateFrom fun s hs => Or.elim hs (fun ⟨hs1, hs2⟩ => this s hs1) ?_
+      · intro ⟨t, ⟨ht1, ht2⟩, hts⟩
+        obtain ⟨B, hB, htB⟩ := eq_finite_iUnion_of_isTopologicalBasis_of_isCompact_open _
+          isTopologicalBasis_basic_opens t ht2 ht1
+        refine hts ▸ htB ▸ isOpen_generateFrom_of_mem ⟨1, B, hB, ?_⟩
+        · change _ = (basicOpen 1).1 ∩ _
+          refine basicOpen_one (R := A) ▸ Set.univ_inter _ ▸ ?_
+          · simp only [basicOpen_eq_zeroLocus_compl, Set.compl_iUnion, compl_compl]
+            exact Set.iInter_congr fun a => Set.iInter_congr fun _ => zeroLocus_singleton_eq a
 
 lemma SpringLike.spring_isAffine_iff_forall_mem_radical_of_subset
     {X A : Type*} [TopologicalSpace X] [CommRing A] (hXA : SpringLike X A) :
