@@ -266,7 +266,16 @@ lemma SpringCat.springLike_spring_cancel (𝔸 : SpringCat) :
       simp [springLike, SpringLike.spring, SpringLike.matchingIdeal, inclusionRingHom,
         Ideal.Quotient.eq_zero_iff_mem]
 
-lemma PrimeSpectrum.zeroLocus_singleton_eq {R : Type*} [CommSemiring R] (r : R) :
+lemma SpringCat.springLike_spring_f (𝔸 : SpringCat) :
+    𝔸.springLike.spring.f = 𝔸.f := by
+  congr!
+  exact 𝔸.springLike_spring_cancel
+
+lemma SpringCat.springLike_matchingIdeal {𝔸 : SpringCat} (x : 𝔸.X) :
+    𝔸.springLike.matchingIdeal x = (𝔸.f x).asIdeal :=
+  springLike_spring_f 𝔸 ▸ rfl
+
+lemma PrimeSpectrum.zeroLocus_singleton {R : Type*} [CommSemiring R] (r : R) :
     zeroLocus {r} = { p | r ∈ p.asIdeal } := by
   simp [zeroLocus]
 
@@ -314,7 +323,7 @@ lemma PrimeSpectrum.ConstructibleTop.isTopologicalBasis_inter_iInter (A : Type*)
         · change _ = (basicOpen 1).1 ∩ _
           refine basicOpen_one (R := A) ▸ Set.univ_inter _ ▸ ?_
           · simp only [basicOpen_eq_zeroLocus_compl, Set.compl_iUnion, compl_compl]
-            exact Set.iInter_congr fun a => Set.iInter_congr fun _ => zeroLocus_singleton_eq a
+            exact Set.iInter_congr fun a => Set.iInter_congr fun _ => zeroLocus_singleton a
 
 lemma TopologicalSpace.IsTopologicalBasis.exists_mem_compl_of_isClosed_of_ne_univ
     {X : Type*} [TopologicalSpace X] {B : Set (Set X)} (hB : IsTopologicalBasis B)
@@ -329,6 +338,9 @@ lemma TopologicalSpace.IsTopologicalBasis.exists_mem_compl_of_isClosed_of_ne_uni
   exact ⟨tᶜ, ⟨t, hSB htS, rfl⟩, Set.subset_compl_comm.2 <| hsS ▸ Set.subset_sUnion_of_mem htS,
     fun h => ht <| Set.compl_univ_iff.mp h⟩
 
+/--
+The `SpringLike` version of Theorem 2 in Hochster's paper.
+-/
 lemma SpringLike.spring_isAffine_iff_forall_mem_radical_of_subset
     {X A : Type*} [TopologicalSpace X] [CommRing A] (hXA : SpringLike X A) :
     hXA.spring.isAffine ↔
@@ -361,3 +373,14 @@ lemma SpringLike.spring_isAffine_iff_forall_mem_radical_of_subset
         simp only [Set.mem_union, Set.mem_compl_iff, Set.mem_setOf_eq, not_not, Set.mem_iUnion,
           exists_prop, Set.mem_univ, iff_true, or_iff_not_imp_right, not_exists, not_and]
         exact fun h => this (Ideal.span_le.mpr h) x.isPrime
+
+/--
+The `SpringCat` version of Theorem 2 in Hochster's paper.
+-/
+lemma SpringCat.isAffine_iff_forall_mem_radical_of_subset (𝔸 : SpringCat) :
+    𝔸.isAffine ↔
+      ∀ a : 𝔸.A, ∀ B : Set 𝔸.A, B.Finite →
+        ⋂ b ∈ B, { x : 𝔸.X | b ∈ (𝔸.f x).asIdeal } ⊆ { x : 𝔸.X | a ∈ (𝔸.f x).asIdeal } →
+          a ∈ (Ideal.span B).radical := by
+  simpa only [springLike_spring_cancel, ← SpringLike.mem_matchingIdeal_iff_eq_zero,
+    springLike_matchingIdeal] using 𝔸.springLike.spring_isAffine_iff_forall_mem_radical_of_subset
