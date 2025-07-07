@@ -316,6 +316,19 @@ lemma PrimeSpectrum.ConstructibleTop.isTopologicalBasis_inter_iInter (A : Type*)
           · simp only [basicOpen_eq_zeroLocus_compl, Set.compl_iUnion, compl_compl]
             exact Set.iInter_congr fun a => Set.iInter_congr fun _ => zeroLocus_singleton_eq a
 
+lemma TopologicalSpace.IsTopologicalBasis.exists_mem_compl_of_isClosed_of_ne_univ
+    {X : Type*} [TopologicalSpace X] {B : Set (Set X)} (hB : IsTopologicalBasis B)
+    {s : Set X} (hs1 : IsClosed s) (hs2 : s ≠ Set.univ) :
+    ∃ t ∈ compl '' B, s ⊆ t ∧ t ≠ Set.univ := by
+  obtain ⟨S, hSB, hsS⟩ := hB.open_eq_sUnion hs1.isOpen_compl
+  have : ∃ t ∈ S, t ≠ ∅ := by
+    by_contra h
+    simp only [not_exists, not_and, not_not] at h
+    exact hs2 <| Set.compl_empty_iff.mp <| Set.sUnion_eq_empty.2 h ▸ hsS
+  obtain ⟨t, htS, ht⟩ := this
+  exact ⟨tᶜ, ⟨t, hSB htS, rfl⟩, Set.subset_compl_comm.2 <| hsS ▸ Set.subset_sUnion_of_mem htS,
+    fun h => ht <| Set.compl_univ_iff.mp h⟩
+
 lemma SpringLike.spring_isAffine_iff_forall_mem_radical_of_subset
     {X A : Type*} [TopologicalSpace X] [CommRing A] (hXA : SpringLike X A) :
     hXA.spring.isAffine ↔
@@ -325,8 +338,26 @@ lemma SpringLike.spring_isAffine_iff_forall_mem_radical_of_subset
   refine ⟨fun h a B hB hBa => ?_, ?_⟩
   · exact Ideal.radical_eq_sInf (Ideal.span B) ▸ Ideal.mem_sInf.2 fun {I} ⟨hIB, hI⟩ => by
       obtain ⟨x, hxI⟩ := le_of_eq h.symm (Set.mem_univ ⟨I, hI⟩)
-      simp only [SpringLike.spring, PrimeSpectrum.mk.injEq] at hxI
-      exact hxI ▸ (SpringLike.mem_matchingIdeal_iff_eq_zero ..).2 <| hBa <|
-        Set.mem_biInter fun b hbB => (SpringLike.mem_matchingIdeal_iff_eq_zero ..).1 <|
-          hxI ▸ hIB <| Ideal.subset_span hbB
-  · sorry
+      simp only [spring, PrimeSpectrum.mk.injEq] at hxI
+      exact hxI ▸ (mem_matchingIdeal_iff_eq_zero ..).2 <| hBa <| Set.mem_biInter fun b hbB =>
+        (mem_matchingIdeal_iff_eq_zero ..).1 <| hxI ▸ hIB <| Ideal.subset_span hbB
+  · intro h
+    by_contra neq
+    · obtain ⟨s, ⟨t, ⟨a, B, hB, htaB⟩, hts⟩, hs1, hs2⟩ :=
+        IsTopologicalBasis.exists_mem_compl_of_isClosed_of_ne_univ
+        (ConstructibleTop.isTopologicalBasis_inter_iInter A) hXA.spring.range_isClosed neq
+      simp only [htaB, Set.compl_inter, Set.compl_iInter] at hts
+      have : ⋂ b ∈ B, { x : X | hXA.h b x = 0 } ⊆ { x : X | hXA.h a x = 0 } := by
+        intro x hxB
+        have := hts ▸ hs1 (Set.mem_range_self x)
+        simp only [Set.mem_union, Set.mem_compl_iff, Set.mem_setOf_eq, not_not,
+          Set.mem_iUnion] at this
+        exact or_iff_not_imp_right.1 this <| by
+          simpa only [not_exists, not_not, Set.mem_iInter] using hxB
+      refine hs2 (hts ▸ ?_)
+      · ext x
+        have := h a B hB this
+        simp only [Ideal.radical_eq_sInf, Ideal.mem_sInf, Set.mem_setOf_eq, and_imp] at this
+        simp only [Set.mem_union, Set.mem_compl_iff, Set.mem_setOf_eq, not_not, Set.mem_iUnion,
+          exists_prop, Set.mem_univ, iff_true, or_iff_not_imp_right, not_exists, not_and]
+        exact fun h => this (Ideal.span_le.mpr h) x.isPrime
