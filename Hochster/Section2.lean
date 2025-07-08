@@ -1,4 +1,3 @@
-import Mathlib.Data.Set.Operations
 import Mathlib.Topology.Constructible
 import Mathlib.Topology.Spectral.Basic
 
@@ -60,52 +59,6 @@ instance (X : Type*) [TopologicalSpace X] :
 
 end ConstructibleTop
 
-theorem latticeClosure.sup_inf_induction {α : Type*} [Lattice α]
-    {s : Set α} (p : (a : α) → a ∈ latticeClosure s → Prop)
-    (mem : ∀ (a : α) (has : a ∈ s), p a (subset_latticeClosure has))
-    (sup : ∀ (a : α) (has : a ∈ latticeClosure s) (b : α) (hbs : b ∈ latticeClosure s),
-      p a has → p b hbs → p (a ⊔ b) (IsSublattice.supClosed isSublattice_latticeClosure has hbs))
-    (inf : ∀ (a : α) (has : a ∈ latticeClosure s) (b : α) (hbs : b ∈ latticeClosure s),
-      p a has → p b hbs → p (a ⊓ b) (IsSublattice.infClosed isSublattice_latticeClosure has hbs))
-    {a : α} (has : a ∈ latticeClosure s) :
-    p a has := by
-  have h1 : s ⊆ { a : α | ∃ has : a ∈ latticeClosure s, p a has } :=
-    fun a ha ↦ ⟨subset_latticeClosure ha, mem a ha⟩
-  have h2 : IsSublattice { a : α | ∃ has : a ∈ latticeClosure s, p a has } := {
-    supClosed := fun a ⟨has, hpa⟩ b ⟨hbs, hpb⟩ =>
-      ⟨IsSublattice.supClosed isSublattice_latticeClosure has hbs, sup a has b hbs hpa hpb⟩
-    infClosed := fun a ⟨has, hpa⟩ b ⟨hbs, hpb⟩ =>
-      ⟨IsSublattice.infClosed isSublattice_latticeClosure has hbs, inf a has b hbs hpa hpb⟩ }
-  exact (latticeClosure_min h1 h2 has).choose_spec
-
-lemma Set.compl_image_latticeClosure {X : Type*} (S : Set (Set X)) :
-    compl '' (latticeClosure S) = latticeClosure (compl '' S) := by
-  refine Set.eq_of_subset_of_subset ?_ ?_
-  · intro s ⟨c, hcS, hcs⟩
-    refine hcs ▸ latticeClosure.sup_inf_induction (fun c hcS => cᶜ ∈ latticeClosure (compl '' S))
-      ?_ ?_ ?_ hcS
-    · exact fun c hcS ↦ subset_latticeClosure <| Set.mem_image_of_mem compl hcS
-    · intro a _ b _ haS hbS
-      exact Set.compl_union _ _ ▸ IsSublattice.infClosed isSublattice_latticeClosure haS hbS
-    · intro a _ b _ haS hbS
-      exact Set.compl_inter _ _ ▸ IsSublattice.supClosed isSublattice_latticeClosure haS hbS
-  · refine latticeClosure_min ?_ ?_
-    · exact fun s ⟨c, hcS, hcs⟩ ↦ ⟨c, subset_latticeClosure hcS, hcs⟩
-    · exact {
-      supClosed := fun a ⟨c, hcS, hca⟩ b ⟨d, hdS, hdb⟩ =>
-        ⟨aᶜ ⊓ bᶜ, hca ▸ hdb ▸ IsSublattice.infClosed isSublattice_latticeClosure
-          ((compl_compl c).symm ▸ hcS) ((compl_compl d).symm ▸ hdS),
-            Set.compl_inter _ _ ▸ (compl_compl a).symm ▸ (compl_compl b).symm ▸ rfl⟩
-      infClosed := fun a ⟨c, hcS, hca⟩ b ⟨d, hdS, hdb⟩ =>
-        ⟨aᶜ ⊔ bᶜ, hca ▸ hdb ▸ IsSublattice.supClosed isSublattice_latticeClosure
-          ((compl_compl c).symm ▸ hcS) ((compl_compl d).symm ▸ hdS),
-            Set.compl_union _ _ ▸ (compl_compl a).symm ▸ (compl_compl b).symm ▸ rfl⟩ }
-
-lemma Set.compl_image_latticeClosure_eq_of_compl_image_eq_self
-    {X : Type*} {S : Set (Set X)} (hS : compl '' S = S) :
-    compl '' (latticeClosure S) = latticeClosure S :=
-  Set.compl_image_latticeClosure S ▸ hS.symm ▸ rfl
-
 namespace TopologicalSpace
 
 lemma generateFrom_latticeClosure {X : Type*} (S : Set (Set X)) :
@@ -113,7 +66,7 @@ lemma generateFrom_latticeClosure {X : Type*} (S : Set (Set X)) :
   refine eq_of_le_of_le ?_ ?_
   · exact le_generateFrom fun o hoS ↦ isOpen_generateFrom_of_mem <| subset_latticeClosure hoS
   · refine le_generateFrom fun o hoS ↦ ?_
-    refine latticeClosure.sup_inf_induction (fun s _ => IsOpen[generateFrom S] s) ?_ ?_ ?_ hoS
+    refine latticeClosure_sup_inf_induction (fun s _ => IsOpen[generateFrom S] s) ?_ ?_ ?_ hoS
     · exact fun _ h ↦ isOpen_generateFrom_of_mem h
     · exact fun _ _ _ _ h1 h2 ↦ @IsOpen.union X _ _ (generateFrom S) h1 h2
     · exact fun _ _ _ _ h1 h2 ↦ @IsOpen.inter X (generateFrom S) _ _ h1 h2
@@ -134,7 +87,7 @@ lemma generateFrom_booleanSubalgebra_closure
     generateFrom (BooleanSubalgebra.closure S) = generateFrom S :=
   BooleanSubalgebra.closure_latticeClosure S ▸
     generateFrom_booleanSubalgebra_closure_eq_of_isSublattice (subset_latticeClosure hS1)
-      (Set.compl_image_latticeClosure_eq_of_compl_image_eq_self hS2) isSublattice_latticeClosure ▸
+      (compl_image_latticeClosure_eq_of_compl_image_eq_self hS2) isSublattice_latticeClosure ▸
         generateFrom_latticeClosure S
 
 lemma generateFrom_isConstructible_eq_generateFrom_union_compl_image
@@ -249,8 +202,7 @@ lemma Ultrafilter.sInter_isIrreducible_of_isClosed_mem {X : Type*} [TopologicalS
           Set.sInter_subset_of_mem ⟨isClosed_compl_iff.mpr ho.1,
             (or_iff_not_imp_left.1 <| mem_or_compl_mem F o) (h1 o ho)⟩
       have : tᶜ ⊆ uᶜ := by
-        refine IsTopologicalBasis.subset_of_forall_subset PrespectralSpace.isTopologicalBasis
-          ht1.isOpen_compl ?_
+        refine subset_of_forall_subset PrespectralSpace.isTopologicalBasis ht1.isOpen_compl ?_
         · exact fun o ⟨ho1, ho2⟩ hot ↦ this o ⟨ho1, ho2, hot⟩
       exact ht2 <| htu.trans <| Set.union_eq_self_of_subset_right <| Set.compl_subset_compl.mp this
     · by_cases h2 : ∀ o : Set X, (IsOpen o ∧ IsCompact o ∧ o ⊆ uᶜ) → o ∉ F
@@ -260,8 +212,7 @@ lemma Ultrafilter.sInter_isIrreducible_of_isClosed_mem {X : Type*} [TopologicalS
             Set.sInter_subset_of_mem ⟨isClosed_compl_iff.mpr ho.1,
               (or_iff_not_imp_left.1 <| mem_or_compl_mem F o) (h2 o ho)⟩
         have : uᶜ ⊆ tᶜ := by
-          refine IsTopologicalBasis.subset_of_forall_subset PrespectralSpace.isTopologicalBasis
-            hu1.isOpen_compl ?_
+          refine subset_of_forall_subset PrespectralSpace.isTopologicalBasis hu1.isOpen_compl ?_
           · exact fun o ⟨ho1, ho2⟩ hou ↦ this o ⟨ho1, ho2, hou⟩
         exact hu2 <| htu.trans <| Set.union_eq_self_of_subset_left <| Set.compl_subset_compl.mp this
       · simp only [and_imp, not_forall, not_not] at h1 h2
@@ -295,14 +246,14 @@ instance (X : Type*) [TopologicalSpace X] [T0Space X] [CompactSpace X]
   obtain ⟨s, hs1, hs2⟩ := not_inseparable_iff_exists_open.1 <| (Decidable.not_imp_not.2 <|
     (t0Space_iff_inseparable X).1 inferInstance x y) hxy
   refine Or.elim hs2 (fun ⟨hxs, hys⟩ ↦ ?_) ?_
-  · obtain ⟨t, ht1, ht2, ht3⟩ := (IsTopologicalBasis.mem_nhds_iff <|
-      (prespectralSpace_iff X).1 inferInstance).1 <| IsOpen.mem_nhds hs1 hxs
+  · obtain ⟨t, ht1, ht2, ht3⟩ := (mem_nhds_iff <| (prespectralSpace_iff X).1 inferInstance).1 <|
+      IsOpen.mem_nhds hs1 hxs
     refine ⟨t, isOpen_generateFrom_of_mem <| Set.mem_union_left _ ht1, ⟨tᶜ, ?_, ?_⟩⟩
     · exact isOpen_generateFrom_of_mem <| Set.mem_union_right _ ⟨t, ht1, rfl⟩
     · exact ⟨ht2, fun h => hys (ht3 h), Set.disjoint_compl_right_iff_subset.mpr fun _ h => h⟩
   · intro ⟨hys, hxs⟩
-    obtain ⟨t, ⟨ht1, ht2⟩, ht3, ht4⟩ := (IsTopologicalBasis.mem_nhds_iff <|
-      (prespectralSpace_iff X).1 inferInstance).1 <| IsOpen.mem_nhds hs1 hys
+    obtain ⟨t, ⟨ht1, ht2⟩, ht3, ht4⟩ := (mem_nhds_iff <| (prespectralSpace_iff X).1 inferInstance).1
+      <| IsOpen.mem_nhds hs1 hys
     refine ⟨tᶜ, isOpen_generateFrom_of_mem <| Set.mem_union_right _ ⟨t, ⟨ht1, ht2⟩, rfl⟩, ⟨t, ?_, ?_⟩⟩
     · exact isOpen_generateFrom_of_mem <| Set.mem_union_left _ ⟨ht1, ht2⟩
     · exact ⟨fun h => hxs (ht4 h), ht3, Set.disjoint_compl_left_iff_subset.mpr fun _ h => h⟩
@@ -489,7 +440,7 @@ lemma quasiSober_of_isEmbedding_of_isClosed_constructibleTop_range
         (Set.image_subset_range f s))
     use x
     refine eq_of_le_of_le ((IsClosed.closure_subset_iff hs2).2
-      (Set.singleton_subset_iff.mpr hx.1)) fun y hys => (IsTopologicalBasis.mem_closure_iff
+      (Set.singleton_subset_iff.mpr hx.1)) fun y hys => (mem_closure_iff
         (hf.eq_induced ▸ IsTopologicalBasis.induced f (PrespectralSpace.isTopologicalBasis))).2 ?_
     · intro o ⟨r, ⟨hr1, hr2⟩, hfro⟩ hyo
       exact hfro ▸ Set.inter_singleton_nonempty.mpr (Set.mem_iInter.1 hx.2
