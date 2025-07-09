@@ -6,7 +6,7 @@
 
 This repository contains a template for blueprint-driven formalization projects in Lean 4.
 
-## Install Lean 4
+### Install Lean 4
 
 Ensure that you have a functioning Lean 4 installation. If you do not, please follow
 the [Lean installation guide](https://leanprover-community.github.io/get_started.html).
