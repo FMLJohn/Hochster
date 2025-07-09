@@ -1,4 +1,4 @@
-# Lean 4 Project Template
+## Lean 4 Project Template
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-lightblue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Zulip : Topic](https://img.shields.io/badge/Zulip-Topic-%237E57C2.svg?logo=zulip&logoColor=white)](https://leanprover.zulipchat.com/#narrow/channel/113488-general/topic/Tutorial.3A.20Getting.20Started.20with.20Blueprint-Driven.20Projects)
@@ -11,7 +11,7 @@ This repository contains a template for blueprint-driven formalization projects 
 Ensure that you have a functioning Lean 4 installation. If you do not, please follow
 the [Lean installation guide](https://leanprover-community.github.io/get_started.html).
 
-## Use this Template
+### Use this Template
 
 To create a new repository using this template, ensure you are on the correct repository page
 ([LeanProject](https://github.com/pitmonticone/LeanProject)) and then follow these steps:
@@ -21,12 +21,12 @@ To create a new repository using this template, ensure you are on the correct re
 3. Select the account or organization where you want to create it, choose a name for the new
 repository, and click the **Create repository** button.
 
-## Clone this Repository
+### Clone this Repository
 
 To clone this repository to your local machine, please refer to the relevant section of the
 GitHub documentation [here](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository).
 
-## Customize this Template
+### Customize this Template
 
 To tailor this template to your specific project, follow these steps:
 
@@ -53,7 +53,7 @@ To tailor this template to your specific project, follow these steps:
 The script [`customize_template.py`](scripts/customize_template.py) will automatically rename the
 project folder and update the necessary files and configurations to match the new project name.
 
-## Configure GitHub Pages
+### Configure GitHub Pages
 
 To set up GitHub Pages for your repository, follow these steps:
 
@@ -61,7 +61,7 @@ To set up GitHub Pages for your repository, follow these steps:
 2. In the left sidebar, click on the **Pages** section.
 3. In the **Source** dropdown, select `GitHub Actions`.
 
-## Repository Layout
+### Repository Layout
 
 The template repository is organized as follows (listing the main folders and files):
 
@@ -95,9 +95,9 @@ project.
 Lean projects.
 - [`lean-toolchain`](lean-toolchain) specifies the Lean version and toolchain used for the project.
 
-## Blueprint
+### Blueprint
 
-### 0. Selected Collaborative Projects
+#### 0. Selected Collaborative Projects
 
 - [Fermat's Last Theorem for Exponent 3](https://pitmonticone.github.io/FLT3/) by Riccardo Brasca et al.
 - [Polynomial Freiman-Ruzsa Conjecture](https://github.com/teorth/pfr) by Terence Tao et al.
@@ -113,12 +113,12 @@ Lean projects.
 For more examples of completed and ongoing Lean projects and libraries, please
 see the [Lean Reservoir](https://reservoir.lean-lang.org).
 
-### 1. Install Dependencies
+#### 1. Install Dependencies
 
 To install the necessary dependencies, follow the instructions in the
 [PyGraphViz installation guide](https://pygraphviz.github.io/documentation/stable/install.html).
 
-### 2. Install LeanBlueprint Package
+#### 2. Install LeanBlueprint Package
 
 Assuming you have a properly configured Python environment, install LeanBlueprint by running:
 
@@ -133,7 +133,7 @@ running:
 pip install -U leanblueprint
 ```
 
-### 3. Configure Blueprint
+#### 3. Configure Blueprint
 
 To set up the blueprint for your project, run:
 
@@ -181,7 +181,7 @@ For more details about the LeanBlueprint package and its commands, please refer 
 After configuring the blueprint, please wait for the GitHub Action workflow to finish.
 You can keep track of the progress in the **Actions** tab of your repository.
 
-## Selected Projects Using this Template
+### Selected Projects Using this Template
 
 If you have used this template to create your own Lean project and would like to share it with the community, please consider opening a [PR](https://github.com/pitmonticone/LeanProject/pulls) to add your project to this list:
 
