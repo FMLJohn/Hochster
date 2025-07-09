@@ -16,7 +16,7 @@ In this repository, we formalise content in Hochster's paper "Prime Ideal Struct
 
 * Every spectral space is homeomorphic with the prime spectrum of some commutative ring.
 
-------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## This repository has been built from a template, whose information can be seen below:
 
