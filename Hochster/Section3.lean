@@ -81,19 +81,18 @@ lemma inclusionRingHom_injective (𝔸 : SpringCat) :
     · have h1 (x : 𝔸.X) : (Ideal.Quotient.mk (𝔸.f x).asIdeal) a = 0 := by
         change (fun x => (Ideal.Quotient.mk (𝔸.f x).asIdeal) a) x = 0
         exact ha ▸ rfl
-      have h2 : ∃ p : PrimeSpectrum 𝔸.A, a ∉ p.asIdeal := by
+      obtain ⟨p, hap⟩ : ∃ p : PrimeSpectrum 𝔸.A, a ∉ p.asIdeal := by
         have : a ∉ sInf { I : Ideal 𝔸.A | I.IsPrime } :=
           (nilradical_eq_sInf 𝔸.A ▸ nilradical_eq_zero 𝔸.A) ▸ hna
         simp only [Submodule.mem_sInf, not_forall] at this
         obtain ⟨I, hI, haI⟩ := this
         use ⟨I, hI⟩
-      obtain ⟨p, hap⟩ := h2
       obtain ⟨q, hqa, x, hfxq⟩ := Dense.inter_open_nonempty (𝔸.range_dense)
         (PrimeSpectrum.basicOpen a).carrier (PrimeSpectrum.basicOpen a).is_open'
         (Set.nonempty_of_mem hap)
-      have h3 : (Ideal.Quotient.mk (𝔸.f x).asIdeal) a ≠ 0 :=
+      have h2 : (Ideal.Quotient.mk (𝔸.f x).asIdeal) a ≠ 0 :=
         hfxq ▸ fun hqa0 => hqa <| Ideal.Quotient.eq_zero_iff_mem.1 hqa0
-      exact h3 <| h1 x
+      exact h2 <| h1 x
 
 /--
 For any spring `𝔸`, we have `SpringLike 𝔸.X 𝔸.A`.
@@ -150,39 +149,27 @@ Given any topological space `X` and commutative ring `A` with `hXA : SpringLike 
 arbitrary `x : X`, then there is an ideal of `A` corresponding to `x`, that is,
 `{ a : A | hXA.h a x = 0 }`.
 -/
-def matchingIdeal {X A : Type*} [TopologicalSpace X] [CommRing A] (hXA : SpringLike X A) (x : X) :
-    Ideal A where
-  carrier := { a : A | hXA.h a x = 0 }
-  add_mem' := fun ha hb => Set.mem_setOf_eq ▸ map_add hXA.h .. ▸ Pi.add_apply (hXA.h _) .. ▸
-    ha ▸ hb ▸ add_zero (hXA.h _ x)
-  zero_mem' := Set.mem_setOf_eq ▸ map_zero hXA.h ▸ rfl
-  smul_mem' := fun c a ha => Set.mem_setOf_eq ▸ smul_eq_mul c a ▸ map_mul hXA.h .. ▸
-    Pi.mul_apply (hXA.h _) .. ▸ mul_eq_zero_of_right (hXA.h c x) ha
+def matchingIdeal {X A : Type*} [TopologicalSpace X] [CommRing A]
+    (hXA : SpringLike X A) (x : X) : Ideal A :=
+  RingHom.ker ((Pi.evalRingHom hXA.i x).comp hXA.h)
 
 lemma mem_matchingIdeal_iff_eq_zero {X A : Type*} [TopologicalSpace X] [CommRing A]
     (hXA : SpringLike X A) (x : X) (a : A) :
     a ∈ hXA.matchingIdeal x ↔ hXA.h a x = 0 := by
-  simp [matchingIdeal]
+  rfl
 
 lemma fun_matchingIdeal_injective {X A : Type*}
     [TopologicalSpace X] [CommRing A] (hXA : SpringLike X A) :
     Function.Injective fun x : X => hXA.matchingIdeal x := by
   intro x y hxy
-  simp only [matchingIdeal, Submodule.mk.injEq, AddSubmonoid.mk.injEq,
-    AddSubsemigroup.mk.injEq] at hxy
+  simp only [Ideal.ext_iff] at hxy
   have (a : A) : x ∈ { x : X | hXA.h a x ≠ 0 } ↔ y ∈ { x : X | hXA.h a x ≠ 0 } :=
-    not_iff_not.2 (Set.ext_iff.1 hxy a)
+    not_iff_not.2 (hxy a)
   exact (@IsTopologicalBasis.eq_iff X _ hXA.spectralSpace.toT0Space _ hXA.isTopologicalBasis).2
     fun s ⟨a, has⟩ => has ▸ this a
 
 lemma matchingIdeal_isPrime {X A : Type*} [TopologicalSpace X] [CommRing A]
-    (hXA : SpringLike X A) (x : X) :
-    (hXA.matchingIdeal x).IsPrime where
-  ne_top' := (Ideal.ne_top_iff_one _).2 fun h1x => by simp only [matchingIdeal, Submodule.mem_mk,
-    AddSubmonoid.mem_mk, AddSubsemigroup.mem_mk, Set.mem_setOf_eq, map_one, Pi.one_apply,
-    one_ne_zero] at h1x
-  mem_or_mem' := fun hab => by simpa only [matchingIdeal, Submodule.mem_mk, AddSubmonoid.mem_mk,
-    AddSubsemigroup.mem_mk, Set.mem_setOf_eq, map_mul, Pi.mul_apply, mul_eq_zero] using hab
+    (hXA : SpringLike X A) (x : X) : (hXA.matchingIdeal x).IsPrime := ker_isPrime _
 
 end SpringLike
 
@@ -206,7 +193,7 @@ lemma isEmbedding_fun_matchingIdeal {X A : Type*}
           Set.range fun a => { x | a ∉ x.asIdeal }) = { { x | hXA.h a x ≠ 0 } | a : A } := by
       ext
       simp only [matchingIdeal, Set.mem_image, Set.mem_range, exists_exists_eq_and,
-        Set.preimage_setOf_eq, Submodule.mem_mk, AddSubmonoid.mem_mk, AddSubsemigroup.mem_mk,
+        Set.preimage_setOf_eq, mem_ker, coe_comp, Function.comp_apply, Pi.evalRingHom_apply,
         Set.mem_setOf_eq]
     exact eq_of_isTopologicalBasis_of_isTopologicalBasis
       (T := induced (fun x => ⟨hXA.matchingIdeal x, matchingIdeal_isPrime hXA x⟩) zariskiTopology)
@@ -254,26 +241,19 @@ def spring {X A : Type*} [TopologicalSpace X] [CommRing A] (hXA : SpringLike X A
 
 end SpringLike
 
-lemma SpringCat.springLike_spring_cancel (𝔸 : SpringCat) :
-    𝔸.springLike.spring = 𝔸 := by
-  ext
-  · rfl
-  · rfl
-  · rfl
-  · rfl
-  · refine heq_eq_eq _ _ ▸ ?_
-    · ext _ _
-      simp [springLike, SpringLike.spring, SpringLike.matchingIdeal, inclusionRingHom,
-        Ideal.Quotient.eq_zero_iff_mem]
-
 lemma SpringCat.springLike_spring_f (𝔸 : SpringCat) :
     𝔸.springLike.spring.f = 𝔸.f := by
-  congr!
-  exact 𝔸.springLike_spring_cancel
+  ext
+  simp [springLike, SpringLike.spring, SpringLike.matchingIdeal, inclusionRingHom,
+    Ideal.Quotient.eq_zero_iff_mem]
 
 lemma SpringCat.springLike_matchingIdeal {𝔸 : SpringCat} (x : 𝔸.X) :
     𝔸.springLike.matchingIdeal x = (𝔸.f x).asIdeal :=
   springLike_spring_f 𝔸 ▸ rfl
+
+lemma SpringCat.springLike_spring_cancel (𝔸 : SpringCat) :
+    𝔸.springLike.spring = 𝔸 :=
+  SpringCat.ext rfl (by rfl) rfl (by rfl) (heq_eq_eq .. ▸ springLike_spring_f _)
 
 lemma PrimeSpectrum.zeroLocus_singleton {R : Type*} [CommSemiring R] (r : R) :
     zeroLocus {r} = { p | r ∈ p.asIdeal } := by

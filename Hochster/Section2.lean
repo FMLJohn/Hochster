@@ -64,24 +64,24 @@ namespace TopologicalSpace
 lemma generateFrom_latticeClosure {X : Type*} (S : Set (Set X)) :
     generateFrom (latticeClosure S) = generateFrom S := by
   refine eq_of_le_of_le ?_ ?_
-  · exact le_generateFrom fun o hoS ↦ isOpen_generateFrom_of_mem <| subset_latticeClosure hoS
-  · refine le_generateFrom fun o hoS ↦ ?_
+  · exact le_generateFrom fun o hoS => isOpen_generateFrom_of_mem <| subset_latticeClosure hoS
+  · refine le_generateFrom fun o hoS => ?_
     refine latticeClosure_sup_inf_induction (fun s _ => IsOpen[generateFrom S] s) ?_ ?_ ?_ hoS
-    · exact fun _ h ↦ isOpen_generateFrom_of_mem h
-    · exact fun _ _ _ _ h1 h2 ↦ @IsOpen.union X _ _ (generateFrom S) h1 h2
-    · exact fun _ _ _ _ h1 h2 ↦ @IsOpen.inter X (generateFrom S) _ _ h1 h2
+    · exact fun _ h => isOpen_generateFrom_of_mem h
+    · exact fun _ _ _ _ h1 h2 => @IsOpen.union X _ _ (generateFrom S) h1 h2
+    · exact fun _ _ _ _ h1 h2 => @IsOpen.inter X (generateFrom S) _ _ h1 h2
 
 lemma generateFrom_booleanSubalgebra_closure_eq_of_isSublattice {X : Type*}
     {S : Set (Set X)} (hS1 : ⊥ ∈ S) (hS2 : compl '' S = S) (hS3 : IsSublattice S) :
     generateFrom (BooleanSubalgebra.closure S) = generateFrom S := by
   refine eq_of_le_of_le ?_ ?_
-  · refine le_generateFrom fun _ h ↦ isOpen_generateFrom_of_mem <|
+  · exact le_generateFrom fun _ h => isOpen_generateFrom_of_mem <|
       BooleanSubalgebra.subset_closure h
   · refine le_generateFrom ?_
     · refine fun s hsS =>
         BooleanSubalgebra.closure_sdiff_sup_induction hS3 hS1 (hS2 ▸ ⟨⊥, hS1, compl_bot⟩) ?_
-          (fun _ _ _ _ h1 h2 ↦ @IsOpen.union _ _ _ (generateFrom S) h1 h2) s hsS
-      exact fun s hsS t htS ↦ Set.diff_eq_compl_inter ▸ (isOpen_generateFrom_of_mem <|
+          (fun _ _ _ _ h1 h2 => @IsOpen.union _ _ _ (generateFrom S) h1 h2) s hsS
+      exact fun s hsS t htS => Set.diff_eq_compl_inter ▸ (isOpen_generateFrom_of_mem <|
         IsSublattice.infClosed hS3 (hS2 ▸ Set.mem_image_of_mem compl htS) hsS)
 
 lemma generateFrom_booleanSubalgebra_closure
@@ -105,12 +105,12 @@ lemma generateFrom_isConstructible_eq_generateFrom_union_compl_image
         Set.union_comm _ _
   refine generateFrom_booleanSubalgebra_closure h1 h2 ▸ ?_
   · congr
-    refine Set.eq_of_subset_of_subset (BooleanSubalgebra.closure_mono fun s ⟨hs1, hs2⟩ ↦ ?_) ?_
+    refine Set.eq_of_subset_of_subset (BooleanSubalgebra.closure_mono fun s ⟨hs1, hs2⟩ => ?_) ?_
     · exact Or.intro_left _ ⟨hs1, (QuasiSeparatedSpace.isRetrocompact_iff_isCompact hs1).1 hs2⟩
     · intro s hs
       simp only [Set.mem_setOf_eq]
       refine BooleanSubalgebra.mem_closure.1 hs ?_
-      · refine fun t ht ↦ Or.elim ht (fun ⟨ht1, ht2⟩ ↦ ?_) fun ⟨u, ⟨hu1, hu2⟩, hut⟩ ↦ ?_
+      · refine fun t ht => Or.elim ht (fun ⟨ht1, ht2⟩ => ?_) fun ⟨u, ⟨hu1, hu2⟩, hut⟩ => ?_
         · exact BooleanSubalgebra.subset_closure ⟨ht1,
             (QuasiSeparatedSpace.isRetrocompact_iff_isCompact ht1).2 ht2⟩
         · exact hut ▸ BooleanSubalgebra.compl_mem <| BooleanSubalgebra.subset_closure
@@ -138,11 +138,11 @@ lemma isClosedSubbasis_isClosed_union_isOpen_isCompact (X : Type*)
       fun hs => ⟨sᶜ, isClosed_compl_iff.2 hs, compl_compl s⟩⟩
   refine instTopologicalSpace_eq_generateFrom_isOpen_isCompact_union_compl_image X ▸
     Set.image_union _ _ _ ▸ h1 ▸ eq_of_le_of_le ?_ ?_
-  · refine le_generateFrom fun s hs => Or.elim hs (fun hs ↦ ?_) ?_
+  · refine le_generateFrom fun s hs => Or.elim hs (fun hs => ?_) ?_
     · obtain ⟨F, hF, hsF⟩ := PrespectralSpace.isTopologicalBasis.open_eq_sUnion hs
       exact hsF ▸ @isOpen_sUnion X (generateFrom _) _ fun t htF => isOpen_generateFrom_of_mem <|
         Or.intro_left _ <| hF htF
-    · exact fun hs ↦ isOpen_generateFrom_of_mem <| Or.intro_right _ hs
+    · exact fun hs => isOpen_generateFrom_of_mem <| Or.intro_right _ hs
   · exact generateFrom_anti <| Set.union_subset_union_left _ fun s hs => hs.1
 
 lemma instTopologicalSpace_le (X : Type*) [T : TopologicalSpace X]
@@ -178,7 +178,7 @@ lemma Filter.inter_sInter_nonempty_of_isCompact_isClosed_mem {X : Type*} [Topolo
   obtain ⟨x, hxs, hxF⟩ := IsCompact.exists_clusterPt hs (le_principal_iff.2 hsF)
   refine ⟨x, hxs, ?_⟩
   simp only [Set.mem_sInter, Set.mem_setOf_eq, and_imp]
-  exact fun t ht htF ↦ IsClosed.closure_eq ht ▸ clusterPt_iff_forall_mem_closure.1 hxF t htF
+  exact fun t ht htF => IsClosed.closure_eq ht ▸ clusterPt_iff_forall_mem_closure.1 hxF t htF
 
 lemma exist_isClosed_union_isClosed_of_isClosed_not_isPreirreducible
     {X : Type*} [TopologicalSpace X] {s : Set X} (hs1 : IsClosed s) (hs2 : ¬IsPreirreducible s) :
@@ -205,7 +205,7 @@ lemma Ultrafilter.sInter_isIrreducible_of_isClosed_mem {X : Type*} [TopologicalS
             (or_iff_not_imp_left.1 <| mem_or_compl_mem F o) (h1 o ho)⟩
       have : tᶜ ⊆ uᶜ := by
         refine subset_of_forall_subset PrespectralSpace.isTopologicalBasis ht1.isOpen_compl ?_
-        · exact fun o ⟨ho1, ho2⟩ hot ↦ this o ⟨ho1, ho2, hot⟩
+        · exact fun o ⟨ho1, ho2⟩ hot => this o ⟨ho1, ho2, hot⟩
       exact ht2 <| htu.trans <| Set.union_eq_self_of_subset_right <| Set.compl_subset_compl.mp this
     · by_cases h2 : ∀ o : Set X, (IsOpen o ∧ IsCompact o ∧ o ⊆ uᶜ) → o ∉ F
       · have : ∀ o : Set X, (IsOpen o ∧ IsCompact o ∧ o ⊆ uᶜ) → o ⊆ tᶜ := by
@@ -215,7 +215,7 @@ lemma Ultrafilter.sInter_isIrreducible_of_isClosed_mem {X : Type*} [TopologicalS
               (or_iff_not_imp_left.1 <| mem_or_compl_mem F o) (h2 o ho)⟩
         have : uᶜ ⊆ tᶜ := by
           refine subset_of_forall_subset PrespectralSpace.isTopologicalBasis hu1.isOpen_compl ?_
-          · exact fun o ⟨ho1, ho2⟩ hou ↦ this o ⟨ho1, ho2, hou⟩
+          · exact fun o ⟨ho1, ho2⟩ hou => this o ⟨ho1, ho2, hou⟩
         exact hu2 <| htu.trans <| Set.union_eq_self_of_subset_left <| Set.compl_subset_compl.mp this
       · simp only [and_imp, not_forall, not_not] at h1 h2
         obtain ⟨o, ho1, ho2, hot, hoF⟩ := h1
@@ -247,7 +247,7 @@ instance (X : Type*) [TopologicalSpace X] [T0Space X] [CompactSpace X]
   intro x y hxy
   obtain ⟨s, hs1, hs2⟩ := not_inseparable_iff_exists_open.1 <| (Decidable.not_imp_not.2 <|
     (t0Space_iff_inseparable X).1 inferInstance x y) hxy
-  refine Or.elim hs2 (fun ⟨hxs, hys⟩ ↦ ?_) ?_
+  refine Or.elim hs2 (fun ⟨hxs, hys⟩ => ?_) ?_
   · obtain ⟨t, ht1, ht2, ht3⟩ := (mem_nhds_iff <| (prespectralSpace_iff X).1 inferInstance).1 <|
       IsOpen.mem_nhds hs1 hxs
     refine ⟨t, isOpen_generateFrom_of_mem <| Set.mem_union_left _ ht1, ⟨tᶜ, ?_, ?_⟩⟩
@@ -276,7 +276,7 @@ instance (X : Type*) [TopologicalSpace X] [CompactSpace X] [QuasiSober X] [Quasi
       x ∈ t → t ∈ F := by
     intro t ht hxt
     by_contra htF
-    refine Or.elim ht (fun ⟨ht1, ht2⟩ ↦ ?_) (fun ⟨o, ⟨ho1, ho2⟩, hot⟩ ↦ ?_)
+    refine Or.elim ht (fun ⟨ht1, ht2⟩ => ?_) (fun ⟨o, ⟨ho1, ho2⟩, hot⟩ => ?_)
     · exact ((Set.sInter_subset_of_mem (Set.mem_sep (isClosed_compl_iff.mpr ht1)
         (Ultrafilter.compl_mem_iff_notMem.mpr htF))) (IsGenericPoint.mem hx)) hxt
     · exact (hot ▸ hxt) ((singleton_closure_inter_open_nonempty_iff x ho1).1
