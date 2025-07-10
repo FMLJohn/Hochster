@@ -18,7 +18,7 @@ In this repository, we formalise content in Hochster's paper "Prime Ideal Struct
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-## This repository has been built from a template, whose information can be seen below:
+## This repository has been created using a template, whose information can be seen below:
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-lightblue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Zulip : Topic](https://img.shields.io/badge/Zulip-Topic-%237E57C2.svg?logo=zulip&logoColor=white)](https://leanprover.zulipchat.com/#narrow/channel/113488-general/topic/Tutorial.3A.20Getting.20Started.20with.20Blueprint-Driven.20Projects)
