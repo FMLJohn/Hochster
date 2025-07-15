@@ -29,6 +29,15 @@ structure SpringLike (X A : Type*) [TopologicalSpace X] [CommRing A] where
   forall_isCompact (a : A) : IsCompact { x : X | h a x ≠ 0 }
   isTopologicalBasis : IsTopologicalBasis { { x : X | h a x ≠ 0 } | a : A }
 
+structure SpringLike' (X : Type*) [TopologicalSpace X] {i : X → Type*} [(x : X) → CommRing (i x)]
+    (A : Subring (Π x : X, i x)) where
+  spectralSpace : SpectralSpace X
+  forall_isDomain (x : X) : IsDomain (i x)
+  forall_eq_top (x : X) : { a x | a ∈ A } = ⊤
+  forall_isOpen : ∀ a ∈ A, IsOpen { x : X | a x ≠ 0 }
+  forall_isCompact : ∀ a ∈ A, IsCompact { x : X | a x ≠ 0 }
+  isTopologicalBasis : IsTopologicalBasis { { x : X | a x ≠ 0 } | a ∈ A }
+
 namespace SpringCat
 
 attribute [instance] SpringCat.tX SpringCat.commRing SpringCat.isReduced
@@ -94,9 +103,6 @@ lemma inclusionRingHom_injective (𝔸 : SpringCat) :
         hfxq ▸ fun hqa0 => hqa <| Ideal.Quotient.eq_zero_iff_mem.1 hqa0
       exact h2 <| h1 x
 
-/--
-For any spring `𝔸`, we have `SpringLike 𝔸.X 𝔸.A`.
--/
 def springLike (𝔸 : SpringCat) : SpringLike 𝔸.X 𝔸.A where
   spectralSpace := inferInstance
   i := fun x => 𝔸.A ⧸ (𝔸.f x).asIdeal
@@ -125,6 +131,18 @@ def springLike (𝔸 : SpringCat) : SpringLike 𝔸.X 𝔸.A where
         inclusionRingHom, coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, ne_eq,
         Ideal.Quotient.eq_zero_iff_mem, Set.mem_setOf_eq]
     exact this ▸ 𝔸.isEmbedding.eq_induced ▸ isTopologicalBasis_basic_opens.induced 𝔸.f
+
+def springLike' (𝔸 : SpringCat) : SpringLike' 𝔸.X 𝔸.inclusionRingHom.range where
+  spectralSpace := inferInstance
+  forall_isDomain := inferInstance
+  forall_eq_top := fun _ => by
+    ext
+    simpa only [mem_range, exists_exists_eq_and, Set.top_eq_univ, Set.mem_univ, iff_true]
+      using Quotient.exists_rep _
+  forall_isOpen := fun a ⟨b, hba⟩ => hba ▸ 𝔸.springLike.forall_isOpen b
+  forall_isCompact := fun a ⟨b, hba⟩ => hba ▸ 𝔸.springLike.forall_isCompact b
+  isTopologicalBasis := by
+    simpa only [mem_range, exists_exists_eq_and] using 𝔸.springLike.isTopologicalBasis
 
 end SpringCat
 
@@ -213,10 +231,6 @@ lemma isSpectralMap_fun_matchingIdeal {X A : Type*}
     exact hos ▸ by simpa only [Set.preimage_iUnion] using
       hs.isCompact_biUnion fun a _ => hXA.forall_isCompact a
 
-/--
-Given a topological space `X` and a commutative ring `A` with `hXA : SpringLike X A`, we obtain a
-spring whose underlying space and ring are `X` and `A` respectively.
--/
 def spring {X A : Type*} [TopologicalSpace X] [CommRing A] (hXA : SpringLike X A) :
     SpringCat where
   X := X
@@ -239,7 +253,38 @@ def spring {X A : Type*} [TopologicalSpace X] [CommRing A] (hXA : SpringLike X A
   range_isClosed := letI := hXA.spectralSpace
     IsSpectralMap.isClosed_range hXA.isSpectralMap_fun_matchingIdeal
 
+def springLike' {X A : Type*} [TopologicalSpace X] [CommRing A] (hXA : SpringLike X A) :
+    SpringLike' X hXA.h.range where
+  spectralSpace := hXA.spectralSpace
+  forall_isDomain := hXA.forall_isDomain
+  forall_eq_top := fun x => by
+    simpa only [mem_range, exists_exists_eq_and] using hXA.forall_eq_top x
+  forall_isOpen := fun a ⟨b, hba⟩ => hba ▸ hXA.forall_isOpen b
+  forall_isCompact := fun a ⟨b, hba⟩ => hba ▸ hXA.forall_isCompact b
+  isTopologicalBasis := by simpa only [mem_range, exists_exists_eq_and] using hXA.isTopologicalBasis
+
 end SpringLike
+
+namespace SpringLike'
+
+def springLike {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → CommRing (i x)]
+    {A : Subring (Π x : X, i x)} (hXA : SpringLike' X A) : SpringLike X A where
+  spectralSpace := hXA.spectralSpace
+  i := i
+  forall_commRing := inferInstance
+  forall_isDomain := hXA.forall_isDomain
+  h := A.subtype
+  injective := A.subtype_injective
+  forall_eq_top := fun x => by
+    simpa only [Subring.subtype_apply, Subtype.exists, exists_prop] using hXA.forall_eq_top x
+  forall_isOpen := fun a => by
+    simpa only [SetLike.coe_mem, forall_const] using hXA.forall_isOpen a
+  forall_isCompact := fun a => by
+    simpa only [SetLike.coe_mem, forall_const] using hXA.forall_isCompact a
+  isTopologicalBasis := by
+    simpa only [Subring.subtype_apply, Subtype.exists, exists_prop] using hXA.isTopologicalBasis
+
+end SpringLike'
 
 lemma SpringCat.springLike_spring_f (𝔸 : SpringCat) :
     𝔸.springLike.spring.f = 𝔸.f := by
