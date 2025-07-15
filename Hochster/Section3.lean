@@ -73,7 +73,7 @@ instance : Category SpringCat where
 instance (𝔸 : SpringCat) : SpectralSpace 𝔸.X :=
   spectralSpace_of_isEmbedding_of_isClosed_constructibleTop_range 𝔸.isEmbedding 𝔸.range_isClosed
 
-lemma isSpectralMap_f (𝔸 : SpringCat) : IsSpectralMap 𝔸.f :=
+lemma isSpectralMap (𝔸 : SpringCat) : IsSpectralMap 𝔸.f :=
   ((spectralSpace_and_isSpectralMap_iff_isClosed_constructibleTop_range 𝔸.isEmbedding).2
     𝔸.range_isClosed).2
 
@@ -126,7 +126,7 @@ def springLike (𝔸 : SpringCat) : SpringLike 𝔸.X 𝔸.A where
     have : { x | a ∉ (𝔸.f x).asIdeal } = 𝔸.f ⁻¹' basicOpen a := rfl
     simpa only [inclusionRingHom, coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, ne_eq,
       Ideal.Quotient.eq_zero_iff_mem] using
-        this ▸ (isSpectralMap_f 𝔸).2 isOpen_basicOpen (isCompact_basicOpen a)
+        this ▸ (isSpectralMap 𝔸).2 isOpen_basicOpen (isCompact_basicOpen a)
   isTopologicalBasis := by
     have : Set.preimage 𝔸.f '' Set.range (fun a => { x | a ∉ x.asIdeal }) =
         { x | ∃ a, { x | 𝔸.inclusionRingHom a x ≠ 0 } = x } := by
@@ -426,3 +426,15 @@ lemma SpringCat.isAffine_iff_forall_mem_radical_of_subset (𝔸 : SpringCat) :
           a ∈ (Ideal.span B).radical := by
   simpa only [springLike_spring_cancel, ← SpringLike.mem_matchingIdeal_iff_eq_zero,
     springLike_matchingIdeal] using 𝔸.springLike.spring_isAffine_iff_forall_mem_radical_of_subset
+
+/--
+The `SpringLike'` version of Theorem 2 in Hochster's paper.
+-/
+lemma SpringLike'.springLike_spring_isAffine_iff_forall_mem_radical_of_subset
+    {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → CommRing (i x)]
+    {A : Subring (Π x : X, i x)} (hXA : SpringLike' X A) :
+    hXA.springLike.spring.isAffine ↔
+      ∀ a : A, ∀ B : Set A, B.Finite →
+        ⋂ b ∈ B, { x : X | b.1 x = 0 } ⊆ { x : X | a.1 x = 0 } →
+          a ∈ (Ideal.span B).radical := by
+  simpa using hXA.springLike.spring_isAffine_iff_forall_mem_radical_of_subset
