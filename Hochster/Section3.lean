@@ -44,6 +44,10 @@ attribute [instance] SpringCat.tX SpringCat.commRing SpringCat.isReduced
 
 def isAffine (𝔸 : SpringCat) := Set.range 𝔸.f = ⊤
 
+noncomputable def isAffine.homeomorph {𝔸 : SpringCat} (h : 𝔸.isAffine) :
+    𝔸.X ≃ₜ PrimeSpectrum 𝔸.A :=
+  𝔸.isEmbedding.toHomeomorphOfSurjective (Set.range_eq_univ.mp h)
+
 @[ext]
 structure Hom (𝔸 𝔹 : SpringCat) where
   hom' : 𝔹.A →+* 𝔸.A
@@ -253,6 +257,10 @@ def spring {X A : Type*} [TopologicalSpace X] [CommRing A] (hXA : SpringLike X A
   range_isClosed := letI := hXA.spectralSpace
     IsSpectralMap.isClosed_range hXA.isSpectralMap_fun_matchingIdeal
 
+noncomputable def spring.isAffine.homeomorph {X A : Type*}
+    [TopologicalSpace X] [CommRing A] {hXA : SpringLike X A} (h : hXA.spring.isAffine) :
+    X ≃ₜ PrimeSpectrum A := h.homeomorph
+
 def springLike' {X A : Type*} [TopologicalSpace X] [CommRing A] (hXA : SpringLike X A) :
     SpringLike' X hXA.h.range where
   spectralSpace := hXA.spectralSpace
@@ -283,6 +291,15 @@ def springLike {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → C
     simpa only [SetLike.coe_mem, forall_const] using hXA.forall_isCompact a
   isTopologicalBasis := by
     simpa only [Subring.subtype_apply, Subtype.exists, exists_prop] using hXA.isTopologicalBasis
+
+lemma isReduced {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → CommRing (i x)]
+    {A : Subring (Π x : X, i x)} (hXA : SpringLike' X A) : IsReduced A :=
+  hXA.springLike.isReduced
+
+noncomputable def springLike.spring.isAffine.homeomorph
+    {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → CommRing (i x)]
+    {A : Subring (Π x : X, i x)} {hXA : SpringLike' X A} (h : hXA.springLike.spring.isAffine) :
+    X ≃ₜ PrimeSpectrum A := h.homeomorph
 
 end SpringLike'
 
