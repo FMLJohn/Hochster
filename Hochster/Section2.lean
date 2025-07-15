@@ -17,7 +17,7 @@ lemma TopologicalSpace.subbasis_iff_isTopologicalBasis_sInter
     {X : Type*} [T : TopologicalSpace X] (S : Set (Set X)) :
     T = generateFrom S ↔
     IsTopologicalBasis ((fun F => ⋂₀ F) '' { F : Set (Set X) | F.Finite ∧ F ⊆ S }) := by
-  refine ⟨isTopologicalBasis_of_subbasis, fun h => h.eq_generateFrom ▸ eq_of_le_of_le ?_ ?_⟩
+  refine ⟨isTopologicalBasis_of_subbasis, fun h => h.eq_generateFrom ▸ eq_of_le_of_ge ?_ ?_⟩
   · exact le_generateFrom fun s hsS =>
       isOpen_generateFrom_of_mem
         ⟨{s}, ⟨Set.finite_singleton s, Set.singleton_subset_iff.mpr hsS⟩, Set.sInter_singleton s⟩
@@ -63,7 +63,7 @@ namespace TopologicalSpace
 
 lemma generateFrom_latticeClosure {X : Type*} (S : Set (Set X)) :
     generateFrom (latticeClosure S) = generateFrom S := by
-  refine eq_of_le_of_le ?_ ?_
+  refine eq_of_le_of_ge ?_ ?_
   · exact le_generateFrom fun o hoS => isOpen_generateFrom_of_mem <| subset_latticeClosure hoS
   · refine le_generateFrom fun o hoS => ?_
     refine latticeClosure_sup_inf_induction (fun s _ => IsOpen[generateFrom S] s) ?_ ?_ ?_ hoS
@@ -74,7 +74,7 @@ lemma generateFrom_latticeClosure {X : Type*} (S : Set (Set X)) :
 lemma generateFrom_booleanSubalgebra_closure_eq_of_isSublattice {X : Type*}
     {S : Set (Set X)} (hS1 : ⊥ ∈ S) (hS2 : compl '' S = S) (hS3 : IsSublattice S) :
     generateFrom (BooleanSubalgebra.closure S) = generateFrom S := by
-  refine eq_of_le_of_le ?_ ?_
+  refine eq_of_le_of_ge ?_ ?_
   · exact le_generateFrom fun _ h => isOpen_generateFrom_of_mem <|
       BooleanSubalgebra.subset_closure h
   · refine le_generateFrom ?_
@@ -137,7 +137,7 @@ lemma isClosedSubbasis_isClosed_union_isOpen_isCompact (X : Type*)
     exact ⟨fun ⟨c, hc, hcs⟩ => hcs ▸ isOpen_compl_iff.2 hc,
       fun hs => ⟨sᶜ, isClosed_compl_iff.2 hs, compl_compl s⟩⟩
   refine instTopologicalSpace_eq_generateFrom_isOpen_isCompact_union_compl_image X ▸
-    Set.image_union _ _ _ ▸ h1 ▸ eq_of_le_of_le ?_ ?_
+    Set.image_union _ _ _ ▸ h1 ▸ eq_of_le_of_ge ?_ ?_
   · refine le_generateFrom fun s hs => Or.elim hs (fun hs => ?_) ?_
     · obtain ⟨F, hF, hsF⟩ := PrespectralSpace.isTopologicalBasis.open_eq_sUnion hs
       exact hsF ▸ @isOpen_sUnion X (generateFrom _) _ fun t htF => isOpen_generateFrom_of_mem <|
@@ -312,7 +312,7 @@ lemma ConstructibleTop.instTopologicalSpace_eq_induced_of_isEmbedding_isSpectral
   rw [instTopologicalSpace_eq_generateFrom_isOpen_isCompact_union_compl_image X,
     instTopologicalSpace_eq_generateFrom_isOpen_isCompact_union_compl_image Y,
     induced_generateFrom_eq]
-  refine eq_of_le_of_le (le_generateFrom fun s ⟨t, ht, hts⟩ => ?_) (le_generateFrom fun s hs => ?_)
+  refine eq_of_le_of_ge (le_generateFrom fun s ⟨t, ht, hts⟩ => ?_) (le_generateFrom fun s hs => ?_)
   · refine Or.elim ht (fun ⟨ht1, ht2⟩ => ?_) (fun ⟨u, ⟨hu1, hu2⟩, hut⟩ => ?_)
     · exact hts ▸ generateFrom_isConstructible_eq_generateFrom_union_compl_image X ▸
         (TopologicalSpace.le_def.1 <| instTopologicalSpace_le X) _
@@ -441,7 +441,7 @@ lemma quasiSober_of_isEmbedding_of_isClosed_constructibleTop_range
       Set.preimage_inter ▸ Set.Nonempty.preimage' h3 (Set.inter_subset_left.trans
         (Set.image_subset_range f s))
     use x
-    refine eq_of_le_of_le ((IsClosed.closure_subset_iff hs2).2
+    refine eq_of_le_of_ge ((IsClosed.closure_subset_iff hs2).2
       (Set.singleton_subset_iff.mpr hx.1)) fun y hys => (mem_closure_iff
         (hf.eq_induced ▸ IsTopologicalBasis.induced f (PrespectralSpace.isTopologicalBasis))).2 ?_
     · intro o ⟨r, ⟨hr1, hr2⟩, hfro⟩ hyo

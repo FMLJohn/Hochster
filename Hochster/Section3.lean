@@ -288,7 +288,7 @@ lemma PrimeSpectrum.ConstructibleTop.isTopologicalBasis_inter_iInter (A : Type*)
         le_generateFrom fun s ⟨a, has⟩ => has ▸ isOpen_generateFrom_of_mem
           ⟨a, ⟨∅, Set.finite_empty, Set.biInter_empty _ ▸ Set.inter_univ _ ▸ rfl⟩⟩
     refine instTopologicalSpace_eq_generateFrom_isOpen_isCompact_union_compl_image (PrimeSpectrum A)
-      ▸ eq_of_le_of_le ?_ ?_
+      ▸ eq_of_le_of_ge ?_ ?_
     · exact le_generateFrom fun s ⟨a, B, hB, hsaB⟩ =>
         hsaB ▸ @IsOpen.inter _ (generateFrom _) _ _
           (isOpen_generateFrom_of_mem <| Or.intro_left _ ⟨isOpen_basicOpen, isCompact_basicOpen a⟩)

@@ -50,7 +50,7 @@ lemma t2Space_of_spectralSpace [SpectralSpace X] : @T2Space X (PatchTopology' X)
 lemma eq_generateFrom_of_SpectralSpace [spectral : SpectralSpace X] :
     PatchTopology' X = generateFrom
       { S : Set X | ∃ C : Set X, (IsClosed C ∨ IsOpen C ∧ IsCompact C) ∧ Cᶜ = S } := by
-  refine eq_of_le_of_le ?_ ?_
+  refine eq_of_le_of_ge ?_ ?_
   · refine le_generateFrom_iff_subset_isOpen.2 ?_
     · simp only [Set.setOf_subset_setOf, forall_exists_index, and_imp, forall_apply_eq_imp_iff₂]
       intro S hS
