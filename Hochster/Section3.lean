@@ -482,13 +482,24 @@ def piFractionRing {X : Type*} [TopologicalSpace X]
     simpa only [← Pi.ringHomToPiFractionRing_apply_ne_zero_iff_of_forall_isDomain]
       using hXA.forall_isCompact a ha
   isTopologicalBasis := by
-    have (s : Set X) : (∃ h ∈ Subring.map (Pi.ringHomToPiFractionRing i) A, { x | h x ≠ 0 } = s) ↔
-        ∃ a ∈ A, { x | a x ≠ 0 } = s := by
-      refine ⟨fun ⟨h, ⟨a, ha, hah⟩, hhs⟩ => ?_, fun ⟨a, ha, has⟩ => ?_⟩
-      · exact ⟨a, ha, hhs ▸ hah ▸ Set.ext fun x =>
-          Pi.ringHomToPiFractionRing_apply_ne_zero_iff_of_forall_isDomain a x⟩
-      · exact ⟨Pi.ringHomToPiFractionRing i a, Subring.mem_map.2 ⟨a, ha, rfl⟩, has ▸ Set.ext
-          fun x => (Pi.ringHomToPiFractionRing_apply_ne_zero_iff_of_forall_isDomain a x).symm⟩
-    simpa only [this] using hXA.isTopologicalBasis
+    refine IsTopologicalBasis.of_isOpen_of_subset (fun s ⟨h, ⟨a, ha, hah⟩, hhs⟩ => hhs ▸ hah ▸ ?_)
+      hXA.isTopologicalBasis (fun s ⟨a, ha, has⟩ => ?_)
+    · simp only [← Pi.ringHomToPiFractionRing_apply_ne_zero_iff_of_forall_isDomain]
+      exact hXA.forall_isOpen a ha
+    · exact ⟨Pi.ringHomToPiFractionRing i a, Subring.mem_map.2 ⟨a, ha, rfl⟩, has ▸ Set.ext
+        fun x => (Pi.ringHomToPiFractionRing_apply_ne_zero_iff_of_forall_isDomain a x).symm⟩
+
+def induced {X : Type*} [TopologicalSpace X]
+    {i : X → Type*} [(x : X) → CommRing (i x)] [(x : X) → IsDomain (i x)]
+    {A : Subring (Π x : X, i x)} (hXA : SpringLike' X A) {B : Set (Π x : X, i x)}
+    (hAB : ∀ c ∈ Subring.closure (A ∪ B),
+      IsOpen { x : X | c x ≠ 0 } ∧ IsCompact { x : X | c x ≠ 0 }) :
+    SpringLike' X (Subring.closure (A ∪ B)) where
+  spectralSpace := hXA.spectralSpace
+  forall_isOpen := fun c hc => (hAB c hc).1
+  forall_isCompact := fun c hc => (hAB c hc).2
+  isTopologicalBasis := IsTopologicalBasis.of_isOpen_of_subset
+    (fun _ ⟨c, hc, hcs⟩ => hcs ▸ (hAB c hc).1) hXA.isTopologicalBasis
+    (fun _ ⟨a, ha, has⟩ => ⟨a, Subring.mem_closure_of_mem (Set.mem_union_left B ha), has⟩)
 
 end SpringLike'
