@@ -77,11 +77,10 @@ lemma generateFrom_booleanSubalgebra_closure_eq_of_isSublattice {X : Type*}
   refine eq_of_le_of_ge ?_ ?_
   · exact le_generateFrom fun _ h => isOpen_generateFrom_of_mem <|
       BooleanSubalgebra.subset_closure h
-  · refine le_generateFrom ?_
-    · refine fun s hsS =>
-        BooleanSubalgebra.closure_sdiff_sup_induction hS3 hS1 (hS2 ▸ ⟨⊥, hS1, compl_bot⟩) ?_
-          (fun _ _ _ _ h1 h2 => @IsOpen.union _ _ _ (generateFrom S) h1 h2) s hsS
-      exact fun s hsS t htS => Set.diff_eq_compl_inter ▸ (isOpen_generateFrom_of_mem <|
+  · refine le_generateFrom fun s hsS =>
+      BooleanSubalgebra.closure_sdiff_sup_induction hS3 hS1 (hS2 ▸ ⟨⊥, hS1, compl_bot⟩) ?_
+        (fun _ _ _ _ h1 h2 => @IsOpen.union _ _ _ (generateFrom S) h1 h2) s hsS
+    · exact fun s hsS t htS => Set.diff_eq_compl_inter ▸ (isOpen_generateFrom_of_mem <|
         IsSublattice.infClosed hS3 (hS2 ▸ Set.mem_image_of_mem compl htS) hsS)
 
 lemma generateFrom_booleanSubalgebra_closure
