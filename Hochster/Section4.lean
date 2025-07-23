@@ -2,7 +2,7 @@ import Mathlib.Data.Real.Basic
 
 import Hochster.Section3
 
-open CommRing
+open CommRing TopologicalSpace
 
 structure CommRing.mulValuation (R : Type*) [CommRing R]
     extends MonoidWithZeroHom R ℝ where
@@ -44,3 +44,54 @@ lemma toFun_add_eq_max_of_ne {R : Type*} [CommRing R]
           max_lt (lt_of_not_ge h1) (lt_of_le_of_ne (le_of_not_gt h) hrs.symm)
 
 end CommRing.mulValuation
+
+/--
+The type of pairs `(x, y) : X × X` such that `y ∈ closure {x}`.
+-/
+structure memClosurePairs (X : Type*) [TopologicalSpace X] where
+  z : X × X
+  mem_closure : z.2 ∈ closure {z.1}
+
+notation "σ("X")" => memClosurePairs X
+
+namespace SpringLike'
+
+/--
+The concept of an "index" of a spring mentioned on Page 47 of Hochster's paper.
+-/
+structure index {X : Type*} [TopologicalSpace X]
+    {i : X → Type*} [(x : X) → Field (i x)]
+    {A : Subring (Π x : X, i x)} (hXA : SpringLike' X A) where
+  v : Π p : σ(X), mulValuation (i p.z.1)
+  forall_le_of_ne (p : σ(X)) : ∀ a ∈ A, a p.z.1 ≠ 0 → (v p).toFun (a p.z.1) ≤ 1
+  forall_iff_of_ne (p : σ(X)) : ∀ a ∈ A, a p.z.1 ≠ 0 → ((v p).toFun (a p.z.1) = 1 ↔ a p.z.2 ≠ 0)
+  forall_exists_le : ∀ a ∈ A, ∃ r > (0 : ℝ), ∀ p : σ(X), a p.z.1 ≠ 0 → r ≤ (v p).toFun (a p.z.1)
+
+/--
+Given some `v : Π p : σ(X), mulValuation (i p.z.1)`, the property that it can be an index.
+-/
+class isIndex {X : Type*} [TopologicalSpace X] {i : X → Type*}
+    [(x : X) → Field (i x)] {A : Subring (Π x : X, i x)} (hXA : SpringLike' X A)
+    (v : Π p : σ(X), mulValuation (i p.z.1)) where
+  forall_le_of_ne (p : σ(X)) : ∀ a ∈ A, a p.z.1 ≠ 0 → (v p).toFun (a p.z.1) ≤ 1
+  forall_iff_of_ne (p : σ(X)) : ∀ a ∈ A, a p.z.1 ≠ 0 → ((v p).toFun (a p.z.1) = 1 ↔ a p.z.2 ≠ 0)
+  forall_exists_le : ∀ a ∈ A, ∃ r > (0 : ℝ), ∀ p : σ(X), a p.z.1 ≠ 0 → r ≤ (v p).toFun (a p.z.1)
+
+instance index.v_isIndex {X : Type*} [TopologicalSpace X]
+    {i : X → Type*} [(x : X) → Field (i x)] {A : Subring (Π x : X, i x)}
+    {hXA : SpringLike' X A} (index : hXA.index) :
+    isIndex hXA index.v where
+  forall_le_of_ne := index.forall_le_of_ne
+  forall_iff_of_ne := index.forall_iff_of_ne
+  forall_exists_le := index.forall_exists_le
+
+def isIndex.toIndex {X : Type*} [TopologicalSpace X] {i : X → Type*}
+    [(x : X) → Field (i x)] {A : Subring (Π x : X, i x)} {hXA : SpringLike' X A}
+    {v : Π p : σ(X), mulValuation (i p.z.1)} (hv : hXA.isIndex v) :
+    index hXA where
+  v := v
+  forall_le_of_ne := hv.forall_le_of_ne
+  forall_iff_of_ne := hv.forall_iff_of_ne
+  forall_exists_le := hv.forall_exists_le
+
+end SpringLike'
