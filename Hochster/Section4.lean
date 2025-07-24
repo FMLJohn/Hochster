@@ -16,6 +16,12 @@ lemma toFun_pos_of_ne_zero {R : Type*} [CommRing R] (v : mulValuation R) {r : R}
   obtain ⟨n, hrn⟩ := v.exists_of_ne_zero r hr
   exact hrn ▸ zpow_pos zero_lt_two n
 
+lemma toFun_div (F : Type*) [Field F] (v : mulValuation F) (r s : F) :
+    v.toFun (r / s) = v.toFun r / v.toFun s := by
+  by_cases hs : s = 0
+  · exact hs ▸ v.map_zero' ▸ (div_zero r).symm ▸ (div_zero (v.toFun r)).symm ▸ v.map_zero'
+  · simp only [ZeroHom.toFun_eq_coe, MonoidWithZeroHom.toZeroHom_coe, map_div₀]
+
 lemma toFun_neg {R : Type*} [CommRing R] (v : mulValuation R) (r : R) :
     v.toFun (-r) = v.toFun r := by
   by_cases hr : r = 0
@@ -56,12 +62,13 @@ notation "σ("X")" => memClosurePairs X
 
 namespace SpringLike'
 
+variable {X : Type*} [TopologicalSpace X]
+variable {i : X → Type*} [(x : X) → Field (i x)] {A : Subring (Π x : X, i x)}
+
 /--
 The concept of an "index" of a spring mentioned on Page 47 of Hochster's paper.
 -/
-structure index {X : Type*} [TopologicalSpace X]
-    {i : X → Type*} [(x : X) → Field (i x)]
-    {A : Subring (Π x : X, i x)} (hXA : SpringLike' X A) where
+structure index (hXA : SpringLike' X A) where
   v : Π p : σ(X), mulValuation (i p.z.1)
   forall_le_of_ne (p : σ(X)) : ∀ a ∈ A, a p.z.1 ≠ 0 → (v p).toFun (a p.z.1) ≤ 1
   forall_iff_of_ne (p : σ(X)) : ∀ a ∈ A, a p.z.1 ≠ 0 → ((v p).toFun (a p.z.1) = 1 ↔ a p.z.2 ≠ 0)
@@ -70,28 +77,57 @@ structure index {X : Type*} [TopologicalSpace X]
 /--
 Given some `v : Π p : σ(X), mulValuation (i p.z.1)`, the property that it can be an index.
 -/
-class isIndex {X : Type*} [TopologicalSpace X] {i : X → Type*}
-    [(x : X) → Field (i x)] {A : Subring (Π x : X, i x)} (hXA : SpringLike' X A)
+class isIndex (hXA : SpringLike' X A)
     (v : Π p : σ(X), mulValuation (i p.z.1)) where
   forall_le_of_ne (p : σ(X)) : ∀ a ∈ A, a p.z.1 ≠ 0 → (v p).toFun (a p.z.1) ≤ 1
   forall_iff_of_ne (p : σ(X)) : ∀ a ∈ A, a p.z.1 ≠ 0 → ((v p).toFun (a p.z.1) = 1 ↔ a p.z.2 ≠ 0)
   forall_exists_le : ∀ a ∈ A, ∃ r > (0 : ℝ), ∀ p : σ(X), a p.z.1 ≠ 0 → r ≤ (v p).toFun (a p.z.1)
 
-instance index.v_isIndex {X : Type*} [TopologicalSpace X]
-    {i : X → Type*} [(x : X) → Field (i x)] {A : Subring (Π x : X, i x)}
-    {hXA : SpringLike' X A} (index : hXA.index) :
+instance index.v_isIndex {hXA : SpringLike' X A} (index : hXA.index) :
     isIndex hXA index.v where
   forall_le_of_ne := index.forall_le_of_ne
   forall_iff_of_ne := index.forall_iff_of_ne
   forall_exists_le := index.forall_exists_le
 
-def isIndex.toIndex {X : Type*} [TopologicalSpace X] {i : X → Type*}
-    [(x : X) → Field (i x)] {A : Subring (Π x : X, i x)} {hXA : SpringLike' X A}
-    {v : Π p : σ(X), mulValuation (i p.z.1)} (hv : hXA.isIndex v) :
-    index hXA where
+def isIndex.toIndex {hXA : SpringLike' X A} {v : Π p : σ(X), mulValuation (i p.z.1)}
+    (hv : hXA.isIndex v) : index hXA where
   v := v
   forall_le_of_ne := hv.forall_le_of_ne
   forall_iff_of_ne := hv.forall_iff_of_ne
   forall_exists_le := hv.forall_exists_le
+
+end SpringLike'
+
+lemma Pi.div_mul_cancel_of_forall_imp {ι : Type*} {G : ι → Type*} [(i : ι) → GroupWithZero (G i)]
+    {f g : (i : ι) → G i} (hfg : ∀ i : ι, g i = 0 → f i = 0) : f / g * g = f := by
+  ext i; by_cases hgi : g i = 0
+  · exact hfg i hgi ▸ Pi.mul_apply _ g i ▸ hgi.symm ▸ mul_zero ((f / g) i)
+  · exact Pi.mul_apply _ g i ▸ Pi.div_apply f g i ▸ div_mul_cancel_of_imp (hfg i)
+
+namespace SpringLike'
+
+variable {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
+variable {A : Subring (Π x : X, i x)} {hXA : SpringLike' X A}
+
+lemma index.toFun_mul_apply (index : hXA.index) (p : σ(X)) (a b : Π x : X, i x) :
+    (index.v p).toFun ((a * b) p.z.1) =
+      (index.v p).toFun (a p.z.1) * (index.v p).toFun (b p.z.1) :=
+  Pi.mul_apply a b p.z.1 ▸ (index.v p).map_mul' ..
+
+lemma index.toFun_zpow_apply (index : hXA.index) (p : σ(X)) (a : Π x : X, i x) (n : ℤ) :
+    (index.v p).toFun ((a ^ n) p.z.1) = (index.v p).toFun (a p.z.1) ^ n :=
+  Pi.pow_apply a n p.z.1 ▸ map_zpow₀ (index.v p).1 (a p.z.1) n
+
+lemma index.toFun_div_apply (index : hXA.index) (p : σ(X)) (a b : Π x : X, i x) :
+    (index.v p).toFun ((a / b) p.z.1) =
+      (index.v p).toFun (a p.z.1) / (index.v p).toFun (b p.z.1) :=
+  Pi.div_apply a b p.z.1 ▸ mulValuation.toFun_div (i p.z.1) (index.v p) (a p.z.1) (b p.z.1)
+
+lemma index.toFun_div_apply_mul_toFun_apply_of_forall_imp (index : hXA.index)
+    (p : σ(X)) {a b : Π x : X, i x} (hab : ∀ x : X, b x = 0 → a x = 0) :
+    (index.v p).toFun ((a / b) p.z.1) * (index.v p).toFun (b p.z.1) =
+      (index.v p).toFun (a p.z.1) :=
+  index.toFun_mul_apply p .. ▸ Pi.mul_apply _ b p.z.1 ▸
+    congr_fun (Pi.div_mul_cancel_of_forall_imp hab) p.z.1 ▸ rfl
 
 end SpringLike'
