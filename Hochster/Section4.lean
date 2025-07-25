@@ -2,7 +2,7 @@ import Mathlib.Data.Real.Basic
 
 import Hochster.Section3
 
-open CommRing TopologicalSpace
+open CommRing Subring TopologicalSpace
 
 structure CommRing.mulValuation (R : Type*) [CommRing R]
     extends MonoidWithZeroHom R ℝ where
@@ -15,6 +15,10 @@ lemma toFun_pos_of_ne_zero {R : Type*} [CommRing R] (v : mulValuation R) {r : R}
     0 < v.toFun r := by
   obtain ⟨n, hrn⟩ := v.exists_of_ne_zero r hr
   exact hrn ▸ zpow_pos zero_lt_two n
+
+lemma toFun_ne_zero_of_ne_zero {R : Type*} [CommRing R] (v : mulValuation R) {r : R} (hr : r ≠ 0) :
+    v.toFun r ≠ 0 :=
+  (ne_of_lt <| toFun_pos_of_ne_zero v hr).symm
 
 lemma toFun_div (F : Type*) [Field F] (v : mulValuation F) (r s : F) :
     v.toFun (r / s) = v.toFun r / v.toFun s := by
@@ -129,5 +133,31 @@ lemma index.toFun_div_apply_mul_toFun_apply_of_forall_imp (index : hXA.index)
       (index.v p).toFun (a p.z.1) :=
   index.toFun_mul_apply p .. ▸ Pi.mul_apply _ b p.z.1 ▸
     congr_fun (Pi.div_mul_cancel_of_forall_imp hab) p.z.1 ▸ rfl
+
+lemma index.toFun_apply_le_v_extension {index : hXA.index}
+    {a b : Π x : X, i x} (hab : ∀ x : X, b x = 0 → a x = 0) {p : σ(X)} (hap : a p.z.1 ≠ 0)
+    {hXAab : SpringLike' X (Subring.closure (A ∪ {a / b}))} (hindex : isIndex hXAab index.v) :
+    (index.v p).toFun (a p.z.1) ≤ (index.v p).toFun (b p.z.1) := by
+  refine Pi.div_mul_cancel_of_forall_imp hab ▸ toFun_mul_apply index p _ b ▸
+    (mul_le_iff_le_one_left ?_).2 ?_
+  · exact mulValuation.toFun_pos_of_ne_zero _ fun hbp => hap (hab p.z.1 hbp)
+  · refine hindex.toIndex.forall_le_of_ne p (a / b) ?_ (fun habp => ?_)
+    · exact mem_closure_of_mem <| Set.mem_union_right _ rfl
+    · exact Or.elim (div_eq_zero_iff.mp habp) hap (fun hbp => hap (hab p.z.1 hbp))
+
+lemma index.ne_zero_of_v_extension_of_toFun_apply_eq {index : hXA.index}
+    {a b : Π x : X, i x} (hab : ∀ x : X, b x = 0 → a x = 0) {p : σ(X)} (hap : a p.z.1 ≠ 0)
+    {hXAab : SpringLike' X (Subring.closure (A ∪ {a / b}))} (hindex : isIndex hXAab index.v)
+    (habp : (index.v p).toFun (a p.z.1) = (index.v p).toFun (b p.z.1)) :
+    a p.z.2 ≠ 0 := by
+  intro h
+  have h1 : (a / b) p.z.2 = 0 := Pi.div_apply a b p.z.2 ▸ h ▸ zero_div (b p.z.2)
+  have h2 : (a / b) p.z.1 ≠ 0 := fun h => hap <| hab p.z.1 <|
+    (or_iff_not_imp_left.1 <| div_eq_zero_iff.1 <| Pi.div_apply a b p.z.1 ▸ h) hap
+  have h3 : (hindex.toIndex.v p).toFun ((a / b) p.z.1) = 1 ↔ (a / b) p.z.2 ≠ 0 :=
+    (hindex.toIndex.forall_iff_of_ne p (a / b) (mem_closure_of_mem <| Set.mem_union_right _ rfl) h2)
+  have h4 : (hindex.toIndex.v p).toFun ((a / b) p.z.1) = 1 := hindex.toIndex.toFun_div_apply p a b
+    ▸ (div_eq_one_iff_eq (habp ▸ (index.v p).toFun_ne_zero_of_ne_zero hap)).2 habp
+  exact h3.1 h4 h1
 
 end SpringLike'
