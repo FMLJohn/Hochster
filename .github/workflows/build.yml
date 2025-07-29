@@ -51,7 +51,7 @@ jobs:
           fetch-depth: 0 # Fetch all history for all branches and tags
 
       - name: Build the project
-        uses: leanprover/lean-action@f807b338d95de7813c5c50d018f1c23c9b93b4ec # v1.2.0
+        uses: leanprover/lean-action@434f25c2f80ded67bba02502ad3a86f25db50709 # v1.3.0
 
       - name: Compile blueprint and documentation
         uses: leanprover-community/docgen-action@f78d5a9a1a728288aef64bde6f133d30a8511cb7 # 2025-06-27
