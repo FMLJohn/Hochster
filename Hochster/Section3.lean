@@ -29,7 +29,7 @@ structure SpringLike (X A : Type*) [TopologicalSpace X] [CommRing A] where
   forall_isCompact (a : A) : IsCompact { x : X | h a x ≠ 0 }
   isTopologicalBasis : IsTopologicalBasis { { x : X | h a x ≠ 0 } | a : A }
 
-class SpringLike' (X : Type*) [TopologicalSpace X] {i : X → Type*}
+structure SpringLike' {X : Type*} [TopologicalSpace X] {i : X → Type*}
     [(x : X) → CommRing (i x)] [(x : X) → IsDomain (i x)] (A : Subring (Π x : X, i x)) where
   spectralSpace : SpectralSpace X
   -- forall_eq_top (x : X) : { a x | a ∈ A } = ⊤
@@ -135,7 +135,7 @@ def springLike (𝔸 : SpringCat) : SpringLike 𝔸.X 𝔸.A where
         Ideal.Quotient.eq_zero_iff_mem, Set.mem_setOf_eq]
     exact this ▸ 𝔸.isEmbedding.eq_induced ▸ isTopologicalBasis_basic_opens.induced 𝔸.f
 
-instance springLike' (𝔸 : SpringCat) : SpringLike' 𝔸.X 𝔸.inclusionRingHom.range where
+def springLike' (𝔸 : SpringCat) : SpringLike' 𝔸.inclusionRingHom.range where
   spectralSpace := inferInstance
   -- forall_eq_top := fun _ => by
   --   ext
@@ -259,8 +259,8 @@ noncomputable def spring.isAffine.homeomorph {X A : Type*}
     [TopologicalSpace X] [CommRing A] {hXA : SpringLike X A} (h : hXA.spring.isAffine) :
     X ≃ₜ PrimeSpectrum A := h.homeomorph
 
-instance springLike' {X A : Type*} [TopologicalSpace X] [CommRing A] (hXA : SpringLike X A) :
-    SpringLike' X hXA.h.range where
+def springLike' {X A : Type*} [TopologicalSpace X] [CommRing A] (hXA : SpringLike X A) :
+    SpringLike' hXA.h.range where
   spectralSpace := hXA.spectralSpace
   -- forall_eq_top := fun x => by
   --   simpa only [mem_range, exists_exists_eq_and] using hXA.forall_eq_top x
@@ -274,9 +274,9 @@ namespace SpringLike'
 
 def springLike {X : Type*} [TopologicalSpace X] {i : X → Type*}
     [(x : X) → CommRing (i x)] [(x : X) → IsDomain (i x)]
-    {A : Subring (Π x : X, i x)} (hXA : SpringLike' X A) :
+    {A : Subring (Π x : X, i x)} (hA : SpringLike' A) :
     SpringLike X A where
-  spectralSpace := hXA.spectralSpace
+  spectralSpace := hA.spectralSpace
   i := i
   forall_commRing := inferInstance
   forall_isDomain := inferInstance
@@ -285,20 +285,20 @@ def springLike {X : Type*} [TopologicalSpace X] {i : X → Type*}
   -- forall_eq_top := fun x => by
   --   simpa only [Subring.subtype_apply, Subtype.exists, exists_prop] using hXA.forall_eq_top x
   forall_isOpen := fun a => by
-    simpa only [SetLike.coe_mem, forall_const] using hXA.forall_isOpen a
+    simpa only [SetLike.coe_mem, forall_const] using hA.forall_isOpen a
   forall_isCompact := fun a => by
-    simpa only [SetLike.coe_mem, forall_const] using hXA.forall_isCompact a
+    simpa only [SetLike.coe_mem, forall_const] using hA.forall_isCompact a
   isTopologicalBasis := by
-    simpa only [Subring.subtype_apply, Subtype.exists, exists_prop] using hXA.isTopologicalBasis
+    simpa only [Subring.subtype_apply, Subtype.exists, exists_prop] using hA.isTopologicalBasis
 
 lemma isReduced {X : Type*} [TopologicalSpace X] {i : X → Type*}
     [(x : X) → CommRing (i x)] [(x : X) → IsDomain (i x)]
-    {A : Subring (Π x : X, i x)} (hXA : SpringLike' X A) :
-    IsReduced A := hXA.springLike.isReduced
+    {A : Subring (Π x : X, i x)} (hA : SpringLike' A) :
+    IsReduced A := hA.springLike.isReduced
 
 noncomputable def springLike.spring.isAffine.homeomorph {X : Type*} [TopologicalSpace X]
     {i : X → Type*} [(x : X) → CommRing (i x)] [(x : X) → IsDomain (i x)]
-    {A : Subring (Π x : X, i x)} {hXA : SpringLike' X A} (h : hXA.springLike.spring.isAffine) :
+    {A : Subring (Π x : X, i x)} {hA : SpringLike' A} (h : hA.springLike.spring.isAffine) :
     X ≃ₜ PrimeSpectrum A := h.homeomorph
 
 end SpringLike'
@@ -432,12 +432,12 @@ The `SpringLike'` version of Theorem 2 in Hochster's paper.
 -/
 lemma SpringLike'.springLike_spring_isAffine_iff_forall_mem_radical_of_subset
     {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → CommRing (i x)]
-    [(x : X) → IsDomain (i x)] {A : Subring (Π x : X, i x)} (hXA : SpringLike' X A) :
-    hXA.springLike.spring.isAffine ↔
+    [(x : X) → IsDomain (i x)] {A : Subring (Π x : X, i x)} (hA : SpringLike' A) :
+    hA.springLike.spring.isAffine ↔
       ∀ a : A, ∀ B : Set A, B.Finite →
         ⋂ b ∈ B, { x : X | b.1 x = 0 } ⊆ { x : X | a.1 x = 0 } →
           a ∈ (Ideal.span B).radical := by
-  simpa using hXA.springLike.spring_isAffine_iff_forall_mem_radical_of_subset
+  simpa using hA.springLike.spring_isAffine_iff_forall_mem_radical_of_subset
 
 @[simps!]
 def Pi.ringHomToPiFractionRing {α : Type*} (i : α → Type*) [(a : α) → CommRing (i a)] :
@@ -470,36 +470,36 @@ lemma Pi.ringHomToPiFractionRing_apply_ne_zero_iff_of_forall_isDomain {α : Type
 
 namespace SpringLike'
 
-instance piFractionRing {X : Type*} [TopologicalSpace X]
+def piFractionRing {X : Type*} [TopologicalSpace X]
     {i : X → Type*} [(x : X) → CommRing (i x)] [(x : X) → IsDomain (i x)]
-    {A : Subring (Π x : X, i x)} (hXA : SpringLike' X A) :
-    SpringLike' X (A.map (Pi.ringHomToPiFractionRing i)) where
-  spectralSpace := hXA.spectralSpace
+    {A : Subring (Π x : X, i x)} (hA : SpringLike' A) :
+    SpringLike' (A.map (Pi.ringHomToPiFractionRing i)) where
+  spectralSpace := hA.spectralSpace
   forall_isOpen := fun h ⟨a, ha, hah⟩ => hah ▸ by
     simpa only [← Pi.ringHomToPiFractionRing_apply_ne_zero_iff_of_forall_isDomain]
-      using hXA.forall_isOpen a ha
+      using hA.forall_isOpen a ha
   forall_isCompact := fun h ⟨a, ha, hah⟩ => hah ▸ by
     simpa only [← Pi.ringHomToPiFractionRing_apply_ne_zero_iff_of_forall_isDomain]
-      using hXA.forall_isCompact a ha
+      using hA.forall_isCompact a ha
   isTopologicalBasis := by
     refine IsTopologicalBasis.of_isOpen_of_subset (fun s ⟨h, ⟨a, ha, hah⟩, hhs⟩ => hhs ▸ hah ▸ ?_)
-      hXA.isTopologicalBasis (fun s ⟨a, ha, has⟩ => ?_)
+      hA.isTopologicalBasis (fun s ⟨a, ha, has⟩ => ?_)
     · simp only [← Pi.ringHomToPiFractionRing_apply_ne_zero_iff_of_forall_isDomain]
-      exact hXA.forall_isOpen a ha
+      exact hA.forall_isOpen a ha
     · exact ⟨Pi.ringHomToPiFractionRing i a, Subring.mem_map.2 ⟨a, ha, rfl⟩, has ▸ Set.ext
         fun x => (Pi.ringHomToPiFractionRing_apply_ne_zero_iff_of_forall_isDomain a x).symm⟩
 
-instance induced {X : Type*} [TopologicalSpace X]
+def induced {X : Type*} [TopologicalSpace X]
     {i : X → Type*} [(x : X) → CommRing (i x)] [(x : X) → IsDomain (i x)]
-    {A : Subring (Π x : X, i x)} (hXA : SpringLike' X A) {B : Set (Π x : X, i x)}
+    {A : Subring (Π x : X, i x)} (hA : SpringLike' A) {B : Set (Π x : X, i x)}
     (hAB : ∀ c ∈ Subring.closure (A ∪ B),
       IsOpen { x : X | c x ≠ 0 } ∧ IsCompact { x : X | c x ≠ 0 }) :
-    SpringLike' X (Subring.closure (A ∪ B)) where
-  spectralSpace := hXA.spectralSpace
+    SpringLike' (Subring.closure (A ∪ B)) where
+  spectralSpace := hA.spectralSpace
   forall_isOpen := fun c hc => (hAB c hc).1
   forall_isCompact := fun c hc => (hAB c hc).2
   isTopologicalBasis := IsTopologicalBasis.of_isOpen_of_subset
-    (fun _ ⟨c, hc, hcs⟩ => hcs ▸ (hAB c hc).1) hXA.isTopologicalBasis
+    (fun _ ⟨c, hc, hcs⟩ => hcs ▸ (hAB c hc).1) hA.isTopologicalBasis
     (fun _ ⟨a, ha, has⟩ => ⟨a, Subring.mem_closure_of_mem (Set.mem_union_left B ha), has⟩)
 
 end SpringLike'
