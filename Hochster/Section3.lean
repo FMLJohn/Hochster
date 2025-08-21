@@ -59,7 +59,7 @@ def Hom.id (𝔸 : SpringCat) : Hom 𝔸 𝔸 where
 def Hom.comp {𝔸 𝔹 ℂ : SpringCat} (hom1 : 𝔸.Hom 𝔹) (hom2 : 𝔹.Hom ℂ) : 𝔸.Hom ℂ where
   hom' := hom1.hom'.comp hom2.hom'
   image_subset := specComap_comp hom2.hom' hom1.hom' ▸ Set.image_comp _ _ _ ▸
-    (Set.image_subset hom2.hom'.specComap hom1.image_subset).trans hom2.image_subset
+    (Set.image_mono hom1.image_subset).trans hom2.image_subset
 
 instance : Category SpringCat where
   Hom 𝔸 𝔹 := Hom 𝔸 𝔹
