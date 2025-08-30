@@ -94,3 +94,8 @@ lemma ne_zero_of_pi_valuation_of_v_extension_of_map_apply_eq {X : Type*} [Topolo
   exact h3.1 h4 h1
 
 end MemClosurePairs
+
+theorem Subring.exists_polynomial_of_mem_closure
+    {R : Type*} [Ring R] {s : Set R} {x y : R} (hy : y ∈ closure (s ∪ {x})) :
+  ∃ p : Polynomial R, (∀ n : ℕ, p.coeff n ∈ s ∨ p.coeff n = 0 ∨ p.coeff n  = 1 ∨ p.coeff n = -1)
+    ∧ p.eval x = y := sorry
