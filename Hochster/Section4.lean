@@ -3,7 +3,7 @@ import Mathlib.RingTheory.Valuation.Discrete.Basic
 
 import Hochster.Section3
 
-open CommRing SpringLike' Subring TopologicalSpace Valuation
+open CommRing Polynomial SpringLike' Subring TopologicalSpace Valuation
 
 /--
 The type of pairs `(x, y) : X × X` such that `y ∈ closure {x}`.
@@ -97,4 +97,19 @@ end MemClosurePairs
 
 theorem Subring.exists_polynomial_of_mem_closure
     {R : Type*} [Ring R] {A : Subring R} {x y : R} (hy : y ∈ closure (A ∪ {x})) :
-    ∃ p : Polynomial R, p.eval x = y ∧ ∀ n : ℕ, p.coeff n ∈ A := sorry
+    ∃ p : Polynomial R, p.eval x = y ∧ ∀ n : ℕ, p.coeff n ∈ A := by
+  refine closure_induction (fun y hy => ?_) ?_ ?_
+    (fun y1 y2 hy1 hy2 ⟨p1, hpy1, hp1⟩ ⟨p2, hpy2, hp2⟩ => ?_) (fun y hy ⟨p, hpy, hp⟩ => ?_) ?_ hy
+  · by_cases hyx : y = x
+    · exact hyx.symm ▸ ⟨X, eval_X,
+        fun n => coeff_X (R := R) ▸ ite_mem.mpr ⟨fun hn => one_mem A, fun hn => zero_mem A⟩⟩
+    · exact ⟨C y, eval_C,
+        fun n => coeff_C (R := R) ▸
+          ite_mem.mpr ⟨fun hn => or_iff_not_imp_right.1 hy hyx, fun hn => zero_mem A⟩⟩
+  · exact ⟨0, eval_zero, fun n => coeff_zero (R := R) n ▸ zero_mem A⟩
+  · exact ⟨1, eval_one, fun n =>
+      coeff_one (R := R) ▸ ite_mem.mpr ⟨fun hn => one_mem A, fun hn => zero_mem A⟩⟩
+  · exact ⟨p1 + p2, eval_add (R := R) ▸ hpy1 ▸ hpy2 ▸ rfl,
+      fun n => coeff_add p1 p2 n ▸ A.add_mem (hp1 n) (hp2 n)⟩
+  · exact ⟨-p, hpy ▸ eval_neg p x, fun n => coeff_neg p n ▸ A.neg_mem (hp n)⟩
+  · sorry
