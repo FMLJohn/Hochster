@@ -115,3 +115,10 @@ theorem Subring.exists_polynomial_of_mem_closure
   · exact ⟨-p, hpy ▸ eval_neg p x, fun n => coeff_neg p n ▸ A.neg_mem (hp n)⟩
   · exact ⟨p1 * p2, eval_mul (R := R) ▸ hpy1 ▸ hpy2 ▸ rfl, fun n =>
       coeff_mul p1 p2 n ▸ Subring.sum_mem A fun c hc => Subring.mul_mem A (hp1 c.1) (hp2 c.2)⟩
+
+theorem Subring.exists_polynomial_of_mem_closure₁
+    {R : Type*} [CommRing R] {s : Set R} {x y : R} (hy : y ∈ closure (s ∪ {x})) :
+    ∃ p : Polynomial R, p.eval x = y ∧ ∀ n : ℕ, p.coeff n ∈ closure s := by
+  have : closure (s ∪ {x}) = closure ((closure s) ∪ {x}) :=
+    closure_union s {x} ▸ closure_union (closure s) {x} ▸ (closure_eq (closure s)).symm ▸ rfl
+  exact exists_polynomial_of_mem_closure (this.symm ▸ hy)
