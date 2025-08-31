@@ -96,10 +96,11 @@ lemma ne_zero_of_pi_valuation_of_v_extension_of_map_apply_eq {X : Type*} [Topolo
 end MemClosurePairs
 
 theorem Subring.exists_polynomial_of_mem_closure
-    {R : Type*} [Ring R] {A : Subring R} {x y : R} (hy : y ∈ closure (A ∪ {x})) :
+    {R : Type*} [CommRing R] {A : Subring R} {x y : R} (hy : y ∈ closure (A ∪ {x})) :
     ∃ p : Polynomial R, p.eval x = y ∧ ∀ n : ℕ, p.coeff n ∈ A := by
   refine closure_induction (fun y hy => ?_) ?_ ?_
-    (fun y1 y2 hy1 hy2 ⟨p1, hpy1, hp1⟩ ⟨p2, hpy2, hp2⟩ => ?_) (fun y hy ⟨p, hpy, hp⟩ => ?_) ?_ hy
+    (fun y1 y2 hy1 hy2 ⟨p1, hpy1, hp1⟩ ⟨p2, hpy2, hp2⟩ => ?_) (fun y hy ⟨p, hpy, hp⟩ => ?_)
+    (fun y1 y2 hy1 hy2 ⟨p1, hpy1, hp1⟩ ⟨p2, hpy2, hp2⟩ => ?_) hy
   · by_cases hyx : y = x
     · exact hyx.symm ▸ ⟨X, eval_X,
         fun n => coeff_X (R := R) ▸ ite_mem.mpr ⟨fun hn => one_mem A, fun hn => zero_mem A⟩⟩
@@ -112,4 +113,5 @@ theorem Subring.exists_polynomial_of_mem_closure
   · exact ⟨p1 + p2, eval_add (R := R) ▸ hpy1 ▸ hpy2 ▸ rfl,
       fun n => coeff_add p1 p2 n ▸ A.add_mem (hp1 n) (hp2 n)⟩
   · exact ⟨-p, hpy ▸ eval_neg p x, fun n => coeff_neg p n ▸ A.neg_mem (hp n)⟩
-  · sorry
+  · exact ⟨p1 * p2, eval_mul (R := R) ▸ hpy1 ▸ hpy2 ▸ rfl, fun n =>
+      coeff_mul p1 p2 n ▸ Subring.sum_mem A fun c hc => Subring.mul_mem A (hp1 c.1) (hp2 c.2)⟩
