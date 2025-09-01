@@ -152,5 +152,9 @@ lemma Pi.weffwe {ι : Type*} {G : ι → Type*} [(i : ι) → Field (G i)] {A : 
       ({ i : ι | (repPoly hh).constantCoeff i ≠ 0 } ∩ { i : ι | f i = 0 }) := by
   ext i
   refine ⟨fun hi => ?_, fun hi => ?_⟩
-  · sorry
+  · by_cases hfi : f i ≠ 0
+    · refine Or.intro_left _ ⟨?_, hfi⟩
+      sorry
+      --refine repPoly_eval_eq hh ▸ ?_
+    · sorry
   · sorry
