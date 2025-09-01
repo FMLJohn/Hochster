@@ -142,9 +142,11 @@ lemma coeff_repPoly_mem {R : Type*} [CommRing R] {A : Subring R} {x y : R}
 
 end Subring
 
-lemma weffwewe {ι : Type*} {G : ι → Type*} [(i : ι) → Field (G i)]
-    {f : (i : ι) → G i} (p : Polynomial ((i : ι) → G i)) (i : ι) :
-    p.eval f i = p.sum fun n g => (g i) * (f i) ^ n := sorry
+lemma Pi.polynomial_eval_apply {ι : Type*} {G : ι → Type*} [(i : ι) → Semiring (G i)]
+    (p : Polynomial ((i : ι) → G i)) (f : (i : ι) → G i) (i : ι) :
+    p.eval f i = p.sum fun n g => (g i) * (f i) ^ n := by
+  rw [eval_eq_sum, sum, sum]
+  exact Finset.sum_apply i p.support fun n => p.coeff n * f ^ n
 
 lemma Pi.weffwe {ι : Type*} {G : ι → Type*} [(i : ι) → Field (G i)] {A : Subring ((i : ι) → G i)}
     {f g h : (i : ι) → G i} (hfg : ∀ i : ι, g i = 0 → f i = 0)
@@ -156,6 +158,14 @@ lemma Pi.weffwe {ι : Type*} {G : ι → Type*} [(i : ι) → Field (G i)] {A : 
   refine ⟨fun hi => ?_, fun hi => ?_⟩
   · by_cases hfi : f i = 0
     · refine Or.intro_right _ ⟨?_, hfi⟩
-      sorry
+      · have := repPoly_eval_eq hh ▸ hi
+        simp only [Set.mem_setOf_eq, Pi.polynomial_eval_apply, Pi.div_apply, hfi, zero_div,
+          zero_pow_eq, sum, mul_ite, mul_one, mul_zero, Finset.sum_ite_eq', ne_eq, ite_eq_right_iff,
+          Classical.not_imp] at this
+        exact this.2
+    · refine Or.intro_left _ ⟨?_, hfi⟩
+      · simp only [mul_apply, pow_apply, ne_eq, mul_eq_zero, pow_eq_zero_iff', not_or, not_and]
+        exact ⟨hi, fun hgi => False.elim (hfi <| hfg i hgi)⟩
+  · refine Or.elim hi ?_ ?_
     · sorry
-  · sorry
+    · sorry
