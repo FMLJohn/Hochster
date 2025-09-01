@@ -142,6 +142,10 @@ lemma coeff_repPoly_mem {R : Type*} [CommRing R] {A : Subring R} {x y : R}
 
 end Subring
 
+lemma weffwewe {ι : Type*} {G : ι → Type*} [(i : ι) → Field (G i)]
+    {f : (i : ι) → G i} (p : Polynomial ((i : ι) → G i)) (i : ι) :
+    p.eval f i = p.sum fun n g => (g i) * (f i) ^ n := sorry
+
 lemma Pi.weffwe {ι : Type*} {G : ι → Type*} [(i : ι) → Field (G i)] {A : Subring ((i : ι) → G i)}
     {f g h : (i : ι) → G i} (hfg : ∀ i : ι, g i = 0 → f i = 0)
     (hh : h ∈ closure (A.carrier ∪ {f / g})) :
@@ -152,7 +156,6 @@ lemma Pi.weffwe {ι : Type*} {G : ι → Type*} [(i : ι) → Field (G i)] {A : 
   refine ⟨fun hi => ?_, fun hi => ?_⟩
   · by_cases hfi : f i = 0
     · refine Or.intro_right _ ⟨?_, hfi⟩
-      have := eval_eq_sum (p := repPoly hh) ▸ repPoly_eval_eq hh ▸ hi
       sorry
     · sorry
   · sorry
