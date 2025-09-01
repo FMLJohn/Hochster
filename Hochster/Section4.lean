@@ -97,8 +97,10 @@ lemma ne_zero_of_pi_valuation_of_v_extension_of_map_apply_eq {X : Type*} [Topolo
 
 end MemClosurePairs
 
-theorem Subring.exists_polynomial_of_mem_closure
-    {R : Type*} [CommRing R] {A : Subring R} {x y : R} (hy : y ∈ closure (A.carrier ∪ {x})) :
+namespace Subring
+
+theorem exists_polynomial_of_mem_closure {R : Type*} [CommRing R] {A : Subring R} {x y : R}
+    (hy : y ∈ closure (A.carrier ∪ {x})) :
     ∃ p : Polynomial R, p.eval x = y ∧ ∀ n : ℕ, p.coeff n ∈ A := by
   refine closure_induction (fun y hy => ?_) ?_ ?_
     (fun y1 y2 hy1 hy2 ⟨p1, hpy1, hp1⟩ ⟨p2, hpy2, hp2⟩ => ?_) (fun y hy ⟨p, hpy, hp⟩ => ?_)
@@ -118,20 +120,37 @@ theorem Subring.exists_polynomial_of_mem_closure
   · exact ⟨p1 * p2, eval_mul (R := R) ▸ hpy1 ▸ hpy2 ▸ rfl, fun n =>
       coeff_mul p1 p2 n ▸ Subring.sum_mem A fun c hc => Subring.mul_mem A (hp1 c.1) (hp2 c.2)⟩
 
-theorem Subring.exists_polynomial_of_mem_closure₁
-    {R : Type*} [CommRing R] {s : Set R} {x y : R} (hy : y ∈ closure (s ∪ {x})) :
+theorem exists_polynomial_of_mem_closure₁ {R : Type*} [CommRing R] {s : Set R} {x y : R}
+    (hy : y ∈ closure (s ∪ {x})) :
     ∃ p : Polynomial R, p.eval x = y ∧ ∀ n : ℕ, p.coeff n ∈ closure s := by
   have : closure (s ∪ {x}) = closure ((closure s) ∪ {x}) :=
     closure_union s {x} ▸ closure_union (closure s) {x} ▸ (closure_eq (closure s)).symm ▸ rfl
   exact exists_polynomial_of_mem_closure (this.symm ▸ hy)
 
 /--
-`Subring.repPoly hy = (exists_polynomial_of_mem_closure hy).choose`.
+`Subring.repPoly hy = (Subring.exists_polynomial_of_mem_closure hy).choose`.
 -/
-noncomputable def Subring.repPoly {R : Type*} [CommRing R] {A : Subring R} {x y : R}
+noncomputable def repPoly {R : Type*} [CommRing R] {A : Subring R} {x y : R}
     (hy : y ∈ closure (A.carrier ∪ {x})) :=
   (exists_polynomial_of_mem_closure hy).choose
 
-lemma Subring.repPoly_eval_eq {R : Type*} [CommRing R] {A : Subring R} {x y : R}
+lemma repPoly_eval_eq {R : Type*} [CommRing R] {A : Subring R} {x y : R}
     (hy : y ∈ closure (A.carrier ∪ {x})) : (repPoly hy).eval x = y :=
   (exists_polynomial_of_mem_closure hy).choose_spec.1
+
+lemma coeff_repPoly_mem {R : Type*} [CommRing R] {A : Subring R} {x y : R}
+    (hy : y ∈ closure (A.carrier ∪ {x})) (n : ℕ) : (repPoly hy).coeff n ∈ A :=
+  (exists_polynomial_of_mem_closure hy).choose_spec.2 n
+
+end Subring
+
+lemma Pi.weffwe {ι : Type*} {G : ι → Type*} [(i : ι) → Field (G i)] {A : Subring ((i : ι) → G i)}
+    {f g h : (i : ι) → G i} (hfg : ∀ i : ι, g i = 0 → f i = 0)
+    (hh : h ∈ closure (A.carrier ∪ {f / g})) :
+    { i : ι | h i ≠ 0 } =
+      ({ i : ι | (h * g ^ (repPoly hh).natDegree) i ≠ 0 } ∩ { i : ι | f i ≠ 0 }) ∪
+      ({ i : ι | (repPoly hh).constantCoeff i ≠ 0 } ∩ { i : ι | f i = 0 }) := by
+  ext i
+  refine ⟨fun hi => ?_, fun hi => ?_⟩
+  · sorry
+  · sorry
