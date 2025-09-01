@@ -148,24 +148,28 @@ lemma Pi.polynomial_eval_apply {ι : Type*} {G : ι → Type*} [(i : ι) → Sem
   rw [eval_eq_sum, sum, sum]
   exact Finset.sum_apply i p.support fun n => p.coeff n * f ^ n
 
-lemma Pi.weffwe {ι : Type*} {G : ι → Type*} [(i : ι) → Field (G i)] {A : Subring ((i : ι) → G i)}
+lemma Pi.support_eq_inter_union_inter_of_mem_closure_union_div
+    {ι : Type*} {G : ι → Type*} [(i : ι) → Field (G i)] {A : Subring ((i : ι) → G i)}
     {f g h : (i : ι) → G i} (hfg : ∀ i : ι, g i = 0 → f i = 0)
     (hh : h ∈ closure (A.carrier ∪ {f / g})) :
     { i : ι | h i ≠ 0 } =
       ({ i : ι | (h * g ^ (repPoly hh).natDegree) i ≠ 0 } ∩ { i : ι | f i ≠ 0 }) ∪
-      ({ i : ι | (repPoly hh).constantCoeff i ≠ 0 } ∩ { i : ι | f i = 0 }) := by
+        ({ i : ι | (repPoly hh).constantCoeff i ≠ 0 } ∩ { i : ι | f i = 0 }) := by
   ext i
   refine ⟨fun hi => ?_, fun hi => ?_⟩
   · by_cases hfi : f i = 0
     · refine Or.intro_right _ ⟨?_, hfi⟩
       · have := repPoly_eval_eq hh ▸ hi
-        simp only [Set.mem_setOf_eq, Pi.polynomial_eval_apply, Pi.div_apply, hfi, zero_div,
+        simp only [Set.mem_setOf_eq, polynomial_eval_apply, div_apply, hfi, zero_div,
           zero_pow_eq, sum, mul_ite, mul_one, mul_zero, Finset.sum_ite_eq', ne_eq, ite_eq_right_iff,
           Classical.not_imp] at this
         exact this.2
     · refine Or.intro_left _ ⟨?_, hfi⟩
       · simp only [mul_apply, pow_apply, ne_eq, mul_eq_zero, pow_eq_zero_iff', not_or, not_and]
         exact ⟨hi, fun hgi => False.elim (hfi <| hfg i hgi)⟩
-  · refine Or.elim hi ?_ ?_
-    · sorry
-    · sorry
+  · refine hi.elim (fun ⟨hhgi, hfi⟩ hhi => ?_) (fun ⟨hhi, hfi⟩ => repPoly_eval_eq hh ▸ ?_)
+    · exact (zero_mul ((g ^ _) i) ▸ hhi ▸ mul_apply h _ i ▸ Set.mem_setOf_eq ▸ hhgi) rfl
+    · simp only [polynomial_eval_apply, sum, div_apply, ne_eq, Set.mem_setOf_eq,
+        Set.mem_setOf_eq ▸ hfi, zero_div, zero_pow_eq, mul_ite, mul_one, mul_zero,
+        Finset.sum_ite_eq', mem_support_iff, ite_eq_right_iff, Classical.not_imp]
+      exact ⟨fun hh0 => hhi (congrFun hh0 i), hhi⟩
