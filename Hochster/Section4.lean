@@ -1,8 +1,6 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.RingTheory.Valuation.Discrete.Basic
 
-import Mathlib
-
 import Hochster.Section3
 
 open CommRing Polynomial SpringLike' Subring TopologicalSpace Valuation
@@ -152,9 +150,9 @@ lemma Pi.weffwe {ι : Type*} {G : ι → Type*} [(i : ι) → Field (G i)] {A : 
       ({ i : ι | (repPoly hh).constantCoeff i ≠ 0 } ∩ { i : ι | f i = 0 }) := by
   ext i
   refine ⟨fun hi => ?_, fun hi => ?_⟩
-  · by_cases hfi : f i ≠ 0
-    · refine Or.intro_left _ ⟨?_, hfi⟩
+  · by_cases hfi : f i = 0
+    · refine Or.intro_right _ ⟨?_, hfi⟩
+      have := eval_eq_sum (p := repPoly hh) ▸ repPoly_eval_eq hh ▸ hi
       sorry
-      --refine repPoly_eval_eq hh ▸ ?_
     · sorry
   · sorry
