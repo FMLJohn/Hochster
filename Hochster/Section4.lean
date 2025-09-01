@@ -1,6 +1,8 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.RingTheory.Valuation.Discrete.Basic
 
+import Mathlib
+
 import Hochster.Section3
 
 open CommRing Polynomial SpringLike' Subring TopologicalSpace Valuation
@@ -96,7 +98,7 @@ lemma ne_zero_of_pi_valuation_of_v_extension_of_map_apply_eq {X : Type*} [Topolo
 end MemClosurePairs
 
 theorem Subring.exists_polynomial_of_mem_closure
-    {R : Type*} [CommRing R] {A : Subring R} {x y : R} (hy : y ∈ closure (A ∪ {x})) :
+    {R : Type*} [CommRing R] {A : Subring R} {x y : R} (hy : y ∈ closure (A.carrier ∪ {x})) :
     ∃ p : Polynomial R, p.eval x = y ∧ ∀ n : ℕ, p.coeff n ∈ A := by
   refine closure_induction (fun y hy => ?_) ?_ ?_
     (fun y1 y2 hy1 hy2 ⟨p1, hpy1, hp1⟩ ⟨p2, hpy2, hp2⟩ => ?_) (fun y hy ⟨p, hpy, hp⟩ => ?_)
@@ -122,3 +124,14 @@ theorem Subring.exists_polynomial_of_mem_closure₁
   have : closure (s ∪ {x}) = closure ((closure s) ∪ {x}) :=
     closure_union s {x} ▸ closure_union (closure s) {x} ▸ (closure_eq (closure s)).symm ▸ rfl
   exact exists_polynomial_of_mem_closure (this.symm ▸ hy)
+
+/--
+`Subring.repPoly hy = (exists_polynomial_of_mem_closure hy).choose`.
+-/
+noncomputable def Subring.repPoly {R : Type*} [CommRing R] {A : Subring R} {x y : R}
+    (hy : y ∈ closure (A.carrier ∪ {x})) :=
+  (exists_polynomial_of_mem_closure hy).choose
+
+lemma Subring.repPoly_eval_eq {R : Type*} [CommRing R] {A : Subring R} {x y : R}
+    (hy : y ∈ closure (A.carrier ∪ {x})) : (repPoly hy).eval x = y :=
+  (exists_polynomial_of_mem_closure hy).choose_spec.1
