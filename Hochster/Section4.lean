@@ -3,7 +3,7 @@ import Mathlib.RingTheory.Valuation.Discrete.Basic
 
 import Hochster.Section3
 
-open CommRing Polynomial SpringLike' Subring TopologicalSpace Valuation
+open CommRing ConstructibleTop Polynomial SpringLike' Subring TopologicalSpace Valuation
 
 /--
 The type of pairs `(x, y) : X × X` such that `y ∈ closure {x}`.
@@ -173,3 +173,25 @@ lemma Pi.support_eq_inter_union_inter_of_mem_closure_union_div
         Set.mem_setOf_eq ▸ hfi, zero_div, zero_pow_eq, mul_ite, mul_one, mul_zero,
         Finset.sum_ite_eq', mem_support_iff, ite_eq_right_iff, Classical.not_imp]
       exact ⟨fun hh0 => hhi (congrFun hh0 i), hhi⟩
+
+lemma SpringLike'.support_isClosed_mem_union_div
+    {X : Type*} [TopologicalSpace X] {i : X → Type*}
+    [(x : X) → Field (i x)] (A : Subring (Π x : X, i x)) (hA : SpringLike' A)
+    {a b r : Π x : X, i x} (hab : ∀ x : X, b x = 0 → a x = 0)
+    (hr : r ∈ closure (A.carrier ∪ {a / b})) :
+    IsClosed (X := ConstructibleTop X) { x : X | r x ≠ 0 } := by
+  haveI := hA.spectralSpace
+  refine instTopologicalSpace_eq_generateFrom_isOpen_isCompact_union_compl_image X ▸
+    Pi.support_eq_inter_union_inter_of_mem_closure_union_div hab hr ▸ ?_
+  · refine @IsClosed.union X _ _ (generateFrom _) ?_ ?_
+    · refine @IsClosed.inter X _ _ (generateFrom _) ?_ ?_
+      · refine (@isOpen_compl_iff X _ (generateFrom _)).1 <| isOpen_generateFrom_of_mem <|
+          Or.intro_right _ ⟨{ x | (r * b ^ (repPoly hr).natDegree) x ≠ 0}, ⟨?_, ?_⟩, rfl⟩
+        · refine hA.forall_isOpen _ ?_
+          sorry
+
+        · sorry
+      · sorry
+    · refine @IsClosed.inter X _ _ (generateFrom _) ?_ ?_
+      · sorry
+      · sorry
