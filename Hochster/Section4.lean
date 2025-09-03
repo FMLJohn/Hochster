@@ -142,13 +142,15 @@ lemma coeff_repPoly_mem {R : Type*} [CommRing R] {A : Subring R} {x y : R}
 
 end Subring
 
-lemma Pi.polynomial_eval_apply {ι : Type*} {G : ι → Type*} [(i : ι) → Semiring (G i)]
+namespace Pi
+
+lemma polynomial_eval_apply {ι : Type*} {G : ι → Type*} [(i : ι) → Semiring (G i)]
     (p : Polynomial ((i : ι) → G i)) (f : (i : ι) → G i) (i : ι) :
     p.eval f i = p.sum fun n g => (g i) * (f i) ^ n := by
   rw [eval_eq_sum, sum, sum]
   exact Finset.sum_apply i p.support fun n => p.coeff n * f ^ n
 
-lemma Pi.support_eq_inter_union_inter_of_mem_closure_union_div
+lemma support_eq_inter_union_inter_of_mem_closure_union_div
     {ι : Type*} {G : ι → Type*} [(i : ι) → Field (G i)] {A : Subring ((i : ι) → G i)}
     {f g h : (i : ι) → G i} (hfg : ∀ i : ι, g i = 0 → f i = 0)
     (hh : h ∈ closure (A.carrier ∪ {f / g})) :
@@ -173,6 +175,62 @@ lemma Pi.support_eq_inter_union_inter_of_mem_closure_union_div
         Set.mem_setOf_eq ▸ hfi, zero_div, zero_pow_eq, mul_ite, mul_one, mul_zero,
         Finset.sum_ite_eq', mem_support_iff, ite_eq_right_iff, Classical.not_imp]
       exact ⟨fun hh0 => hhi (congrFun hh0 i), hhi⟩
+
+lemma vanishing_set_eq_inter_union_inter_of_mem_closure_union_div
+    {ι : Type*} {G : ι → Type*} [(i : ι) → Field (G i)] {A : Subring ((i : ι) → G i)}
+    {f g h : (i : ι) → G i} (hfg : ∀ i : ι, g i = 0 → f i = 0)
+    (hh : h ∈ closure (A.carrier ∪ {f / g})) :
+    { i : ι | h i = 0 } =
+      ({ i : ι | (h * g ^ (repPoly hh).natDegree) i = 0 } ∩ { i : ι | f i ≠ 0 }) ∪
+        ({ i : ι | (repPoly hh).constantCoeff i = 0 } ∩ { i : ι | f i = 0 }) := by
+  ext i
+  refine ⟨fun hi => ?_, fun hi => ?_⟩
+  · by_cases hfi : f i = 0
+    · refine Or.intro_right _ ⟨?_, hfi⟩
+      · have := polynomial_eval_apply (repPoly hh) (f / g) i ▸ Set.mem_setOf_eq ▸
+          repPoly_eval_eq hh ▸ hi
+        simp only [sum, div_apply, hfi, zero_div, zero_pow_eq, mul_ite, mul_one, mul_zero,
+          Finset.sum_ite_eq', mem_support_iff, ite_eq_right_iff] at this
+        exact by_cases
+          (fun hh0 => (repPoly hh).constantCoeff_apply ▸ Set.mem_setOf_eq ▸ congrFun hh0 i) this
+    · refine Or.intro_left _ ⟨?_, hfi⟩
+      · simpa only [mul_apply, mul_eq_zero] using Or.intro_left _ hi
+  · refine hi.elim (fun ⟨hhgi, hfi⟩ => ?_) (fun ⟨hhi, hfi⟩ => ?_)
+    · exact eq_zero_of_ne_zero_of_mul_right_eq_zero (pow_ne_zero _ (fun hgi => hfi <| hfg i hgi))
+        (mul_apply h _ i ▸ Set.mem_setOf_eq ▸ hhgi)
+    · refine repPoly_eval_eq hh ▸ ?_
+      · simpa only [polynomial_eval_apply, sum, div_apply, Set.mem_setOf_eq, Set.mem_setOf_eq ▸ hfi,
+          zero_div, zero_pow_eq, mul_ite, mul_one, mul_zero, Finset.sum_ite_eq', ite_eq_right_iff]
+            using fun _ => hhi
+
+lemma vanishing_set_eq_inter_union_inter_of_mem_closure_union_div₁
+    {ι : Type*} {G : ι → Type*} [(i : ι) → Field (G i)] {A : Subring ((i : ι) → G i)}
+    {f g h : (i : ι) → G i} (hfg : ∀ i : ι, g i = 0 → f i = 0)
+    (hh : h ∈ closure (A.carrier ∪ {f / g})) :
+    { i : ι | h i = 0 } =
+      ({ i : ι | (h * g ^ (repPoly hh).natDegree) i = 0 } ∩ { i : ι | g i ≠ 0 }) ∪
+        ({ i : ι | (repPoly hh).constantCoeff i = 0 } ∩ { i : ι | g i = 0 }) := by
+  ext i
+  refine ⟨fun hi => ?_, fun hi => ?_⟩
+  · by_cases hgi : g i = 0
+    · refine Or.intro_right _ ⟨?_, hgi⟩
+      · have := polynomial_eval_apply (repPoly hh) (f / g) i ▸ Set.mem_setOf_eq ▸
+          repPoly_eval_eq hh ▸ hi
+        simp only [sum, div_apply, hfg i hgi, zero_div, zero_pow_eq, mul_ite, mul_one, mul_zero,
+          Finset.sum_ite_eq', mem_support_iff, ite_eq_right_iff] at this
+        exact by_cases
+          (fun hh0 => (repPoly hh).constantCoeff_apply ▸ Set.mem_setOf_eq ▸ congrFun hh0 i) this
+    · refine Or.intro_left _ ⟨?_, hgi⟩
+      · simpa only [mul_apply, mul_eq_zero] using Or.intro_left _ hi
+  · refine hi.elim (fun ⟨hhgi, hgi⟩ => ?_) (fun ⟨hhi, hgi⟩ => ?_)
+    · exact eq_zero_of_ne_zero_of_mul_right_eq_zero (pow_ne_zero _ hgi)
+        (mul_apply h _ i ▸ Set.mem_setOf_eq ▸ hhgi)
+    · refine repPoly_eval_eq hh ▸ ?_
+      · simpa only [polynomial_eval_apply, sum, div_apply, Set.mem_setOf_eq, hfg i hgi, zero_div,
+          zero_pow_eq, mul_ite, mul_one, mul_zero, Finset.sum_ite_eq', ite_eq_right_iff]
+            using fun _ => hhi
+
+end Pi
 
 lemma SpringLike'.isClosed_support_of_mem_closure_union_div
     {X : Type*} [TopologicalSpace X] {i : X → Type*}[(x : X) → Field (i x)]
