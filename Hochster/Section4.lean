@@ -3,7 +3,7 @@ import Mathlib.RingTheory.Valuation.Discrete.Basic
 
 import Hochster.Section3
 
-open CommRing ConstructibleTop Polynomial SpringLike' Subring TopologicalSpace Valuation
+open CommRing ConstructibleTop Polynomial SpringLike' Subring TopologicalSpace Topology Valuation
 
 /--
 The type of pairs `(x, y) : X × X` such that `y ∈ closure {x}`.
@@ -232,7 +232,9 @@ lemma vanishing_set_eq_inter_union_inter_of_mem_closure_union_div₁
 
 end Pi
 
-lemma SpringLike'.isClosed_support_of_mem_closure_union_div
+namespace SpringLike'
+
+lemma support_is_patch_of_mem_closure_union_div
     {X : Type*} [TopologicalSpace X] {i : X → Type*}[(x : X) → Field (i x)]
     {A : Subring (Π x : X, i x)} (hA : SpringLike' A) {a b r : Π x : X, i x}
     (ha : a ∈ A) (hb : b ∈ A) (hab : ∀ x : X, b x = 0 → a x = 0)
@@ -263,9 +265,61 @@ lemma SpringLike'.isClosed_support_of_mem_closure_union_div
         Or.intro_right _ ⟨{ x | constantCoeff (repPoly hr) x ≠ 0},
           ⟨hA.forall_isOpen _ (coeff_repPoly_mem hr 0),
             hA.forall_isCompact _ (coeff_repPoly_mem hr 0)⟩, rfl⟩
-    · refine (@isOpen_compl_iff X _ (generateFrom _)).1 <| isOpen_generateFrom_of_mem <|
-        Or.intro_left _ ?_
-      · have : { x | a x = 0 }ᶜ = { x | a x ≠ 0 } := by
-          ext
-          simp only [Set.mem_compl_iff, Set.mem_setOf_eq]
-        exact this ▸ ⟨hA.forall_isOpen a ha, hA.forall_isCompact a ha⟩
+    · exact (@isOpen_compl_iff X _ (generateFrom _)).1 <| isOpen_generateFrom_of_mem <|
+        Or.intro_left _ ⟨hA.forall_isOpen a ha, hA.forall_isCompact a ha⟩
+
+lemma isCompact_support_of_mem_closure_union_div
+    {X : Type*} [TopologicalSpace X] {i : X → Type*}[(x : X) → Field (i x)]
+    {A : Subring (Π x : X, i x)} (hA : SpringLike' A) {a b r : Π x : X, i x}
+    (ha : a ∈ A) (hb : b ∈ A) (hab : ∀ x : X, b x = 0 → a x = 0)
+    (hr : r ∈ closure (A.carrier ∪ {a / b})) :
+    IsCompact { x : X | r x ≠ 0 } := by
+  haveI := hA.spectralSpace
+  exact isCompact_iff_compactSpace.mpr ((Subtype.range_coe_subtype ▸
+    compactSpace_of_isEmbedding_of_isClosed_constructibleTop_range IsEmbedding.subtypeVal)
+      (support_is_patch_of_mem_closure_union_div hA ha hb hab hr))
+
+lemma vanishing_set_is_patch_of_mem_closure_union_div
+    {X : Type*} [TopologicalSpace X] {i : X → Type*}[(x : X) → Field (i x)]
+    {A : Subring (Π x : X, i x)} (hA : SpringLike' A) {a b r : Π x : X, i x}
+    (ha : a ∈ A) (hb : b ∈ A) (hab : ∀ x : X, b x = 0 → a x = 0)
+    (hr : r ∈ closure (A.carrier ∪ {a / b})) :
+    IsClosed (X := ConstructibleTop X) { x : X | r x = 0 } := by
+  haveI := hA.spectralSpace
+  refine instTopologicalSpace_eq_generateFrom_isOpen_isCompact_union_compl_image X ▸
+    Pi.vanishing_set_eq_inter_union_inter_of_mem_closure_union_div hab hr ▸
+    @IsClosed.union X _ _ (generateFrom _) ?_ ?_
+  · refine @IsClosed.inter X _ _ (generateFrom _) ?_ ?_
+    · have : (r * b ^ (repPoly hr).natDegree) ∈ A := by
+        have : r * b ^ (repPoly hr).natDegree =
+            ((repPoly hr).eval (a / b)) * b ^ (repPoly hr).natDegree :=
+          congrFun (congrArg _ (repPoly_eval_eq hr).symm) _
+        exact this ▸ eval_eq_sum (R := Π x : X, i x) ▸ sum_def (S := Π x : X, i x) (repPoly hr) _ ▸
+          Finset.sum_mul (R := Π x : X, i x) .. ▸ A.sum_mem fun n hnr =>
+            mul_assoc ((repPoly hr).coeff n) .. ▸
+            (Nat.add_sub_of_le <| le_natDegree_of_mem_supp n hnr) ▸ pow_add b n _ ▸
+            mul_assoc _ (b ^ n) _ ▸ mul_pow _ b n ▸ mul_mem (coeff_repPoly_mem hr n)
+              (mul_mem (pow_mem ((Pi.div_mul_cancel_of_forall_imp hab).symm ▸ ha) n) (pow_mem hb _))
+      exact (@isOpen_compl_iff X _ (generateFrom _)).1 <| isOpen_generateFrom_of_mem <|
+        Or.intro_left _ ⟨hA.forall_isOpen _ this, hA.forall_isCompact _ this⟩
+    · exact (@isOpen_compl_iff X _ (generateFrom _)).1 <| isOpen_generateFrom_of_mem <|
+        Or.intro_right _ ⟨{ x | a x ≠ 0}, ⟨hA.forall_isOpen _ ha, hA.forall_isCompact _ ha⟩, rfl⟩
+  · refine @IsClosed.inter X _ _ (generateFrom _) ?_ ?_
+    · exact (@isOpen_compl_iff X _ (generateFrom _)).1 <| isOpen_generateFrom_of_mem <|
+        Or.intro_left _ ⟨hA.forall_isOpen _ (coeff_repPoly_mem hr 0),
+          hA.forall_isCompact _ (coeff_repPoly_mem hr 0)⟩
+    · exact (@isOpen_compl_iff X _ (generateFrom _)).1 <| isOpen_generateFrom_of_mem <|
+        Or.intro_left _ ⟨hA.forall_isOpen a ha, hA.forall_isCompact a ha⟩
+
+lemma isCompact_vanishing_set_of_mem_closure_union_div
+    {X : Type*} [TopologicalSpace X] {i : X → Type*}[(x : X) → Field (i x)]
+    {A : Subring (Π x : X, i x)} (hA : SpringLike' A) {a b r : Π x : X, i x}
+    (ha : a ∈ A) (hb : b ∈ A) (hab : ∀ x : X, b x = 0 → a x = 0)
+    (hr : r ∈ closure (A.carrier ∪ {a / b})) :
+    IsCompact { x : X | r x = 0 } := by
+  haveI := hA.spectralSpace
+  exact isCompact_iff_compactSpace.mpr ((Subtype.range_coe_subtype ▸
+    compactSpace_of_isEmbedding_of_isClosed_constructibleTop_range IsEmbedding.subtypeVal)
+      (vanishing_set_is_patch_of_mem_closure_union_div hA ha hb hab hr))
+
+end SpringLike'
