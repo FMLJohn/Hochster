@@ -150,6 +150,24 @@ lemma polynomial_eval_apply {ι : Type*} {G : ι → Type*} [(i : ι) → Semiri
   rw [eval_eq_sum, sum, sum]
   exact Finset.sum_apply i p.support fun n => p.coeff n * f ^ n
 
+lemma support_eq_inter_union_inter_of_mem_cwef
+    {ι : Type*} {G : ι → Type*} [(i : ι) → Field (G i)] {A : Subring ((i : ι) → G i)}
+    {f g h : (i : ι) → G i} (hf : f ∈ A) (hg : g ∈ A) (hfg : ∀ i : ι, g i = 0 → f i = 0)
+    (hh : h ∈ closure (A.carrier ∪ {f / g})) {n : ℕ} (hn : (repPoly hh).natDegree ≤ n) :
+    h * g ^ n ∈ A := by
+  have : h * g ^ n = ((repPoly hh).eval (f / g)) * g ^ n :=
+    congrFun (congrArg _ (repPoly_eval_eq hh).symm) _
+  refine this ▸ eval_eq_sum (R := Π i : ι, G i) ▸ sum_def (S := Π i : ι, G i) (repPoly hh) _ ▸
+    Finset.sum_mul (R := Π i : ι, G i) .. ▸ A.sum_mem fun m hmh =>
+      mul_assoc ((repPoly hh).coeff m) .. ▸ ?_
+  · sorry
+                --
+                --  ▸ pow_add b m _ ▸
+                -- mul_assoc _ (b ^ m) _ ▸ mul_pow _ b m ▸ mul_mem (coeff_repPoly_mem hh m)
+                --   (mul_mem (pow_mem ((Pi.div_mul_cancel_of_forall_imp hfg).symm ▸ hf) m)
+                --   (pow_mem hg _))
+
+
 lemma constantCoeff_repPoly_apply_ne_zero_of_apply_eq_zero_of_apply_ne_zero
     {ι : Type*} {i : ι} {G : ι → Type*} [(i : ι) → Field (G i)]
     {A : Subring ((i : ι) → G i)} {f g h : (i : ι) → G i}
