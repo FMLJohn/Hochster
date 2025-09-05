@@ -323,3 +323,13 @@ lemma isCompact_vanishing_set_of_mem_closure_union_div
       (vanishing_set_is_patch_of_mem_closure_union_div hA ha hb hab hr))
 
 end SpringLike'
+
+lemma isClosed_iff_forall_closure_subset_of_isClosed_constructibleTop
+    {X : Type*} [TopologicalSpace X] [CompactSpace X] [QuasiSober X] [QuasiSeparatedSpace X]
+    [PrespectralSpace X] {Y : Set X} (hY : IsClosed (X := ConstructibleTop X) Y) :
+    IsClosed Y ↔ ∀ y ∈ Y, closure {y} ⊆ Y := by
+  refine ⟨fun hY y hyY => (IsClosed.mem_iff_closure_subset hY).mp hyY,
+    fun h => closure_eq_iff_isClosed.1 <| Set.eq_of_subset_of_subset ?_ subset_closure⟩
+  · intro y hyY
+    obtain ⟨x, hxY, hyx⟩ := (mem_patch_closure_iff_mem_pt_closure hY y).1 hyY
+    exact h x hxY hyx
