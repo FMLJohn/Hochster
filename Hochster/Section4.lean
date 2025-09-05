@@ -150,6 +150,24 @@ lemma polynomial_eval_apply {ι : Type*} {G : ι → Type*} [(i : ι) → Semiri
   rw [eval_eq_sum, sum, sum]
   exact Finset.sum_apply i p.support fun n => p.coeff n * f ^ n
 
+lemma constantCoeff_repPoly_apply_ne_zero_of_apply_eq_zero_of_apply_ne_zero
+    {ι : Type*} {i : ι} {G : ι → Type*} [(i : ι) → Field (G i)]
+    {A : Subring ((i : ι) → G i)} {f g h : (i : ι) → G i}
+    (hfi : f i = 0) (hhi : h i ≠ 0) (hh : h ∈ closure (A.carrier ∪ {f / g})) :
+    (repPoly hh).constantCoeff i ≠ 0 := by
+  have := repPoly_eval_eq hh ▸ hhi
+  simp only [polynomial_eval_apply, div_apply, hfi, zero_div, zero_pow_eq, sum, mul_ite, mul_one,
+    mul_zero, Finset.sum_ite_eq', ne_eq, ite_eq_right_iff, Classical.not_imp] at this
+  exact this.2
+
+lemma mul_pow_natDegree_repPoly_apply_ne_zero_of_apply_ne_zero_of_apply_ne_zero
+    {ι : Type*} {i : ι} {G : ι → Type*} [(i : ι) → Field (G i)]
+    {A : Subring ((i : ι) → G i)} {f g h : (i : ι) → G i}
+    (hgi : g i ≠ 0) (hhi : h i ≠ 0) (hh : h ∈ closure (A.carrier ∪ {f / g})) :
+    (h * g ^ (repPoly hh).natDegree) i ≠ 0 := by
+  simp only [mul_apply, pow_apply, ne_eq, mul_eq_zero, pow_eq_zero_iff', not_or, not_and]
+  exact ⟨hhi, fun hgi' _ => hgi hgi'⟩
+
 lemma support_eq_inter_union_inter_of_mem_closure_union_div
     {ι : Type*} {G : ι → Type*} [(i : ι) → Field (G i)] {A : Subring ((i : ι) → G i)}
     {f g h : (i : ι) → G i} (hfg : ∀ i : ι, g i = 0 → f i = 0)
@@ -160,21 +178,34 @@ lemma support_eq_inter_union_inter_of_mem_closure_union_div
   ext i
   refine ⟨fun hi => ?_, fun hi => ?_⟩
   · by_cases hfi : f i = 0
-    · refine Or.intro_right _ ⟨?_, hfi⟩
-      · have := repPoly_eval_eq hh ▸ hi
-        simp only [Set.mem_setOf_eq, polynomial_eval_apply, div_apply, hfi, zero_div,
-          zero_pow_eq, sum, mul_ite, mul_one, mul_zero, Finset.sum_ite_eq', ne_eq, ite_eq_right_iff,
-          Classical.not_imp] at this
-        exact this.2
-    · refine Or.intro_left _ ⟨?_, hfi⟩
-      · simp only [mul_apply, pow_apply, ne_eq, mul_eq_zero, pow_eq_zero_iff', not_or, not_and]
-        exact ⟨hi, fun hgi => False.elim (hfi <| hfg i hgi)⟩
+    · exact Or.intro_right _
+        ⟨constantCoeff_repPoly_apply_ne_zero_of_apply_eq_zero_of_apply_ne_zero hfi hi hh, hfi⟩
+    · exact Or.intro_left _
+        ⟨mul_pow_natDegree_repPoly_apply_ne_zero_of_apply_ne_zero_of_apply_ne_zero
+          (fun hgi => hfi <| hfg i hgi) hi hh, hfi⟩
   · refine hi.elim (fun ⟨hhgi, hfi⟩ hhi => ?_) (fun ⟨hhi, hfi⟩ => repPoly_eval_eq hh ▸ ?_)
     · exact (zero_mul ((g ^ _) i) ▸ hhi ▸ mul_apply h _ i ▸ Set.mem_setOf_eq ▸ hhgi) rfl
     · simp only [polynomial_eval_apply, sum, div_apply, ne_eq, Set.mem_setOf_eq,
         Set.mem_setOf_eq ▸ hfi, zero_div, zero_pow_eq, mul_ite, mul_one, mul_zero,
         Finset.sum_ite_eq', mem_support_iff, ite_eq_right_iff, Classical.not_imp]
       exact ⟨fun hh0 => hhi (congrFun hh0 i), hhi⟩
+
+lemma constantCoeff_repPoly_apply_eq_zero_of_apply_eq_zero_of_apply_eq_zero
+    {ι : Type*} {i : ι} {G : ι → Type*} [(i : ι) → Field (G i)]
+    {A : Subring ((i : ι) → G i)} {f g h : (i : ι) → G i}
+    (hfi : f i = 0) (hhi : h i = 0) (hh : h ∈ closure (A.carrier ∪ {f / g})) :
+    (repPoly hh).constantCoeff i = 0 := by
+  have := polynomial_eval_apply (repPoly hh) (f / g) i ▸ repPoly_eval_eq hh ▸ hhi
+  simp only [sum, div_apply, hfi, zero_div, zero_pow_eq, mul_ite, mul_one, mul_zero,
+    Finset.sum_ite_eq', mem_support_iff, ite_eq_right_iff] at this
+  exact by_cases (fun hh0 => (repPoly hh).constantCoeff_apply ▸ congrFun hh0 i) this
+
+lemma mul_pow_natDegree_repPoly_apply_eq_zero_of_apply_eq_zero
+    {ι : Type*} {i : ι} {G : ι → Type*} [(i : ι) → Field (G i)]
+    {A : Subring ((i : ι) → G i)} {f g h : (i : ι) → G i}
+    (hhi : h i = 0) (hh : h ∈ closure (A.carrier ∪ {f / g})) :
+    (h * g ^ (repPoly hh).natDegree) i = 0 := by
+  simpa only [mul_apply, mul_eq_zero] using Or.intro_left _ hhi
 
 lemma vanishing_set_eq_inter_union_inter_of_mem_closure_union_div
     {ι : Type*} {G : ι → Type*} [(i : ι) → Field (G i)] {A : Subring ((i : ι) → G i)}
@@ -186,15 +217,9 @@ lemma vanishing_set_eq_inter_union_inter_of_mem_closure_union_div
   ext i
   refine ⟨fun hi => ?_, fun hi => ?_⟩
   · by_cases hfi : f i = 0
-    · refine Or.intro_right _ ⟨?_, hfi⟩
-      · have := polynomial_eval_apply (repPoly hh) (f / g) i ▸ Set.mem_setOf_eq ▸
-          repPoly_eval_eq hh ▸ hi
-        simp only [sum, div_apply, hfi, zero_div, zero_pow_eq, mul_ite, mul_one, mul_zero,
-          Finset.sum_ite_eq', mem_support_iff, ite_eq_right_iff] at this
-        exact by_cases
-          (fun hh0 => (repPoly hh).constantCoeff_apply ▸ Set.mem_setOf_eq ▸ congrFun hh0 i) this
-    · refine Or.intro_left _ ⟨?_, hfi⟩
-      · simpa only [mul_apply, mul_eq_zero] using Or.intro_left _ hi
+    · exact Or.intro_right _
+        ⟨constantCoeff_repPoly_apply_eq_zero_of_apply_eq_zero_of_apply_eq_zero hfi hi hh, hfi⟩
+    · exact Or.intro_left _ ⟨mul_pow_natDegree_repPoly_apply_eq_zero_of_apply_eq_zero hi hh, hfi⟩
   · refine hi.elim (fun ⟨hhgi, hfi⟩ => ?_) (fun ⟨hhi, hfi⟩ => ?_)
     · exact eq_zero_of_ne_zero_of_mul_right_eq_zero (pow_ne_zero _ (fun hgi => hfi <| hfg i hgi))
         (mul_apply h _ i ▸ Set.mem_setOf_eq ▸ hhgi)
@@ -213,15 +238,10 @@ lemma vanishing_set_eq_inter_union_inter_of_mem_closure_union_div₁
   ext i
   refine ⟨fun hi => ?_, fun hi => ?_⟩
   · by_cases hgi : g i = 0
-    · refine Or.intro_right _ ⟨?_, hgi⟩
-      · have := polynomial_eval_apply (repPoly hh) (f / g) i ▸ Set.mem_setOf_eq ▸
-          repPoly_eval_eq hh ▸ hi
-        simp only [sum, div_apply, hfg i hgi, zero_div, zero_pow_eq, mul_ite, mul_one, mul_zero,
-          Finset.sum_ite_eq', mem_support_iff, ite_eq_right_iff] at this
-        exact by_cases
-          (fun hh0 => (repPoly hh).constantCoeff_apply ▸ Set.mem_setOf_eq ▸ congrFun hh0 i) this
-    · refine Or.intro_left _ ⟨?_, hgi⟩
-      · simpa only [mul_apply, mul_eq_zero] using Or.intro_left _ hi
+    · exact Or.intro_right _
+        ⟨constantCoeff_repPoly_apply_eq_zero_of_apply_eq_zero_of_apply_eq_zero (hfg i hgi) hi hh,
+          hgi⟩
+    · exact Or.intro_left _ ⟨mul_pow_natDegree_repPoly_apply_eq_zero_of_apply_eq_zero hi hh, hgi⟩
   · refine hi.elim (fun ⟨hhgi, hgi⟩ => ?_) (fun ⟨hhi, hgi⟩ => ?_)
     · exact eq_zero_of_ne_zero_of_mul_right_eq_zero (pow_ne_zero _ hgi)
         (mul_apply h _ i ▸ Set.mem_setOf_eq ▸ hhgi)
@@ -337,8 +357,36 @@ lemma isClosed_iff_forall_closure_subset_of_isClosed_constructibleTop
 lemma SpringLike'.isClosed_vanishing_set_of_forall_map_apply_le_of_forall_ne_zero
     {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
     {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
-    {hA : SpringLike' A} (hAv : hA.isIndex v) {a b r : Π x : X, i x}
+    {hA : SpringLike' A} (hAv : hA.isIndex v) {a b r : Π x : X, i x} (ha : a ∈ A) (hb : b ∈ A)
     (hab : ∀ x : X, b x = 0 → a x = 0) (hr : r ∈ closure (A.carrier ∪ {a / b}))
     --(h1 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) ≤ v p (b p.z.1))
     (h : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) = v p (b p.z.1) → a p.z.2 ≠ 0) :
-    IsClosed { x : X | r x = 0 } := sorry
+    IsClosed { x : X | r x = 0 } := by
+  haveI := hA.spectralSpace
+  refine (isClosed_iff_forall_closure_subset_of_isClosed_constructibleTop (X := X)
+    (hA.vanishing_set_is_patch_of_mem_closure_union_div ha hb hab hr)).2 fun y hry => ?_
+  · by_cases hay : a y = 0
+    · refine Pi.vanishing_set_eq_inter_union_inter_of_mem_closure_union_div hab hr ▸
+        Set.subset_union_of_subset_right ((IsClosed.closure_subset_iff ?_).2 ?_) _
+      · exact IsClosed.inter ⟨hA.forall_isOpen _ (coeff_repPoly_mem hr 0)⟩ ⟨hA.forall_isOpen _ ha⟩
+      · exact Set.singleton_subset_iff.2
+          ⟨Pi.constantCoeff_repPoly_apply_eq_zero_of_apply_eq_zero_of_apply_eq_zero hay hry hr, hay⟩
+    · intro x hxy
+      have hrby := Pi.mul_pow_natDegree_repPoly_apply_eq_zero_of_apply_eq_zero hry hr
+      by_cases hbx : b x = 0
+      · sorry
+      · refine Pi.vanishing_set_eq_inter_union_inter_of_mem_closure_union_div₁ hab hr ▸
+          Or.intro_left _ ⟨?_, hbx⟩
+        · have : (r * b ^ (repPoly hr).natDegree) ∈ A := by
+            have : r * b ^ (repPoly hr).natDegree =
+                ((repPoly hr).eval (a / b)) * b ^ (repPoly hr).natDegree :=
+              congrFun (congrArg _ (repPoly_eval_eq hr).symm) _
+            exact this ▸ eval_eq_sum (R := Π x : X, i x) ▸
+              sum_def (S := Π x : X, i x) (repPoly hr) _ ▸
+              Finset.sum_mul (R := Π x : X, i x) .. ▸ A.sum_mem fun n hnr =>
+                mul_assoc ((repPoly hr).coeff n) .. ▸
+                (Nat.add_sub_of_le <| le_natDegree_of_mem_supp n hnr) ▸ pow_add b n _ ▸
+                mul_assoc _ (b ^ n) _ ▸ mul_pow _ b n ▸ mul_mem (coeff_repPoly_mem hr n)
+                  (mul_mem (pow_mem ((Pi.div_mul_cancel_of_forall_imp hab).symm ▸ ha) n)
+                  (pow_mem hb _))
+          exact (IsClosed.mem_iff_closure_subset ⟨hA.forall_isOpen _ this⟩).1 hrby hxy
