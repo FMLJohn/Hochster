@@ -377,6 +377,9 @@ lemma SpringLike'.isClosed_vanishing_set_of_forall_map_apply_le_of_forall_ne_zer
       by_cases hbx : b x = 0
       · let p : σ(X) := ⟨(y, x), hxy⟩
         have hvpab := lt_of_le_of_ne (h1 p hay) (imp_not_comm.1 (h2 p hay) (hab x hbx))
+        have := Pi.polynomial_eval_apply (repPoly hr) (a / b) y ▸ Set.mem_setOf_eq ▸
+          repPoly_eval_eq hr ▸ hry
+        simp [sum] at this
         sorry
       · exact Pi.vanishing_set_eq_inter_union_inter_of_mem_closure_union_div₁ hab hr ▸
           Or.intro_left _ ⟨(IsClosed.mem_iff_closure_subset ⟨hA.forall_isOpen _ <|
