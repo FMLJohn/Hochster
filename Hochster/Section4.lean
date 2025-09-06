@@ -360,8 +360,8 @@ lemma SpringLike'.isClosed_vanishing_set_of_forall_map_apply_le_of_forall_ne_zer
     {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
     {hA : SpringLike' A} (hAv : hA.isIndex v) {a b r : Π x : X, i x} (ha : a ∈ A) (hb : b ∈ A)
     (hab : ∀ x : X, b x = 0 → a x = 0) (hr : r ∈ closure (A.carrier ∪ {a / b}))
-    --(h1 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) ≤ v p (b p.z.1))
-    (h : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) = v p (b p.z.1) → a p.z.2 ≠ 0) :
+    (h1 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) ≤ v p (b p.z.1))
+    (h2 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) = v p (b p.z.1) → a p.z.2 ≠ 0) :
     IsClosed { x : X | r x = 0 } := by
   haveI := hA.spectralSpace
   refine (isClosed_iff_forall_closure_subset_of_isClosed_constructibleTop (X := X)
@@ -375,7 +375,9 @@ lemma SpringLike'.isClosed_vanishing_set_of_forall_map_apply_le_of_forall_ne_zer
     · intro x hxy
       have hrby := Pi.mul_pow_natDegree_repPoly_apply_eq_zero_of_apply_eq_zero hry hr
       by_cases hbx : b x = 0
-      · sorry
+      · let p : σ(X) := ⟨(y, x), hxy⟩
+        have hvpab := lt_of_le_of_ne (h1 p hay) (imp_not_comm.1 (h2 p hay) (hab x hbx))
+        sorry
       · exact Pi.vanishing_set_eq_inter_union_inter_of_mem_closure_union_div₁ hab hr ▸
           Or.intro_left _ ⟨(IsClosed.mem_iff_closure_subset ⟨hA.forall_isOpen _ <|
             Pi.mul_pow_mem_of_mem_closure_union_div_of_natDegree_repPoly_le ha hb hab hr <|
