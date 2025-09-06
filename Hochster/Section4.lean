@@ -150,23 +150,19 @@ lemma polynomial_eval_apply {ι : Type*} {G : ι → Type*} [(i : ι) → Semiri
   rw [eval_eq_sum, sum, sum]
   exact Finset.sum_apply i p.support fun n => p.coeff n * f ^ n
 
-lemma support_eq_inter_union_inter_of_mem_cwef
+lemma mul_pow_mem_of_mem_closure_union_div_of_natDegree_repPoly_le
     {ι : Type*} {G : ι → Type*} [(i : ι) → Field (G i)] {A : Subring ((i : ι) → G i)}
     {f g h : (i : ι) → G i} (hf : f ∈ A) (hg : g ∈ A) (hfg : ∀ i : ι, g i = 0 → f i = 0)
     (hh : h ∈ closure (A.carrier ∪ {f / g})) {n : ℕ} (hn : (repPoly hh).natDegree ≤ n) :
     h * g ^ n ∈ A := by
   have : h * g ^ n = ((repPoly hh).eval (f / g)) * g ^ n :=
     congrFun (congrArg _ (repPoly_eval_eq hh).symm) _
-  refine this ▸ eval_eq_sum (R := Π i : ι, G i) ▸ sum_def (S := Π i : ι, G i) (repPoly hh) _ ▸
-    Finset.sum_mul (R := Π i : ι, G i) .. ▸ A.sum_mem fun m hmh =>
-      mul_assoc ((repPoly hh).coeff m) .. ▸ ?_
-  · sorry
-                --
-                --  ▸ pow_add b m _ ▸
-                -- mul_assoc _ (b ^ m) _ ▸ mul_pow _ b m ▸ mul_mem (coeff_repPoly_mem hh m)
-                --   (mul_mem (pow_mem ((Pi.div_mul_cancel_of_forall_imp hfg).symm ▸ hf) m)
-                --   (pow_mem hg _))
-
+  exact this ▸ eval_eq_sum (R := Π i : ι, G i) ▸
+    sum_def (S := Π i : ι, G i) (repPoly hh) _ ▸ Finset.sum_mul (R := Π i : ι, G i) .. ▸
+    A.sum_mem fun m hmh => mul_assoc ((repPoly hh).coeff m) .. ▸
+      (Nat.add_sub_of_le <| (le_natDegree_of_mem_supp m hmh).trans hn) ▸ pow_add g m _ ▸
+      mul_assoc _ (g ^ m) _ ▸ mul_pow _ g m ▸ mul_mem (coeff_repPoly_mem hh m)
+        (mul_mem (pow_mem ((div_mul_cancel_of_forall_imp hfg).symm ▸ hf) m) (pow_mem hg _))
 
 lemma constantCoeff_repPoly_apply_ne_zero_of_apply_eq_zero_of_apply_ne_zero
     {ι : Type*} {i : ι} {G : ι → Type*} [(i : ι) → Field (G i)]
@@ -283,19 +279,12 @@ lemma support_is_patch_of_mem_closure_union_div
     Pi.support_eq_inter_union_inter_of_mem_closure_union_div hab hr ▸
     @IsClosed.union X _ _ (generateFrom _) ?_ ?_
   · refine @IsClosed.inter X _ _ (generateFrom _) ?_ ?_
-    · have : (r * b ^ (repPoly hr).natDegree) ∈ A := by
-        have : r * b ^ (repPoly hr).natDegree =
-            ((repPoly hr).eval (a / b)) * b ^ (repPoly hr).natDegree :=
-          congrFun (congrArg _ (repPoly_eval_eq hr).symm) _
-        exact this ▸ eval_eq_sum (R := Π x : X, i x) ▸ sum_def (S := Π x : X, i x) (repPoly hr) _ ▸
-          Finset.sum_mul (R := Π x : X, i x) .. ▸ A.sum_mem fun n hnr =>
-            mul_assoc ((repPoly hr).coeff n) .. ▸
-            (Nat.add_sub_of_le <| le_natDegree_of_mem_supp n hnr) ▸ pow_add b n _ ▸
-            mul_assoc _ (b ^ n) _ ▸ mul_pow _ b n ▸ mul_mem (coeff_repPoly_mem hr n)
-              (mul_mem (pow_mem ((Pi.div_mul_cancel_of_forall_imp hab).symm ▸ ha) n) (pow_mem hb _))
-      exact (@isOpen_compl_iff X _ (generateFrom _)).1 <| isOpen_generateFrom_of_mem <|
-        Or.intro_right _ ⟨{ x | (r * b ^ (repPoly hr).natDegree) x ≠ 0},
-          ⟨hA.forall_isOpen _ this, hA.forall_isCompact _ this⟩, rfl⟩
+    · exact (@isOpen_compl_iff X _ (generateFrom _)).1 <| isOpen_generateFrom_of_mem <|
+        Or.intro_right _ ⟨{ x | (r * b ^ (repPoly hr).natDegree) x ≠ 0 },
+          ⟨hA.forall_isOpen _ <| Pi.mul_pow_mem_of_mem_closure_union_div_of_natDegree_repPoly_le
+            ha hb hab hr <| Nat.le_refl _, hA.forall_isCompact _ <|
+              Pi.mul_pow_mem_of_mem_closure_union_div_of_natDegree_repPoly_le ha hb hab hr <|
+                Nat.le_refl _⟩, rfl⟩
     · exact (@isOpen_compl_iff X _ (generateFrom _)).1 <| isOpen_generateFrom_of_mem <|
         Or.intro_right _ ⟨{ x | a x ≠ 0}, ⟨hA.forall_isOpen _ ha, hA.forall_isCompact _ ha⟩, rfl⟩
   · refine @IsClosed.inter X _ _ (generateFrom _) ?_ ?_
@@ -328,18 +317,12 @@ lemma vanishing_set_is_patch_of_mem_closure_union_div
     Pi.vanishing_set_eq_inter_union_inter_of_mem_closure_union_div hab hr ▸
     @IsClosed.union X _ _ (generateFrom _) ?_ ?_
   · refine @IsClosed.inter X _ _ (generateFrom _) ?_ ?_
-    · have : (r * b ^ (repPoly hr).natDegree) ∈ A := by
-        have : r * b ^ (repPoly hr).natDegree =
-            ((repPoly hr).eval (a / b)) * b ^ (repPoly hr).natDegree :=
-          congrFun (congrArg _ (repPoly_eval_eq hr).symm) _
-        exact this ▸ eval_eq_sum (R := Π x : X, i x) ▸ sum_def (S := Π x : X, i x) (repPoly hr) _ ▸
-          Finset.sum_mul (R := Π x : X, i x) .. ▸ A.sum_mem fun n hnr =>
-            mul_assoc ((repPoly hr).coeff n) .. ▸
-            (Nat.add_sub_of_le <| le_natDegree_of_mem_supp n hnr) ▸ pow_add b n _ ▸
-            mul_assoc _ (b ^ n) _ ▸ mul_pow _ b n ▸ mul_mem (coeff_repPoly_mem hr n)
-              (mul_mem (pow_mem ((Pi.div_mul_cancel_of_forall_imp hab).symm ▸ ha) n) (pow_mem hb _))
-      exact (@isOpen_compl_iff X _ (generateFrom _)).1 <| isOpen_generateFrom_of_mem <|
-        Or.intro_left _ ⟨hA.forall_isOpen _ this, hA.forall_isCompact _ this⟩
+    · exact (@isOpen_compl_iff X _ (generateFrom _)).1 <| isOpen_generateFrom_of_mem <|
+        Or.intro_left _ ⟨hA.forall_isOpen _ <|
+          Pi.mul_pow_mem_of_mem_closure_union_div_of_natDegree_repPoly_le ha hb hab hr <|
+            Nat.le_refl _, hA.forall_isCompact _ <|
+              Pi.mul_pow_mem_of_mem_closure_union_div_of_natDegree_repPoly_le ha hb hab hr <|
+                Nat.le_refl _⟩
     · exact (@isOpen_compl_iff X _ (generateFrom _)).1 <| isOpen_generateFrom_of_mem <|
         Or.intro_right _ ⟨{ x | a x ≠ 0}, ⟨hA.forall_isOpen _ ha, hA.forall_isCompact _ ha⟩, rfl⟩
   · refine @IsClosed.inter X _ _ (generateFrom _) ?_ ?_
@@ -393,18 +376,7 @@ lemma SpringLike'.isClosed_vanishing_set_of_forall_map_apply_le_of_forall_ne_zer
       have hrby := Pi.mul_pow_natDegree_repPoly_apply_eq_zero_of_apply_eq_zero hry hr
       by_cases hbx : b x = 0
       · sorry
-      · refine Pi.vanishing_set_eq_inter_union_inter_of_mem_closure_union_div₁ hab hr ▸
-          Or.intro_left _ ⟨?_, hbx⟩
-        · have : (r * b ^ (repPoly hr).natDegree) ∈ A := by
-            have : r * b ^ (repPoly hr).natDegree =
-                ((repPoly hr).eval (a / b)) * b ^ (repPoly hr).natDegree :=
-              congrFun (congrArg _ (repPoly_eval_eq hr).symm) _
-            exact this ▸ eval_eq_sum (R := Π x : X, i x) ▸
-              sum_def (S := Π x : X, i x) (repPoly hr) _ ▸
-              Finset.sum_mul (R := Π x : X, i x) .. ▸ A.sum_mem fun n hnr =>
-                mul_assoc ((repPoly hr).coeff n) .. ▸
-                (Nat.add_sub_of_le <| le_natDegree_of_mem_supp n hnr) ▸ pow_add b n _ ▸
-                mul_assoc _ (b ^ n) _ ▸ mul_pow _ b n ▸ mul_mem (coeff_repPoly_mem hr n)
-                  (mul_mem (pow_mem ((Pi.div_mul_cancel_of_forall_imp hab).symm ▸ ha) n)
-                  (pow_mem hb _))
-          exact (IsClosed.mem_iff_closure_subset ⟨hA.forall_isOpen _ this⟩).1 hrby hxy
+      · exact Pi.vanishing_set_eq_inter_union_inter_of_mem_closure_union_div₁ hab hr ▸
+          Or.intro_left _ ⟨(IsClosed.mem_iff_closure_subset ⟨hA.forall_isOpen _ <|
+            Pi.mul_pow_mem_of_mem_closure_union_div_of_natDegree_repPoly_le ha hb hab hr <|
+              Nat.le_refl _⟩).1 hrby hxy, hbx⟩
