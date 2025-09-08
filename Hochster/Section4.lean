@@ -405,9 +405,11 @@ lemma SpringLike'.isClosed_vanishing_set_of_forall_map_apply_le_of_forall_ne_zer
           · by_cases hrny : (repPoly hr).coeff n y = 0
             · exact hrny ▸ map_zero (v p) ▸ (zero_mul (v p _)).symm ▸ (zero_mul ((v p _) ^ _)).symm
                 ▸ pow_pos ((pos_iff (v p)).2 fun hby => hay <| hab y hby) _
-            · have := hAv.forall_le_of_ne p ((repPoly hr).coeff n) (coeff_repPoly_mem hr n) hrny
-
+            · refine mul_assoc (v p _) .. ▸ lt_of_le_of_lt
+                (mul_le_of_le_one_left (zero_le (_ * (v p) _ ^ _))
+                (hAv.forall_le_of_ne p _ (coeff_repPoly_mem hr n) hrny)) ?_
               · sorry
+
         sorry
       · exact Pi.vanishing_set_eq_inter_union_inter_of_mem_closure_union_div₁ hab hr ▸
           Or.intro_left _ ⟨(IsClosed.mem_iff_closure_subset ⟨hA.forall_isOpen _ <|
