@@ -397,6 +397,17 @@ lemma SpringLike'.isClosed_vanishing_set_of_forall_map_apply_le_of_forall_ne_zer
               Finset.mem_range_succ_iff.1 (Finset.mem_sdiff.1 hn).1) ▸ Nat.add_sub_self_left .. ▸
               pow_add (b y) .. ▸ mul_assoc ((a y / _) ^ n) .. ▸ mul_pow (a y / _) .. ▸
               (div_mul_cancel₀ (a y) (fun hby => hay <| hab y hby)).symm ▸ rfl
+        have hvpbry : v p (-((repPoly hr).coeff 0 y * b y ^ (repPoly hr).natDegree)) <
+            (v p (b y)) ^ (repPoly hr).natDegree := by
+          refine habry ▸ map_sum_lt (v p) (pow_ne_zero _ <| (ne_zero_iff (v p)).2
+            fun hby => hay <| hab y hby) fun n hn => map_mul (v p) .. ▸ (map_mul (v p) ..).symm ▸
+              map_pow (v p) _ (_ - n) ▸ ?_
+          · by_cases hrny : (repPoly hr).coeff n y = 0
+            · exact hrny ▸ map_zero (v p) ▸ (zero_mul (v p _)).symm ▸ (zero_mul ((v p _) ^ _)).symm
+                ▸ pow_pos ((pos_iff (v p)).2 fun hby => hay <| hab y hby) _
+            · have := hAv.forall_le_of_ne p ((repPoly hr).coeff n) (coeff_repPoly_mem hr n) hrny
+
+              · sorry
         sorry
       · exact Pi.vanishing_set_eq_inter_union_inter_of_mem_closure_union_div₁ hab hr ▸
           Or.intro_left _ ⟨(IsClosed.mem_iff_closure_subset ⟨hA.forall_isOpen _ <|
