@@ -383,12 +383,21 @@ lemma SpringLike'.isClosed_vanishing_set_of_forall_map_apply_le_of_forall_ne_zer
       by_cases hbx : b x = 0
       · let p : σ(X) := ⟨(y, x), hxy⟩
         have hvpab := lt_of_le_of_ne (h1 p hay) (imp_not_comm.1 (h2 p hay) (hab x hbx))
-        have := mul_eq_zero_of_left ((Finset.sum_sdiff (f := fun n => (repPoly hr).coeff .. * _) <|
-          Finset.singleton_subset_iff.mpr <| Finset.mem_range.mpr <| (1 : ℕ).le_add_left _) ▸
-          Pi.polynomial_eval_apply' (repPoly hr) _ y ▸ Set.mem_setOf_eq ▸ repPoly_eval_eq hr ▸ hry)
-          (b y ^ (repPoly hr).natDegree)
-        simp only [add_mul, add_eq_zero_iff_neg_eq', Pi.div_apply, Finset.sum_singleton, pow_zero,
-          mul_one, Finset.sum_mul] at this
+        have habry : -((repPoly hr).coeff 0 y * b y ^ (repPoly hr).natDegree) =
+            ∑ n ∈ Finset.range ((repPoly hr).natDegree + 1) \ {0},
+              (repPoly hr).coeff n y * a y ^ n * b y ^ ((repPoly hr).natDegree - n) := by
+          have := mul_eq_zero_of_left ((Finset.sum_sdiff (f := fun n => (repPoly hr).coeff .. * _)
+            <| Finset.singleton_subset_iff.mpr <| Finset.mem_range.mpr <| (1 : ℕ).le_add_left _) ▸
+            Pi.polynomial_eval_apply' (repPoly hr) _ y ▸ Set.mem_setOf_eq ▸ repPoly_eval_eq hr ▸
+              hry) (b y ^ (repPoly hr).natDegree)
+          simp only [add_mul, add_eq_zero_iff_neg_eq', Pi.div_apply, Finset.sum_singleton, pow_zero,
+            mul_one, Finset.sum_mul] at this
+          refine this ▸ Finset.sum_congr rfl fun n hn => mul_assoc ((repPoly hr).coeff ..) .. ▸
+            (mul_assoc ((repPoly hr).coeff ..) ..).symm ▸ congr_arg₂ _ rfl ?_
+            --( ?_)
+          · refine (Nat.add_sub_of_le <| Finset.mem_range_succ_iff.1 (Finset.mem_sdiff.1 hn).1) ▸
+              Nat.add_sub_self_left .. ▸ pow_add (b y) .. ▸ mul_assoc ((a y / b y) ^ n) .. ▸ ?_
+            sorry
         sorry
       · exact Pi.vanishing_set_eq_inter_union_inter_of_mem_closure_union_div₁ hab hr ▸
           Or.intro_left _ ⟨(IsClosed.mem_iff_closure_subset ⟨hA.forall_isOpen _ <|
