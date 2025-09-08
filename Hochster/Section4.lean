@@ -390,14 +390,13 @@ lemma SpringLike'.isClosed_vanishing_set_of_forall_map_apply_le_of_forall_ne_zer
             <| Finset.singleton_subset_iff.mpr <| Finset.mem_range.mpr <| (1 : ℕ).le_add_left _) ▸
             Pi.polynomial_eval_apply' (repPoly hr) _ y ▸ Set.mem_setOf_eq ▸ repPoly_eval_eq hr ▸
               hry) (b y ^ (repPoly hr).natDegree)
-          simp only [add_mul, add_eq_zero_iff_neg_eq', Pi.div_apply, Finset.sum_singleton, pow_zero,
-            mul_one, Finset.sum_mul] at this
-          refine this ▸ Finset.sum_congr rfl fun n hn => mul_assoc ((repPoly hr).coeff ..) .. ▸
-            (mul_assoc ((repPoly hr).coeff ..) ..).symm ▸ congr_arg₂ _ rfl ?_
-            --( ?_)
-          · refine (Nat.add_sub_of_le <| Finset.mem_range_succ_iff.1 (Finset.mem_sdiff.1 hn).1) ▸
-              Nat.add_sub_self_left .. ▸ pow_add (b y) .. ▸ mul_assoc ((a y / b y) ^ n) .. ▸ ?_
-            sorry
+          simp only [add_mul, add_eq_zero_iff_neg_eq', Finset.sum_singleton, pow_zero, mul_one,
+            Finset.sum_mul] at this
+          exact this ▸ Finset.sum_congr rfl fun n hn => mul_assoc ((repPoly hr).coeff ..) .. ▸
+            (mul_assoc ((repPoly hr).coeff ..) ..).symm ▸ (Nat.add_sub_of_le <|
+              Finset.mem_range_succ_iff.1 (Finset.mem_sdiff.1 hn).1) ▸ Nat.add_sub_self_left .. ▸
+              pow_add (b y) .. ▸ mul_assoc ((a y / _) ^ n) .. ▸ mul_pow (a y / _) .. ▸
+              (div_mul_cancel₀ (a y) (fun hby => hay <| hab y hby)).symm ▸ rfl
         sorry
       · exact Pi.vanishing_set_eq_inter_union_inter_of_mem_closure_union_div₁ hab hr ▸
           Or.intro_left _ ⟨(IsClosed.mem_iff_closure_subset ⟨hA.forall_isOpen _ <|
