@@ -67,19 +67,19 @@ namespace MemClosurePairs
 lemma map_apply_le_of_pi_valuation_of_v_extension {X : Type*} [TopologicalSpace X]
     {i : X → Type*} [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
     {A : Subring (Π x : X, i x)} {a b : Π x : X, i x} (hab : ∀ x : X, b x = 0 → a x = 0)
-    {p : σ(X)} (hap : a p.z.1 ≠ 0) {hAab : SpringLike' (Subring.closure (A ∪ {a / b}))}
+    {p : σ(X)} (hap : a p.z.1 ≠ 0) {hAab : SpringLike' (closure (A.carrier.insert (a / b)))}
     (hAabv : hAab.isIndex v) : v p (a p.z.1) ≤ v p (b p.z.1) := by
   refine Pi.div_mul_cancel_of_forall_imp hab ▸ p.map_mul_apply_of_pi_valuation v _ b ▸
     (mul_le_iff_le_one_left ?_).2 ?_
   · exact (v p).pos_iff.2 fun hbp => hap (hab p.z.1 hbp)
   · refine hAabv.forall_le_of_ne p (a / b) ?_ (fun habp => ?_)
-    · exact mem_closure_of_mem <| Set.mem_union_right _ rfl
+    · exact mem_closure_of_mem <| A.carrier.mem_insert (a / b)
     · exact Or.elim (div_eq_zero_iff.mp habp) hap (fun hbp => hap (hab p.z.1 hbp))
 
 lemma ne_zero_of_pi_valuation_of_v_extension_of_map_apply_eq {X : Type*} [TopologicalSpace X]
     {i : X → Type*} [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
     {A : Subring (Π x : X, i x)} {a b : Π x : X, i x} (hab : ∀ x : X, b x = 0 → a x = 0)
-    {p : σ(X)} (hap : a p.z.1 ≠ 0) {hAab : SpringLike' (Subring.closure (A ∪ {a / b}))}
+    {p : σ(X)} (hap : a p.z.1 ≠ 0) {hAab : SpringLike' (closure (A.carrier.insert (a / b)))}
     (hAabv : hAab.isIndex v) (hvpab : v p (a p.z.1) = v p (b p.z.1)) :
     a p.z.2 ≠ 0 := by
   intro h
@@ -87,7 +87,7 @@ lemma ne_zero_of_pi_valuation_of_v_extension_of_map_apply_eq {X : Type*} [Topolo
   have h2 : (a / b) p.z.1 ≠ 0 := fun h => hap <| hab p.z.1 <|
     (or_iff_not_imp_left.1 <| div_eq_zero_iff.1 <| Pi.div_apply a b p.z.1 ▸ h) hap
   have h3 : v p ((a / b) p.z.1) = 1 ↔ (a / b) p.z.2 ≠ 0 :=
-    (hAabv.forall_iff_of_ne p (a / b) (mem_closure_of_mem <| Set.mem_union_right _ rfl) h2)
+    (hAabv.forall_iff_of_ne p (a / b) (mem_closure_of_mem <| A.carrier.mem_insert _) h2)
   have h4 : v p ((a / b) p.z.1) = 1 :=
     (v p).map_div (a p.z.1) (b p.z.1) ▸
       (div_eq_one_iff_eq (hvpab ▸ (v p).ne_zero_iff.2 hap)).2 hvpab
@@ -98,7 +98,7 @@ end MemClosurePairs
 namespace Subring
 
 theorem exists_polynomial_of_mem_closure {R : Type*} [CommRing R] {A : Subring R} {x y : R}
-    (hy : y ∈ closure (A.carrier ∪ {x})) :
+    (hy : y ∈ closure (A.carrier.insert x)) :
     ∃ p : Polynomial R, p.eval x = y ∧ ∀ n : ℕ, p.coeff n ∈ A := by
   refine closure_induction (fun y hy => ?_) ?_ ?_
     (fun y1 y2 hy1 hy2 ⟨p1, hpy1, hp1⟩ ⟨p2, hpy2, hp2⟩ => ?_) (fun y hy ⟨p, hpy, hp⟩ => ?_)
@@ -108,7 +108,7 @@ theorem exists_polynomial_of_mem_closure {R : Type*} [CommRing R] {A : Subring R
         fun n => coeff_X (R := R) ▸ ite_mem.mpr ⟨fun hn => one_mem A, fun hn => zero_mem A⟩⟩
     · exact ⟨C y, eval_C,
         fun n => coeff_C (R := R) ▸
-          ite_mem.mpr ⟨fun hn => or_iff_not_imp_right.1 hy hyx, fun hn => zero_mem A⟩⟩
+          ite_mem.mpr ⟨fun hn => A.carrier.mem_of_mem_insert_of_ne hy hyx, fun hn => zero_mem A⟩⟩
   · exact ⟨0, eval_zero, fun n => coeff_zero (R := R) n ▸ zero_mem A⟩
   · exact ⟨1, eval_one, fun n =>
       coeff_one (R := R) ▸ ite_mem.mpr ⟨fun hn => one_mem A, fun hn => zero_mem A⟩⟩
@@ -116,28 +116,29 @@ theorem exists_polynomial_of_mem_closure {R : Type*} [CommRing R] {A : Subring R
       fun n => coeff_add p1 p2 n ▸ A.add_mem (hp1 n) (hp2 n)⟩
   · exact ⟨-p, hpy ▸ eval_neg p x, fun n => coeff_neg p n ▸ A.neg_mem (hp n)⟩
   · exact ⟨p1 * p2, eval_mul (R := R) ▸ hpy1 ▸ hpy2 ▸ rfl, fun n =>
-      coeff_mul p1 p2 n ▸ Subring.sum_mem A fun c hc => Subring.mul_mem A (hp1 c.1) (hp2 c.2)⟩
+      coeff_mul p1 p2 n ▸ A.sum_mem fun c hc => A.mul_mem (hp1 c.1) (hp2 c.2)⟩
 
 theorem exists_polynomial_of_mem_closure₁ {R : Type*} [CommRing R] {s : Set R} {x y : R}
-    (hy : y ∈ closure (s ∪ {x})) :
+    (hy : y ∈ closure (s.insert x)) :
     ∃ p : Polynomial R, p.eval x = y ∧ ∀ n : ℕ, p.coeff n ∈ closure s := by
-  have : closure (s ∪ {x}) = closure ((closure s) ∪ {x}) :=
-    closure_union s {x} ▸ closure_union (closure s) {x} ▸ (closure_eq (closure s)).symm ▸ rfl
-  exact exists_polynomial_of_mem_closure (this.symm ▸ hy)
+  have : closure (s.insert x) = closure ((closure s).carrier.insert x) := by
+    rw [Set.insert, Set.insert]
+    exact closure_union {x} s ▸ closure_union {x} (closure s) ▸ (closure_eq (closure s)).symm ▸ rfl
+  exact exists_polynomial_of_mem_closure (this ▸ hy)
 
 /--
 `Subring.repPoly hy = (Subring.exists_polynomial_of_mem_closure hy).choose`.
 -/
 noncomputable def repPoly {R : Type*} [CommRing R] {A : Subring R} {x y : R}
-    (hy : y ∈ closure (A.carrier ∪ {x})) :=
+    (hy : y ∈ closure (A.carrier.insert x)) :=
   (exists_polynomial_of_mem_closure hy).choose
 
 lemma repPoly_eval_eq {R : Type*} [CommRing R] {A : Subring R} {x y : R}
-    (hy : y ∈ closure (A.carrier ∪ {x})) : (repPoly hy).eval x = y :=
+    (hy : y ∈ closure (A.carrier.insert x)) : (repPoly hy).eval x = y :=
   (exists_polynomial_of_mem_closure hy).choose_spec.1
 
 lemma coeff_repPoly_mem {R : Type*} [CommRing R] {A : Subring R} {x y : R}
-    (hy : y ∈ closure (A.carrier ∪ {x})) (n : ℕ) : (repPoly hy).coeff n ∈ A :=
+    (hy : y ∈ closure (A.carrier.insert x)) (n : ℕ) : (repPoly hy).coeff n ∈ A :=
   (exists_polynomial_of_mem_closure hy).choose_spec.2 n
 
 end Subring
@@ -156,10 +157,10 @@ lemma polynomial_eval_apply' {ι : Type*} {G : ι → Type*} [(i : ι) → Semir
   rw [eval_eq_sum_range]
   exact Finset.sum_apply i (Finset.range (p.natDegree + 1)) fun n => p.coeff n * f ^ n
 
-lemma mul_pow_mem_of_mem_closure_union_div_of_natDegree_repPoly_le
+lemma mul_pow_mem_of_mem_closure_insert_div_of_natDegree_repPoly_le
     {ι : Type*} {G : ι → Type*} [(i : ι) → Field (G i)] {A : Subring ((i : ι) → G i)}
     {f g h : (i : ι) → G i} (hf : f ∈ A) (hg : g ∈ A) (hfg : ∀ i : ι, g i = 0 → f i = 0)
-    (hh : h ∈ closure (A.carrier ∪ {f / g})) {n : ℕ} (hn : (repPoly hh).natDegree ≤ n) :
+    (hh : h ∈ closure (A.carrier.insert (f / g))) {n : ℕ} (hn : (repPoly hh).natDegree ≤ n) :
     h * g ^ n ∈ A := by
   have : h * g ^ n = ((repPoly hh).eval (f / g)) * g ^ n :=
     congrFun (congrArg _ (repPoly_eval_eq hh).symm) _
@@ -173,7 +174,7 @@ lemma mul_pow_mem_of_mem_closure_union_div_of_natDegree_repPoly_le
 lemma constantCoeff_repPoly_apply_ne_zero_of_apply_eq_zero_of_apply_ne_zero
     {ι : Type*} {i : ι} {G : ι → Type*} [(i : ι) → Field (G i)]
     {A : Subring ((i : ι) → G i)} {f g h : (i : ι) → G i}
-    (hfi : f i = 0) (hhi : h i ≠ 0) (hh : h ∈ closure (A.carrier ∪ {f / g})) :
+    (hfi : f i = 0) (hhi : h i ≠ 0) (hh : h ∈ closure (A.carrier.insert (f / g))) :
     (repPoly hh).constantCoeff i ≠ 0 := by
   have := repPoly_eval_eq hh ▸ hhi
   simp only [polynomial_eval_apply, div_apply, hfi, zero_div, zero_pow_eq, sum, mul_ite, mul_one,
@@ -183,15 +184,15 @@ lemma constantCoeff_repPoly_apply_ne_zero_of_apply_eq_zero_of_apply_ne_zero
 lemma mul_pow_natDegree_repPoly_apply_ne_zero_of_apply_ne_zero_of_apply_ne_zero
     {ι : Type*} {i : ι} {G : ι → Type*} [(i : ι) → Field (G i)]
     {A : Subring ((i : ι) → G i)} {f g h : (i : ι) → G i}
-    (hgi : g i ≠ 0) (hhi : h i ≠ 0) (hh : h ∈ closure (A.carrier ∪ {f / g})) :
+    (hgi : g i ≠ 0) (hhi : h i ≠ 0) (hh : h ∈ closure (A.carrier.insert (f / g))) :
     (h * g ^ (repPoly hh).natDegree) i ≠ 0 := by
   simp only [mul_apply, pow_apply, ne_eq, mul_eq_zero, pow_eq_zero_iff', not_or, not_and]
   exact ⟨hhi, fun hgi' _ => hgi hgi'⟩
 
-lemma support_eq_inter_union_inter_of_mem_closure_union_div
+lemma support_eq_inter_union_inter_of_mem_closure_insert_div
     {ι : Type*} {G : ι → Type*} [(i : ι) → Field (G i)] {A : Subring ((i : ι) → G i)}
     {f g h : (i : ι) → G i} (hfg : ∀ i : ι, g i = 0 → f i = 0)
-    (hh : h ∈ closure (A.carrier ∪ {f / g})) :
+    (hh : h ∈ closure (A.carrier.insert (f / g))) :
     { i : ι | h i ≠ 0 } =
       ({ i : ι | (h * g ^ (repPoly hh).natDegree) i ≠ 0 } ∩ { i : ι | f i ≠ 0 }) ∪
         ({ i : ι | (repPoly hh).constantCoeff i ≠ 0 } ∩ { i : ι | f i = 0 }) := by
@@ -213,7 +214,7 @@ lemma support_eq_inter_union_inter_of_mem_closure_union_div
 lemma constantCoeff_repPoly_apply_eq_zero_of_apply_eq_zero_of_apply_eq_zero
     {ι : Type*} {i : ι} {G : ι → Type*} [(i : ι) → Field (G i)]
     {A : Subring ((i : ι) → G i)} {f g h : (i : ι) → G i}
-    (hfi : f i = 0) (hhi : h i = 0) (hh : h ∈ closure (A.carrier ∪ {f / g})) :
+    (hfi : f i = 0) (hhi : h i = 0) (hh : h ∈ closure (A.carrier.insert (f / g))) :
     (repPoly hh).constantCoeff i = 0 := by
   have := polynomial_eval_apply (repPoly hh) (f / g) i ▸ repPoly_eval_eq hh ▸ hhi
   simp only [sum, div_apply, hfi, zero_div, zero_pow_eq, mul_ite, mul_one, mul_zero,
@@ -223,14 +224,14 @@ lemma constantCoeff_repPoly_apply_eq_zero_of_apply_eq_zero_of_apply_eq_zero
 lemma mul_pow_natDegree_repPoly_apply_eq_zero_of_apply_eq_zero
     {ι : Type*} {i : ι} {G : ι → Type*} [(i : ι) → Field (G i)]
     {A : Subring ((i : ι) → G i)} {f g h : (i : ι) → G i}
-    (hhi : h i = 0) (hh : h ∈ closure (A.carrier ∪ {f / g})) :
+    (hhi : h i = 0) (hh : h ∈ closure (A.carrier.insert (f / g))) :
     (h * g ^ (repPoly hh).natDegree) i = 0 := by
   simpa only [mul_apply, mul_eq_zero] using Or.intro_left _ hhi
 
-lemma vanishing_set_eq_inter_union_inter_of_mem_closure_union_div
+lemma vanishing_set_eq_inter_union_inter_of_mem_closure_insert_div
     {ι : Type*} {G : ι → Type*} [(i : ι) → Field (G i)] {A : Subring ((i : ι) → G i)}
     {f g h : (i : ι) → G i} (hfg : ∀ i : ι, g i = 0 → f i = 0)
-    (hh : h ∈ closure (A.carrier ∪ {f / g})) :
+    (hh : h ∈ closure (A.carrier.insert (f / g))) :
     { i : ι | h i = 0 } =
       ({ i : ι | (h * g ^ (repPoly hh).natDegree) i = 0 } ∩ { i : ι | f i ≠ 0 }) ∪
         ({ i : ι | (repPoly hh).constantCoeff i = 0 } ∩ { i : ι | f i = 0 }) := by
@@ -248,10 +249,10 @@ lemma vanishing_set_eq_inter_union_inter_of_mem_closure_union_div
           zero_div, zero_pow_eq, mul_ite, mul_one, mul_zero, Finset.sum_ite_eq', ite_eq_right_iff]
             using fun _ => hhi
 
-lemma vanishing_set_eq_inter_union_inter_of_mem_closure_union_div₁
+lemma vanishing_set_eq_inter_union_inter_of_mem_closure_insert_div₁
     {ι : Type*} {G : ι → Type*} [(i : ι) → Field (G i)] {A : Subring ((i : ι) → G i)}
     {f g h : (i : ι) → G i} (hfg : ∀ i : ι, g i = 0 → f i = 0)
-    (hh : h ∈ closure (A.carrier ∪ {f / g})) :
+    (hh : h ∈ closure (A.carrier.insert (f / g))) :
     { i : ι | h i = 0 } =
       ({ i : ι | (h * g ^ (repPoly hh).natDegree) i = 0 } ∩ { i : ι | g i ≠ 0 }) ∪
         ({ i : ι | (repPoly hh).constantCoeff i = 0 } ∩ { i : ι | g i = 0 }) := by
@@ -274,22 +275,22 @@ end Pi
 
 namespace SpringLike'
 
-lemma support_is_patch_of_mem_closure_union_div
+lemma support_is_patch_of_mem_closure_insert_div
     {X : Type*} [TopologicalSpace X] {i : X → Type*}[(x : X) → Field (i x)]
     {A : Subring (Π x : X, i x)} (hA : SpringLike' A) {a b r : Π x : X, i x}
     (ha : a ∈ A) (hb : b ∈ A) (hab : ∀ x : X, b x = 0 → a x = 0)
-    (hr : r ∈ closure (A.carrier ∪ {a / b})) :
+    (hr : r ∈ closure (A.carrier.insert (a / b))) :
     IsClosed (X := ConstructibleTop X) { x : X | r x ≠ 0 } := by
   haveI := hA.spectralSpace
   refine instTopologicalSpace_eq_generateFrom_isOpen_isCompact_union_compl_image X ▸
-    Pi.support_eq_inter_union_inter_of_mem_closure_union_div hab hr ▸
+    Pi.support_eq_inter_union_inter_of_mem_closure_insert_div hab hr ▸
     @IsClosed.union X _ _ (generateFrom _) ?_ ?_
   · refine @IsClosed.inter X _ _ (generateFrom _) ?_ ?_
     · exact (@isOpen_compl_iff X _ (generateFrom _)).1 <| isOpen_generateFrom_of_mem <|
         Or.intro_right _ ⟨{ x | (r * b ^ (repPoly hr).natDegree) x ≠ 0 },
-          ⟨hA.forall_isOpen _ <| Pi.mul_pow_mem_of_mem_closure_union_div_of_natDegree_repPoly_le
+          ⟨hA.forall_isOpen _ <| Pi.mul_pow_mem_of_mem_closure_insert_div_of_natDegree_repPoly_le
             ha hb hab hr <| Nat.le_refl _, hA.forall_isCompact _ <|
-              Pi.mul_pow_mem_of_mem_closure_union_div_of_natDegree_repPoly_le ha hb hab hr <|
+              Pi.mul_pow_mem_of_mem_closure_insert_div_of_natDegree_repPoly_le ha hb hab hr <|
                 Nat.le_refl _⟩, rfl⟩
     · exact (@isOpen_compl_iff X _ (generateFrom _)).1 <| isOpen_generateFrom_of_mem <|
         Or.intro_right _ ⟨{ x | a x ≠ 0}, ⟨hA.forall_isOpen _ ha, hA.forall_isCompact _ ha⟩, rfl⟩
@@ -301,33 +302,33 @@ lemma support_is_patch_of_mem_closure_union_div
     · exact (@isOpen_compl_iff X _ (generateFrom _)).1 <| isOpen_generateFrom_of_mem <|
         Or.intro_left _ ⟨hA.forall_isOpen a ha, hA.forall_isCompact a ha⟩
 
-lemma isCompact_support_of_mem_closure_union_div
+lemma isCompact_support_of_mem_closure_insert_div
     {X : Type*} [TopologicalSpace X] {i : X → Type*}[(x : X) → Field (i x)]
     {A : Subring (Π x : X, i x)} (hA : SpringLike' A) {a b r : Π x : X, i x}
     (ha : a ∈ A) (hb : b ∈ A) (hab : ∀ x : X, b x = 0 → a x = 0)
-    (hr : r ∈ closure (A.carrier ∪ {a / b})) :
+    (hr : r ∈ closure (A.carrier.insert (a / b))) :
     IsCompact { x : X | r x ≠ 0 } := by
   haveI := hA.spectralSpace
   exact isCompact_iff_compactSpace.mpr ((Subtype.range_coe_subtype ▸
     compactSpace_of_isEmbedding_of_isClosed_constructibleTop_range IsEmbedding.subtypeVal)
-      (support_is_patch_of_mem_closure_union_div hA ha hb hab hr))
+      (support_is_patch_of_mem_closure_insert_div hA ha hb hab hr))
 
-lemma vanishing_set_is_patch_of_mem_closure_union_div
+lemma vanishing_set_is_patch_of_mem_closure_insert_div
     {X : Type*} [TopologicalSpace X] {i : X → Type*}[(x : X) → Field (i x)]
     {A : Subring (Π x : X, i x)} (hA : SpringLike' A) {a b r : Π x : X, i x}
     (ha : a ∈ A) (hb : b ∈ A) (hab : ∀ x : X, b x = 0 → a x = 0)
-    (hr : r ∈ closure (A.carrier ∪ {a / b})) :
+    (hr : r ∈ closure (A.carrier.insert (a / b))) :
     IsClosed (X := ConstructibleTop X) { x : X | r x = 0 } := by
   haveI := hA.spectralSpace
   refine instTopologicalSpace_eq_generateFrom_isOpen_isCompact_union_compl_image X ▸
-    Pi.vanishing_set_eq_inter_union_inter_of_mem_closure_union_div hab hr ▸
+    Pi.vanishing_set_eq_inter_union_inter_of_mem_closure_insert_div hab hr ▸
     @IsClosed.union X _ _ (generateFrom _) ?_ ?_
   · refine @IsClosed.inter X _ _ (generateFrom _) ?_ ?_
     · exact (@isOpen_compl_iff X _ (generateFrom _)).1 <| isOpen_generateFrom_of_mem <|
         Or.intro_left _ ⟨hA.forall_isOpen _ <|
-          Pi.mul_pow_mem_of_mem_closure_union_div_of_natDegree_repPoly_le ha hb hab hr <|
+          Pi.mul_pow_mem_of_mem_closure_insert_div_of_natDegree_repPoly_le ha hb hab hr <|
             Nat.le_refl _, hA.forall_isCompact _ <|
-              Pi.mul_pow_mem_of_mem_closure_union_div_of_natDegree_repPoly_le ha hb hab hr <|
+              Pi.mul_pow_mem_of_mem_closure_insert_div_of_natDegree_repPoly_le ha hb hab hr <|
                 Nat.le_refl _⟩
     · exact (@isOpen_compl_iff X _ (generateFrom _)).1 <| isOpen_generateFrom_of_mem <|
         Or.intro_right _ ⟨{ x | a x ≠ 0}, ⟨hA.forall_isOpen _ ha, hA.forall_isCompact _ ha⟩, rfl⟩
@@ -338,16 +339,16 @@ lemma vanishing_set_is_patch_of_mem_closure_union_div
     · exact (@isOpen_compl_iff X _ (generateFrom _)).1 <| isOpen_generateFrom_of_mem <|
         Or.intro_left _ ⟨hA.forall_isOpen a ha, hA.forall_isCompact a ha⟩
 
-lemma isCompact_vanishing_set_of_mem_closure_union_div
+lemma isCompact_vanishing_set_of_mem_closure_insert_div
     {X : Type*} [TopologicalSpace X] {i : X → Type*}[(x : X) → Field (i x)]
     {A : Subring (Π x : X, i x)} (hA : SpringLike' A) {a b r : Π x : X, i x}
     (ha : a ∈ A) (hb : b ∈ A) (hab : ∀ x : X, b x = 0 → a x = 0)
-    (hr : r ∈ closure (A.carrier ∪ {a / b})) :
+    (hr : r ∈ closure (A.carrier.insert (a / b))) :
     IsCompact { x : X | r x = 0 } := by
   haveI := hA.spectralSpace
   exact isCompact_iff_compactSpace.mpr ((Subtype.range_coe_subtype ▸
     compactSpace_of_isEmbedding_of_isClosed_constructibleTop_range IsEmbedding.subtypeVal)
-      (vanishing_set_is_patch_of_mem_closure_union_div hA ha hb hab hr))
+      (vanishing_set_is_patch_of_mem_closure_insert_div hA ha hb hab hr))
 
 end SpringLike'
 
@@ -365,15 +366,15 @@ lemma SpringLike'.isClosed_vanishing_set_of_forall_map_apply_le_of_forall_ne_zer
     {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
     {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
     {hA : SpringLike' A} (hAv : hA.isIndex v) {a b r : Π x : X, i x} (ha : a ∈ A) (hb : b ∈ A)
-    (hab : ∀ x : X, b x = 0 → a x = 0) (hr : r ∈ closure (A.carrier ∪ {a / b}))
+    (hab : ∀ x : X, b x = 0 → a x = 0) (hr : r ∈ closure (A.carrier.insert (a / b)))
     (h1 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) ≤ v p (b p.z.1))
     (h2 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) = v p (b p.z.1) → a p.z.2 ≠ 0) :
     IsClosed { x : X | r x = 0 } := by
   haveI := hA.spectralSpace
   refine (isClosed_iff_forall_closure_subset_of_isClosed_constructibleTop (X := X)
-    (hA.vanishing_set_is_patch_of_mem_closure_union_div ha hb hab hr)).2 fun y hry => ?_
+    (hA.vanishing_set_is_patch_of_mem_closure_insert_div ha hb hab hr)).2 fun y hry => ?_
   · by_cases hay : a y = 0
-    · refine Pi.vanishing_set_eq_inter_union_inter_of_mem_closure_union_div hab hr ▸
+    · refine Pi.vanishing_set_eq_inter_union_inter_of_mem_closure_insert_div hab hr ▸
         Set.subset_union_of_subset_right ((IsClosed.closure_subset_iff ?_).2 ?_) _
       · exact IsClosed.inter ⟨hA.forall_isOpen _ (coeff_repPoly_mem hr 0)⟩ ⟨hA.forall_isOpen _ ha⟩
       · exact Set.singleton_subset_iff.2
@@ -415,16 +416,16 @@ lemma SpringLike'.isClosed_vanishing_set_of_forall_map_apply_le_of_forall_ne_zer
               · exact pow_pos (lt_of_le_of_ne (zero_le _)
                   (ne_of_lt <| lt_of_le_of_lt (zero_le _) hvpab)) _
         by_cases hry0 : (repPoly hr).coeff 0 y = 0
-        · exact Pi.vanishing_set_eq_inter_union_inter_of_mem_closure_union_div₁ hab hr ▸
+        · exact Pi.vanishing_set_eq_inter_union_inter_of_mem_closure_insert_div₁ hab hr ▸
             Or.intro_right _ ⟨(⟨hA.forall_isOpen (constantCoeff (repPoly hr))
               (coeff_repPoly_mem hr 0)⟩ : IsClosed _).mem_iff_closure_subset.1 hry0 hxy, hbx⟩
-        · refine Pi.vanishing_set_eq_inter_union_inter_of_mem_closure_union_div₁ hab hr ▸
+        · refine Pi.vanishing_set_eq_inter_union_inter_of_mem_closure_insert_div₁ hab hr ▸
             Or.intro_right _ ⟨?_, hbx⟩
           · exact (iff_not_comm.1 <| hAv.forall_iff_of_ne p ((repPoly hr).coeff 0)
               (coeff_repPoly_mem hr 0) hry0).2 <| ne_of_lt <| lt_one_of_mul_lt_left <|
                 (v p).map_pow .. ▸ (v p).map_mul .. ▸ (v p).map_neg _ ▸ hvpbry
-      · exact Pi.vanishing_set_eq_inter_union_inter_of_mem_closure_union_div₁ hab hr ▸
+      · exact Pi.vanishing_set_eq_inter_union_inter_of_mem_closure_insert_div₁ hab hr ▸
           Or.intro_left _ ⟨(IsClosed.mem_iff_closure_subset ⟨hA.forall_isOpen _ <|
-            Pi.mul_pow_mem_of_mem_closure_union_div_of_natDegree_repPoly_le ha hb hab hr <|
+            Pi.mul_pow_mem_of_mem_closure_insert_div_of_natDegree_repPoly_le ha hb hab hr <|
               Nat.le_refl _⟩).1 (Pi.mul_pow_natDegree_repPoly_apply_eq_zero_of_apply_eq_zero hry hr)
                 hxy, hbx⟩

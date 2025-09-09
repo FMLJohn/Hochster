@@ -492,14 +492,14 @@ def piFractionRing {X : Type*} [TopologicalSpace X]
 def induced {X : Type*} [TopologicalSpace X]
     {i : X → Type*} [(x : X) → CommRing (i x)] [(x : X) → IsDomain (i x)]
     {A : Subring (Π x : X, i x)} (hA : SpringLike' A) {B : Set (Π x : X, i x)}
-    (hAB : ∀ c ∈ Subring.closure (A ∪ B),
+    (hBA : ∀ c ∈ Subring.closure (B ∪ A),
       IsOpen { x : X | c x ≠ 0 } ∧ IsCompact { x : X | c x ≠ 0 }) :
-    SpringLike' (Subring.closure (A ∪ B)) where
+    SpringLike' (Subring.closure (B ∪ A)) where
   spectralSpace := hA.spectralSpace
-  forall_isOpen := fun c hc => (hAB c hc).1
-  forall_isCompact := fun c hc => (hAB c hc).2
+  forall_isOpen := fun c hc => (hBA c hc).1
+  forall_isCompact := fun c hc => (hBA c hc).2
   isTopologicalBasis := IsTopologicalBasis.of_isOpen_of_subset
-    (fun _ ⟨c, hc, hcs⟩ => hcs ▸ (hAB c hc).1) hA.isTopologicalBasis
-    (fun _ ⟨a, ha, has⟩ => ⟨a, Subring.mem_closure_of_mem (Set.mem_union_left B ha), has⟩)
+    (fun _ ⟨c, hc, hcs⟩ => hcs ▸ (hBA c hc).1) hA.isTopologicalBasis
+    (fun _ ⟨a, ha, has⟩ => ⟨a, Subring.mem_closure_of_mem (Set.mem_union_right B ha), has⟩)
 
 end SpringLike'
