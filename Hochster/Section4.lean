@@ -415,9 +415,13 @@ lemma SpringLike'.isClosed_vanishing_set_of_forall_map_apply_le_of_forall_ne_zer
                   Finset.notMem_singleton.1 (Finset.mem_sdiff.1 hn).2).2 hvpab
               · exact pow_pos (lt_of_le_of_ne (zero_le _)
                   (ne_of_lt <| lt_of_le_of_lt (zero_le _) hvpab)) _
-        have hhh := lt_one_of_mul_lt_left <| (v p).map_pow .. ▸ (v p).map_mul .. ▸ (v p).map_neg _ ▸ hvpbry
-        have := hAv.forall_iff_of_ne p ((repPoly hr).coeff 0) (coeff_repPoly_mem hr 0)
-        sorry
+        by_cases hry0 : (repPoly hr).coeff 0 y = 0
+        · exact Pi.vanishing_set_eq_inter_union_inter_of_mem_closure_union_div₁ hab hr ▸
+            Or.intro_right _ ⟨(⟨hA.forall_isOpen (constantCoeff (repPoly hr))
+              (coeff_repPoly_mem hr 0)⟩ : IsClosed _).mem_iff_closure_subset.1 hry0 hxy, hbx⟩
+        · have hhh := lt_one_of_mul_lt_left <| (v p).map_pow .. ▸ (v p).map_mul .. ▸ (v p).map_neg _ ▸ hvpbry
+          have := hAv.forall_iff_of_ne p ((repPoly hr).coeff 0) (coeff_repPoly_mem hr 0)
+          sorry
 
 
       · exact Pi.vanishing_set_eq_inter_union_inter_of_mem_closure_union_div₁ hab hr ▸
