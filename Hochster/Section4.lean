@@ -401,16 +401,25 @@ lemma SpringLike'.isClosed_vanishing_set_of_forall_map_apply_le_of_forall_ne_zer
             (v p (b y)) ^ (repPoly hr).natDegree := by
           refine habry ▸ map_sum_lt (v p) (pow_ne_zero _ <| (ne_zero_iff (v p)).2
             fun hby => hay <| hab y hby) fun n hn => map_mul (v p) .. ▸ (map_mul (v p) ..).symm ▸
-              map_pow (v p) _ (_ - n) ▸ ?_
+              (v p).map_pow _ (_ - n) ▸ ?_
           · by_cases hrny : (repPoly hr).coeff n y = 0
-            · exact hrny ▸ map_zero (v p) ▸ (zero_mul (v p _)).symm ▸ (zero_mul ((v p _) ^ _)).symm
+            · exact hrny ▸ (v p).map_zero ▸ (zero_mul (v p _)).symm ▸ (zero_mul ((v p _) ^ _)).symm
                 ▸ pow_pos ((pos_iff (v p)).2 fun hby => hay <| hab y hby) _
             · refine mul_assoc (v p _) .. ▸ lt_of_le_of_lt
                 (mul_le_of_le_one_left (zero_le (_ * (v p) _ ^ _))
-                (hAv.forall_le_of_ne p _ (coeff_repPoly_mem hr n) hrny)) ?_
-              · sorry
-
+                  (hAv.forall_le_of_ne p _ (coeff_repPoly_mem hr n) hrny))
+                ((Nat.add_sub_of_le <| le_natDegree_of_ne_zero fun hrn =>
+                  hrny (congrFun hrn y)) ▸ Nat.add_sub_cancel_left .. ▸ pow_add (v p _) .. ▸
+                  (v p).map_pow (a y) n ▸ mul_lt_mul_of_pos_right ?_ ?_)
+              · exact (pow_lt_pow_iff_left₀ (zero_le _) (zero_le _) <|
+                  Finset.notMem_singleton.1 (Finset.mem_sdiff.1 hn).2).2 hvpab
+              · exact pow_pos (lt_of_le_of_ne (zero_le _)
+                  (ne_of_lt <| lt_of_le_of_lt (zero_le _) hvpab)) _
+        have hhh := lt_one_of_mul_lt_left <| (v p).map_pow .. ▸ (v p).map_mul .. ▸ (v p).map_neg _ ▸ hvpbry
+        have := hAv.forall_iff_of_ne p ((repPoly hr).coeff 0) (coeff_repPoly_mem hr 0)
         sorry
+
+
       · exact Pi.vanishing_set_eq_inter_union_inter_of_mem_closure_union_div₁ hab hr ▸
           Or.intro_left _ ⟨(IsClosed.mem_iff_closure_subset ⟨hA.forall_isOpen _ <|
             Pi.mul_pow_mem_of_mem_closure_union_div_of_natDegree_repPoly_le ha hb hab hr <|
