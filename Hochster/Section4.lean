@@ -362,7 +362,9 @@ lemma isClosed_iff_forall_closure_subset_of_isClosed_constructibleTop
     obtain ⟨x, hxY, hyx⟩ := (mem_patch_closure_iff_mem_pt_closure hY y).1 hyY
     exact h x hxY hyx
 
-lemma SpringLike'.isClosed_vanishing_set_of_forall_map_apply_le_of_forall_ne_zero
+namespace SpringLike'
+
+lemma isIndex.isClosed_vanishing_set_of_forall_map_apply_le_of_forall_ne_zero
     {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
     {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
     {hA : SpringLike' A} (hAv : hA.isIndex v) {a b r : Π x : X, i x} (ha : a ∈ A) (hb : b ∈ A)
@@ -429,3 +431,16 @@ lemma SpringLike'.isClosed_vanishing_set_of_forall_map_apply_le_of_forall_ne_zer
             Pi.mul_pow_mem_of_mem_closure_insert_div_of_natDegree_repPoly_le ha hb hab hr <|
               Nat.le_refl _⟩).1 (Pi.mul_pow_natDegree_repPoly_apply_eq_zero_of_apply_eq_zero hry hr)
                 hxy, hbx⟩
+
+def isIndex.closureInsertDiv {X : Type*} [TopologicalSpace X] {i : X → Type*}
+    [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
+    {A : Subring (Π x : X, i x)} {hA : SpringLike' A} (hAv : hA.isIndex v)
+    {a b : Π x : X, i x} (ha : a ∈ A) (hb : b ∈ A) (hab : ∀ x : X, b x = 0 → a x = 0)
+    (h1 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) ≤ v p (b p.z.1))
+    (h2 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) = v p (b p.z.1) → a p.z.2 ≠ 0) :
+    SpringLike' (closure (A.carrier.insert (a / b))) :=
+  hA.induced fun _ hr =>
+    ⟨(hAv.isClosed_vanishing_set_of_forall_map_apply_le_of_forall_ne_zero ha hb hab hr h1 h2).1,
+      hA.isCompact_support_of_mem_closure_insert_div ha hb hab hr⟩
+
+end SpringLike'
