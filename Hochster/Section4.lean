@@ -379,7 +379,6 @@ lemma SpringLike'.isClosed_vanishing_set_of_forall_map_apply_le_of_forall_ne_zer
       · exact Set.singleton_subset_iff.2
           ⟨Pi.constantCoeff_repPoly_apply_eq_zero_of_apply_eq_zero_of_apply_eq_zero hay hry hr, hay⟩
     · intro x hxy
-      have hrby := Pi.mul_pow_natDegree_repPoly_apply_eq_zero_of_apply_eq_zero hry hr
       by_cases hbx : b x = 0
       · let p : σ(X) := ⟨(y, x), hxy⟩
         have hvpab := lt_of_le_of_ne (h1 p hay) (imp_not_comm.1 (h2 p hay) (hab x hbx))
@@ -419,12 +418,13 @@ lemma SpringLike'.isClosed_vanishing_set_of_forall_map_apply_le_of_forall_ne_zer
         · exact Pi.vanishing_set_eq_inter_union_inter_of_mem_closure_union_div₁ hab hr ▸
             Or.intro_right _ ⟨(⟨hA.forall_isOpen (constantCoeff (repPoly hr))
               (coeff_repPoly_mem hr 0)⟩ : IsClosed _).mem_iff_closure_subset.1 hry0 hxy, hbx⟩
-        · have hhh := lt_one_of_mul_lt_left <| (v p).map_pow .. ▸ (v p).map_mul .. ▸ (v p).map_neg _ ▸ hvpbry
-          have := hAv.forall_iff_of_ne p ((repPoly hr).coeff 0) (coeff_repPoly_mem hr 0)
-          sorry
-
-
+        · refine Pi.vanishing_set_eq_inter_union_inter_of_mem_closure_union_div₁ hab hr ▸
+            Or.intro_right _ ⟨?_, hbx⟩
+          · exact (iff_not_comm.1 <| hAv.forall_iff_of_ne p ((repPoly hr).coeff 0)
+              (coeff_repPoly_mem hr 0) hry0).2 <| ne_of_lt <| lt_one_of_mul_lt_left <|
+                (v p).map_pow .. ▸ (v p).map_mul .. ▸ (v p).map_neg _ ▸ hvpbry
       · exact Pi.vanishing_set_eq_inter_union_inter_of_mem_closure_union_div₁ hab hr ▸
           Or.intro_left _ ⟨(IsClosed.mem_iff_closure_subset ⟨hA.forall_isOpen _ <|
             Pi.mul_pow_mem_of_mem_closure_union_div_of_natDegree_repPoly_le ha hb hab hr <|
-              Nat.le_refl _⟩).1 hrby hxy, hbx⟩
+              Nat.le_refl _⟩).1 (Pi.mul_pow_natDegree_repPoly_apply_eq_zero_of_apply_eq_zero hry hr)
+                hxy, hbx⟩
