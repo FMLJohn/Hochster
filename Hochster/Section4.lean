@@ -457,7 +457,9 @@ lemma isIndex.map_apply_le_one_of_forall_map_apply_le_of_forall_ne_zero
       (v p).map_sum_le fun n hnr => (v p).map_mul .. ▸ (v p).map_pow .. ▸ (v p).map_div .. ▸ ?_
     · by_cases hrnp : (repPoly hr).coeff n p.z.1 = 0
       · exact hrnp ▸ (v p).map_zero ▸ (zero_mul ((v p _ / _) ^ n)).symm ▸ rfl
-      · sorry
+      · exact mul_le_one' (hAv.forall_le_of_ne p ((repPoly hr).coeff n) (coeff_repPoly_mem hr n)
+          hrnp) (pow_le_one' ((div_le_one <| lt_of_lt_of_le ((v p).pos_iff.2 hap) (h1 p hap)).2
+            (h1 p hap)) _)
   · sorry
 
 end SpringLike'
