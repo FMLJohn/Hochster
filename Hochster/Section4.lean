@@ -450,6 +450,14 @@ lemma isIndex.map_apply_le_one_of_forall_map_apply_le_of_forall_ne_zero
     (hab : ∀ x : X, b x = 0 → a x = 0) (hr : r ∈ closure (A.carrier.insert (a / b)))
     {p : σ(X)} (hrp : r p.z.1 ≠ 0) (h1 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) ≤ v p (b p.z.1))
     (h2 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) = v p (b p.z.1) → a p.z.2 ≠ 0) :
-    v p (r p.z.1) ≤ 1 := sorry
+    v p (r p.z.1) ≤ 1 := by
+  refine Or.elim (Pi.support_eq_inter_union_inter_of_mem_closure_insert_div hab hr ▸
+    Set.mem_setOf_eq (p := fun y => r y ≠ 0) ▸ hrp) (fun ⟨hbrp, hap⟩ => ?_) (fun ⟨hrp, hap⟩ => ?_)
+  · refine repPoly_eval_eq hr ▸ Pi.polynomial_eval_apply (repPoly hr) (a / b) p.z.1 ▸
+      (v p).map_sum_le fun n hnr => (v p).map_mul .. ▸ (v p).map_pow .. ▸ (v p).map_div .. ▸ ?_
+    · by_cases hrnp : (repPoly hr).coeff n p.z.1 = 0
+      · exact hrnp ▸ (v p).map_zero ▸ (zero_mul ((v p _ / _) ^ n)).symm ▸ rfl
+      · sorry
+  · sorry
 
 end SpringLike'
