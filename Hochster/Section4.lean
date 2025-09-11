@@ -443,6 +443,28 @@ def isIndex.closureInsertDiv {X : Type*} [TopologicalSpace X] {i : X → Type*}
     ⟨(hAv.isClosed_vanishing_set_of_forall_map_apply_le_of_forall_ne_zero ha hb hab hr h1 h2).1,
       hA.isCompact_support_of_mem_closure_insert_div ha hb hab hr⟩
 
+lemma isIndex.map_apply_le_one_of_mem_closure_insert_div_of_forall_map_apply_le
+    {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
+    {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
+    {hA : SpringLike' A} (hAv : hA.isIndex v) {a b r : Π x : X, i x}
+    (hab : ∀ x : X, b x = 0 → a x = 0) (hr : r ∈ closure (A.carrier.insert (a / b)))
+    {p : σ(X)} (hrp : r p.z.1 ≠ 0) (h : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) ≤ v p (b p.z.1)) :
+    v p (r p.z.1) ≤ 1 := by
+  refine repPoly_eval_eq hr ▸ Pi.polynomial_eval_apply (repPoly hr) (a / b) p.z.1 ▸
+    Or.elim (Pi.support_eq_inter_union_inter_of_mem_closure_insert_div hab hr ▸
+    Set.mem_setOf_eq (p := fun y => r y ≠ 0) ▸ hrp) (fun ⟨hbrp, hap⟩ => ?_) (fun ⟨hrp, hap⟩ => ?_)
+  · refine (v p).map_sum_le fun n hnr => (v p).map_mul .. ▸ (v p).map_pow .. ▸ (v p).map_div .. ▸ ?_
+    · by_cases hrnp : (repPoly hr).coeff n p.z.1 = 0
+      · exact hrnp ▸ (v p).map_zero ▸ (zero_mul ((v p _ / _) ^ n)).symm ▸ rfl
+      · exact mul_le_one' (hAv.forall_le_of_ne p ((repPoly hr).coeff n) (coeff_repPoly_mem hr n)
+          hrnp) (pow_le_one' ((div_le_one <| lt_of_lt_of_le ((v p).pos_iff.2 hap) (h p hap)).2
+            (h p hap)) _)
+  · simp only [sum, Pi.div_apply, Set.mem_setOf_eq ▸ hap, zero_div, zero_pow_eq, mul_ite, mul_one,
+      mul_zero, Finset.sum_ite_eq']
+    by_cases h0 : 0 ∈ (repPoly hr).support
+    · simpa only [h0] using hAv.forall_le_of_ne p _ (coeff_repPoly_mem hr 0) hrp
+    · simp only [h0, reduceIte, map_zero, zero_le]
+
 lemma isIndex.map_apply_le_one_of_forall_map_apply_le_of_forall_ne_zero
     {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
     {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
@@ -450,16 +472,6 @@ lemma isIndex.map_apply_le_one_of_forall_map_apply_le_of_forall_ne_zero
     (hab : ∀ x : X, b x = 0 → a x = 0) (hr : r ∈ closure (A.carrier.insert (a / b)))
     {p : σ(X)} (hrp : r p.z.1 ≠ 0) (h1 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) ≤ v p (b p.z.1))
     (h2 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) = v p (b p.z.1) → a p.z.2 ≠ 0) :
-    v p (r p.z.1) ≤ 1 := by
-  refine Or.elim (Pi.support_eq_inter_union_inter_of_mem_closure_insert_div hab hr ▸
-    Set.mem_setOf_eq (p := fun y => r y ≠ 0) ▸ hrp) (fun ⟨hbrp, hap⟩ => ?_) (fun ⟨hrp, hap⟩ => ?_)
-  · refine repPoly_eval_eq hr ▸ Pi.polynomial_eval_apply (repPoly hr) (a / b) p.z.1 ▸
-      (v p).map_sum_le fun n hnr => (v p).map_mul .. ▸ (v p).map_pow .. ▸ (v p).map_div .. ▸ ?_
-    · by_cases hrnp : (repPoly hr).coeff n p.z.1 = 0
-      · exact hrnp ▸ (v p).map_zero ▸ (zero_mul ((v p _ / _) ^ n)).symm ▸ rfl
-      · exact mul_le_one' (hAv.forall_le_of_ne p ((repPoly hr).coeff n) (coeff_repPoly_mem hr n)
-          hrnp) (pow_le_one' ((div_le_one <| lt_of_lt_of_le ((v p).pos_iff.2 hap) (h1 p hap)).2
-            (h1 p hap)) _)
-  · sorry
+    v p (r p.z.1) ≤ 1 := sorry
 
 end SpringLike'
