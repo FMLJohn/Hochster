@@ -76,7 +76,7 @@ lemma map_apply_le_of_pi_valuation_of_v_extension {X : Type*} [TopologicalSpace 
     · exact mem_closure_of_mem <| A.carrier.mem_insert (a / b)
     · exact Or.elim (div_eq_zero_iff.mp habp) hap (fun hbp => hap (hab p.z.1 hbp))
 
-lemma ne_zero_of_pi_valuation_of_v_extension_of_map_apply_eq {X : Type*} [TopologicalSpace X]
+lemma apply_ne_zero_of_pi_valuation_of_v_extension_of_map_apply_eq {X : Type*} [TopologicalSpace X]
     {i : X → Type*} [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
     {A : Subring (Π x : X, i x)} {a b : Π x : X, i x} (hab : ∀ x : X, b x = 0 → a x = 0)
     {p : σ(X)} (hap : a p.z.1 ≠ 0) {hAab : SpringLike' (closure (A.carrier.insert (a / b)))}
@@ -465,13 +465,21 @@ lemma isIndex.map_apply_le_one_of_mem_closure_insert_div_of_forall_map_apply_le
     · simpa only [h0] using hAv.forall_le_of_ne p _ (coeff_repPoly_mem hr 0) hrp
     · simp only [h0, reduceIte, map_zero, zero_le]
 
-lemma isIndex.map_apply_le_one_of_forall_map_apply_le_of_forall_ne_zero
+lemma isIndex.map_apply_eq_one_iff_apply_ne_zero_of_forall_map_apply_le_of_forall_ne_zero
     {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
     {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
     {hA : SpringLike' A} (hAv : hA.isIndex v) {a b r : Π x : X, i x} (ha : a ∈ A) (hb : b ∈ A)
     (hab : ∀ x : X, b x = 0 → a x = 0) (hr : r ∈ closure (A.carrier.insert (a / b)))
     {p : σ(X)} (hrp : r p.z.1 ≠ 0) (h1 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) ≤ v p (b p.z.1))
     (h2 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) = v p (b p.z.1) → a p.z.2 ≠ 0) :
-    v p (r p.z.1) ≤ 1 := sorry
+    v p (r p.z.1) = 1 ↔ r p.z.2 ≠ 0 := by
+  refine Or.elim (Pi.support_eq_inter_union_inter_of_mem_closure_insert_div hab hr ▸
+    Set.mem_setOf_eq (p := fun y => r y ≠ 0) ▸ hrp) (fun ⟨hbrp, hap⟩ => ?_)
+    (fun ⟨hrp, hap⟩ => ?_)
+  · have hvpb : v p (b p.z.1) ≠ 0 := (v p).ne_zero_iff.2 fun hbp => hap <| hab p.z.1 hbp
+    constructor
+    · sorry
+    · sorry
+  · sorry
 
 end SpringLike'
