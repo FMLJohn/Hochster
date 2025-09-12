@@ -478,7 +478,9 @@ lemma isIndex.map_apply_eq_one_iff_apply_ne_zero_of_forall_map_apply_le_of_foral
     (fun ⟨hrp, hap⟩ => ?_)
   · have hvpb : v p (b p.z.1) ≠ 0 := (v p).ne_zero_iff.2 fun hbp => hap <| hab p.z.1 hbp
     constructor
-    · sorry
+    · let q : σ(X) := ⟨(p.z.1, p.z.1), Specializes.mem_closure fun _ h => h⟩
+
+      sorry
     · sorry
   · sorry
 
