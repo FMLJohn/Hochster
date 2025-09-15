@@ -476,7 +476,7 @@ lemma isIndex.map_apply_eq_one_iff_apply_ne_zero_of_forall_map_apply_le_of_foral
   refine Or.elim (Pi.support_eq_inter_union_inter_of_mem_closure_insert_div hab hr ▸
     Set.mem_setOf_eq (p := fun y => r y ≠ 0) ▸ hrp) (fun ⟨hbrp, hap⟩ => ?_) (fun ⟨hrp, hap⟩ => ?_)
   · have hvpb : v p (b p.z.1) ≠ 0 := (v p).ne_zero_iff.2 fun hbp => hap <| hab p.z.1 hbp
-    refine ⟨fun hvpr => ?_, ?_⟩
+    refine ⟨fun hvpr => ?_, fun hrp0 => ?_⟩
     · by_cases hvpab : v p (a p.z.1) = v p (b p.z.1)
       · have : v p (b p.z.1) = 1 :=
           (hAv.forall_iff_of_ne p b hb <| (v p).ne_zero_iff.1 hvpb).2 (h2 p hap hvpab)
@@ -489,7 +489,11 @@ lemma isIndex.map_apply_eq_one_iff_apply_ne_zero_of_forall_map_apply_le_of_foral
               (repPoly hr).natDegree.le_refl) ((v p).ne_zero_iff.1 <| ne_zero_of_eq_one this)).1
               this
         exact (mul_ne_zero_iff.1 <| Pi.mul_apply r .. ▸ this).1
-      · have : v p ((repPoly hr).coeff 0 p.z.1) = 1 := by
+      · have hap0 : a p.z.2 = 0 :=
+          (iff_not_comm.1 <| hAv.forall_iff_of_ne p a ha hap).2 <| ne_of_lt <| lt_of_lt_of_le
+            (lt_of_le_of_ne (h1 p hap) hvpab) (hAv.forall_le_of_ne p b hb fun hbp =>
+              hap <| hab p.z.1 hbp)
+        have hvpr1 : v p ((repPoly hr).coeff 0 p.z.1) = 1 := by
           by_contra hvpr1
           · have : v p ((repPoly hr).coeff 0 p.z.1) < 1 := by
               by_cases hr0 : (repPoly hr).coeff 0 p.z.1 = 0
@@ -511,7 +515,14 @@ lemma isIndex.map_apply_eq_one_iff_apply_ne_zero_of_forall_map_apply_le_of_foral
                       lt_of_le_of_lt (zero_le _) (lt_of_le_of_ne (h1 p hap) hvpab)).2 <|
                         lt_of_le_of_ne (h1 p hap) hvpab) hn0
             exact (lt_self_iff_false 1).1 <| hvpr ▸ this
-        sorry
+        have hrp0 : (repPoly hr).coeff 0 p.z.2 ≠ 0 :=
+          (hAv.forall_iff_of_ne p ((repPoly hr).coeff 0) (coeff_repPoly_mem hr 0)
+            (((v p).ne_zero_iff).1 <| ne_zero_of_eq_one hvpr1)).1 hvpr1
+        refine repPoly_eval_eq hr ▸ ?_
+        · simp only [Pi.polynomial_eval_apply, sum, Pi.div_apply, hap0, zero_div, zero_pow_eq,
+            mul_ite, mul_one, mul_zero, Finset.sum_ite_eq', mem_support_iff, ne_eq,
+            ite_eq_right_iff, Classical.not_imp]
+          exact ⟨fun hr0 => (hr0 ▸ hrp0) rfl, hrp0⟩
     · sorry
   · sorry
 
