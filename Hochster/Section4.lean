@@ -476,7 +476,7 @@ lemma isIndex.map_apply_eq_one_iff_apply_ne_zero_of_forall_map_apply_le_of_foral
   refine Or.elim (Pi.support_eq_inter_union_inter_of_mem_closure_insert_div hab hr ▸
     Set.mem_setOf_eq (p := fun y => r y ≠ 0) ▸ hrp) (fun ⟨hbrp, hap⟩ => ?_) (fun ⟨hrp, hap⟩ => ?_)
   · have hvpb : v p (b p.z.1) ≠ 0 := (v p).ne_zero_iff.2 fun hbp => hap <| hab p.z.1 hbp
-    refine ⟨fun hvpr => ?_, fun hrp0 => ?_⟩
+    refine ⟨fun hvpr => ?_, ?_⟩
     · by_cases hvpab : v p (a p.z.1) = v p (b p.z.1)
       · have : v p (b p.z.1) = 1 :=
           (hAv.forall_iff_of_ne p b hb <| (v p).ne_zero_iff.1 hvpb).2 (h2 p hap hvpab)
@@ -523,7 +523,26 @@ lemma isIndex.map_apply_eq_one_iff_apply_ne_zero_of_forall_map_apply_le_of_foral
             mul_ite, mul_one, mul_zero, Finset.sum_ite_eq', mem_support_iff, ne_eq,
             ite_eq_right_iff, Classical.not_imp]
           exact ⟨fun hr0 => (hr0 ▸ hrp0) rfl, hrp0⟩
-    · sorry
+    · contrapose
+      intro hvpr
+      have : v p (r p.z.1) < 1 :=
+        lt_of_le_of_ne (hAv.map_apply_le_one_of_mem_closure_insert_div_of_forall_map_apply_le hab hr
+          hrp h1) hvpr
+      have : v p ((r * b ^ (repPoly hr).natDegree) p.z.1) < 1 :=
+        (v p).map_mul .. ▸ mul_lt_one_of_lt_of_le this <| Pi.pow_apply b (repPoly hr).natDegree _ ▸
+          (v p).map_pow .. ▸ pow_le_one' (hAv.forall_le_of_ne p b hb (fun hbp => hap <| hab p.z.1
+            hbp)) _
+      have := (iff_not_comm.1 <| hAv.forall_iff_of_ne p (r * b ^ (repPoly hr).natDegree)
+        (Pi.mul_pow_mem_of_mem_closure_insert_div_of_natDegree_repPoly_le ha hb hab hr
+          (repPoly hr).natDegree.le_refl) hbrp).2 (ne_of_lt this)
+      sorry
+
+
+
+
+
+
+      --have := hAv.forall_iff_of_ne p b hb
   · sorry
 
 end SpringLike'
