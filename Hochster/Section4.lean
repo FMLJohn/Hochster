@@ -81,9 +81,9 @@ lemma apply_ne_zero_of_pi_valuation_of_v_extension_of_map_apply_eq {X : Type*} [
     {A : Subring (Π x : X, i x)} {a b : Π x : X, i x} (hab : ∀ x : X, b x = 0 → a x = 0)
     {p : σ(X)} (hap : a p.z.1 ≠ 0) {hAab : SpringLike' (closure (A.carrier.insert (a / b)))}
     (hAabv : hAab.isIndex v) (hvpab : v p (a p.z.1) = v p (b p.z.1)) :
-    a p.z.2 ≠ 0 := by
+    b p.z.2 ≠ 0 := by
   intro h
-  have h1 : (a / b) p.z.2 = 0 := Pi.div_apply a b p.z.2 ▸ h ▸ zero_div (b p.z.2)
+  have h1 : (a / b) p.z.2 = 0 := Pi.div_apply a b p.z.2 ▸ h.symm ▸ div_zero (a p.z.2)
   have h2 : (a / b) p.z.1 ≠ 0 := fun h => hap <| hab p.z.1 <|
     (or_iff_not_imp_left.1 <| div_eq_zero_iff.1 <| Pi.div_apply a b p.z.1 ▸ h) hap
   have h3 : v p ((a / b) p.z.1) = 1 ↔ (a / b) p.z.2 ≠ 0 :=
@@ -370,7 +370,7 @@ lemma isIndex.isClosed_vanishing_set_of_forall_map_apply_le_of_forall_ne_zero
     {hA : SpringLike' A} (hAv : hA.isIndex v) {a b r : Π x : X, i x} (ha : a ∈ A) (hb : b ∈ A)
     (hab : ∀ x : X, b x = 0 → a x = 0) (hr : r ∈ closure (A.carrier.insert (a / b)))
     (h1 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) ≤ v p (b p.z.1))
-    (h2 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) = v p (b p.z.1) → a p.z.2 ≠ 0) :
+    (h2 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) = v p (b p.z.1) → b p.z.2 ≠ 0) :
     IsClosed { x : X | r x = 0 } := by
   haveI := hA.spectralSpace
   refine (isClosed_iff_forall_closure_subset_of_isClosed_constructibleTop (X := X)
@@ -384,7 +384,7 @@ lemma isIndex.isClosed_vanishing_set_of_forall_map_apply_le_of_forall_ne_zero
     · intro x hxy
       by_cases hbx : b x = 0
       · let p : σ(X) := ⟨(y, x), hxy⟩
-        have hvpab := lt_of_le_of_ne (h1 p hay) (imp_not_comm.1 (h2 p hay) (hab x hbx))
+        have hvpab := lt_of_le_of_ne (h1 p hay) (imp_not_comm.1 (h2 p hay) hbx)
         have habry : -((repPoly hr).coeff 0 y * b y ^ (repPoly hr).natDegree) =
             ∑ n ∈ Finset.range ((repPoly hr).natDegree + 1) \ {0},
               (repPoly hr).coeff n y * a y ^ n * b y ^ ((repPoly hr).natDegree - n) := by
@@ -437,7 +437,7 @@ def isIndex.closureInsertDiv {X : Type*} [TopologicalSpace X] {i : X → Type*}
     {A : Subring (Π x : X, i x)} {hA : SpringLike' A} (hAv : hA.isIndex v)
     {a b : Π x : X, i x} (ha : a ∈ A) (hb : b ∈ A) (hab : ∀ x : X, b x = 0 → a x = 0)
     (h1 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) ≤ v p (b p.z.1))
-    (h2 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) = v p (b p.z.1) → a p.z.2 ≠ 0) :
+    (h2 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) = v p (b p.z.1) → b p.z.2 ≠ 0) :
     SpringLike' (closure (A.carrier.insert (a / b))) :=
   hA.induced fun _ hr =>
     ⟨(hAv.isClosed_vanishing_set_of_forall_map_apply_le_of_forall_ne_zero ha hb hab hr h1 h2).1,
@@ -471,15 +471,24 @@ lemma isIndex.map_apply_eq_one_iff_apply_ne_zero_of_forall_map_apply_le_of_foral
     {hA : SpringLike' A} (hAv : hA.isIndex v) {a b r : Π x : X, i x} (ha : a ∈ A) (hb : b ∈ A)
     (hab : ∀ x : X, b x = 0 → a x = 0) (hr : r ∈ closure (A.carrier.insert (a / b)))
     {p : σ(X)} (hrp : r p.z.1 ≠ 0) (h1 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) ≤ v p (b p.z.1))
-    (h2 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) = v p (b p.z.1) → a p.z.2 ≠ 0) :
+    (h2 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) = v p (b p.z.1) → b p.z.2 ≠ 0) :
     v p (r p.z.1) = 1 ↔ r p.z.2 ≠ 0 := by
   refine Or.elim (Pi.support_eq_inter_union_inter_of_mem_closure_insert_div hab hr ▸
-    Set.mem_setOf_eq (p := fun y => r y ≠ 0) ▸ hrp) (fun ⟨hbrp, hap⟩ => ?_)
-    (fun ⟨hrp, hap⟩ => ?_)
+    Set.mem_setOf_eq (p := fun y => r y ≠ 0) ▸ hrp) (fun ⟨hbrp, hap⟩ => ?_) (fun ⟨hrp, hap⟩ => ?_)
   · have hvpb : v p (b p.z.1) ≠ 0 := (v p).ne_zero_iff.2 fun hbp => hap <| hab p.z.1 hbp
     refine ⟨fun hvpr => ?_, ?_⟩
     · by_cases hvpab : v p (a p.z.1) = v p (b p.z.1)
-      · sorry
+      · have : v p (b p.z.1) = 1 :=
+          (hAv.forall_iff_of_ne p b hb <| (v p).ne_zero_iff.1 hvpb).2 (h2 p hap hvpab)
+        have : v p ((r * b ^ (repPoly hr).natDegree) p.z.1) = 1 :=
+          (v p).map_mul .. ▸ hvpr.symm ▸ (one_mul (v p _)).symm ▸
+            Pi.pow_apply b (repPoly hr).natDegree p.z.1 ▸ (v p).map_pow .. ▸ this.symm ▸ one_pow _
+        have : (r * b ^ (repPoly hr).natDegree) p.z.2 ≠ 0 :=
+          (hAv.forall_iff_of_ne p (r * b ^ (repPoly hr).natDegree)
+            (Pi.mul_pow_mem_of_mem_closure_insert_div_of_natDegree_repPoly_le ha hb hab hr
+              (repPoly hr).natDegree.le_refl) ((v p).ne_zero_iff.1 <| ne_zero_of_eq_one this)).1
+              this
+        exact (mul_ne_zero_iff.1 <| Pi.mul_apply r .. ▸ this).1
       · sorry
     · sorry
   · sorry
