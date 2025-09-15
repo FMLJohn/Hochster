@@ -489,7 +489,29 @@ lemma isIndex.map_apply_eq_one_iff_apply_ne_zero_of_forall_map_apply_le_of_foral
               (repPoly hr).natDegree.le_refl) ((v p).ne_zero_iff.1 <| ne_zero_of_eq_one this)).1
               this
         exact (mul_ne_zero_iff.1 <| Pi.mul_apply r .. ▸ this).1
-      · sorry
+      · have : v p ((repPoly hr).coeff 0 p.z.1) = 1 := by
+          by_contra hvpr1
+          · have : v p ((repPoly hr).coeff 0 p.z.1) < 1 := by
+              by_cases hr0 : (repPoly hr).coeff 0 p.z.1 = 0
+              · exact hr0 ▸ (v p).map_zero ▸ rfl
+              · exact lt_of_le_of_ne (hAv.forall_le_of_ne p ((repPoly hr).coeff 0)
+                  (coeff_repPoly_mem hr 0) hr0) hvpr1
+            have : v p (r p.z.1) < 1 := by
+              refine repPoly_eval_eq hr ▸ Pi.polynomial_eval_apply (repPoly hr) .. ▸
+                (v p).map_sum_lt (zero_ne_one' _).symm fun n hnr =>
+                (v p).map_mul ((repPoly hr).coeff _ _) _ ▸ (v p).map_pow .. ▸ Pi.div_apply a .. ▸ ?_
+              · by_cases hn0 : n = 0
+                · exact hn0 ▸ (pow_zero (v p _)).symm ▸ (mul_one (v p _)).symm ▸ this
+                · refine mul_lt_one_of_nonneg_of_lt_one_right ?_ (zero_le _) ?_
+                  · by_cases hrnp : (repPoly hr).coeff n p.z.1 = 0
+                    · exact hrnp ▸ (v p).map_zero ▸ rfl
+                    · exact hAv.forall_le_of_ne p ((repPoly hr).coeff n) (coeff_repPoly_mem hr n)
+                        hrnp
+                  · exact pow_lt_one₀ (zero_le _) ((v p).map_div .. ▸ (div_lt_one₀ <|
+                      lt_of_le_of_lt (zero_le _) (lt_of_le_of_ne (h1 p hap) hvpab)).2 <|
+                        lt_of_le_of_ne (h1 p hap) hvpab) hn0
+            exact (lt_self_iff_false 1).1 <| hvpr ▸ this
+        sorry
     · sorry
   · sorry
 
