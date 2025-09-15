@@ -476,24 +476,25 @@ lemma isIndex.map_apply_eq_one_iff_apply_ne_zero_of_forall_map_apply_le_of_foral
   refine Or.elim (Pi.support_eq_inter_union_inter_of_mem_closure_insert_div hab hr ▸
     Set.mem_setOf_eq (p := fun y => r y ≠ 0) ▸ hrp) (fun ⟨hbrp, hap⟩ => ?_) (fun ⟨hrp, hap⟩ => ?_)
   · have hvpb : v p (b p.z.1) ≠ 0 := (v p).ne_zero_iff.2 fun hbp => hap <| hab p.z.1 hbp
-    refine ⟨fun hvpr => ?_, ?_⟩
+    have h3 (hvpab : v p (a p.z.1) = v p (b p.z.1)) : v p (b p.z.1) = 1 :=
+      (hAv.forall_iff_of_ne p b hb <| (v p).ne_zero_iff.1 hvpb).2 (h2 p hap hvpab)
+    have h4 (hvpab : v p (a p.z.1) ≠ v p (b p.z.1)) : a p.z.2 = 0 :=
+      (iff_not_comm.1 <| hAv.forall_iff_of_ne p a ha hap).2 <| ne_of_lt <| lt_of_lt_of_le
+        (lt_of_le_of_ne (h1 p hap) hvpab) (hAv.forall_le_of_ne p b hb fun hbp =>
+          hap <| hab p.z.1 hbp)
+    refine ⟨fun hvpr => ?_, fun hrp0 => ?_⟩
     · by_cases hvpab : v p (a p.z.1) = v p (b p.z.1)
-      · have : v p (b p.z.1) = 1 :=
-          (hAv.forall_iff_of_ne p b hb <| (v p).ne_zero_iff.1 hvpb).2 (h2 p hap hvpab)
-        have : v p ((r * b ^ (repPoly hr).natDegree) p.z.1) = 1 :=
+      · have : v p ((r * b ^ (repPoly hr).natDegree) p.z.1) = 1 :=
           (v p).map_mul .. ▸ hvpr.symm ▸ (one_mul (v p _)).symm ▸
-            Pi.pow_apply b (repPoly hr).natDegree p.z.1 ▸ (v p).map_pow .. ▸ this.symm ▸ one_pow _
+            Pi.pow_apply b (repPoly hr).natDegree p.z.1 ▸ (v p).map_pow .. ▸ (h3 hvpab).symm ▸
+            one_pow _
         have : (r * b ^ (repPoly hr).natDegree) p.z.2 ≠ 0 :=
           (hAv.forall_iff_of_ne p (r * b ^ (repPoly hr).natDegree)
             (Pi.mul_pow_mem_of_mem_closure_insert_div_of_natDegree_repPoly_le ha hb hab hr
               (repPoly hr).natDegree.le_refl) ((v p).ne_zero_iff.1 <| ne_zero_of_eq_one this)).1
               this
         exact (mul_ne_zero_iff.1 <| Pi.mul_apply r .. ▸ this).1
-      · have hap0 : a p.z.2 = 0 :=
-          (iff_not_comm.1 <| hAv.forall_iff_of_ne p a ha hap).2 <| ne_of_lt <| lt_of_lt_of_le
-            (lt_of_le_of_ne (h1 p hap) hvpab) (hAv.forall_le_of_ne p b hb fun hbp =>
-              hap <| hab p.z.1 hbp)
-        have hvpr1 : v p ((repPoly hr).coeff 0 p.z.1) = 1 := by
+      · have hvpr1 : v p ((repPoly hr).coeff 0 p.z.1) = 1 := by
           by_contra hvpr1
           · have : v p ((repPoly hr).coeff 0 p.z.1) < 1 := by
               by_cases hr0 : (repPoly hr).coeff 0 p.z.1 = 0
@@ -519,23 +520,34 @@ lemma isIndex.map_apply_eq_one_iff_apply_ne_zero_of_forall_map_apply_le_of_foral
           (hAv.forall_iff_of_ne p ((repPoly hr).coeff 0) (coeff_repPoly_mem hr 0)
             (((v p).ne_zero_iff).1 <| ne_zero_of_eq_one hvpr1)).1 hvpr1
         refine repPoly_eval_eq hr ▸ ?_
-        · simp only [Pi.polynomial_eval_apply, sum, Pi.div_apply, hap0, zero_div, zero_pow_eq,
+        · simp only [Pi.polynomial_eval_apply, sum, Pi.div_apply, h4 hvpab, zero_div, zero_pow_eq,
             mul_ite, mul_one, mul_zero, Finset.sum_ite_eq', mem_support_iff, ne_eq,
             ite_eq_right_iff, Classical.not_imp]
           exact ⟨fun hr0 => (hr0 ▸ hrp0) rfl, hrp0⟩
-    · contrapose
-      intro hvpr
-      have : v p (r p.z.1) < 1 :=
-        lt_of_le_of_ne (hAv.map_apply_le_one_of_mem_closure_insert_div_of_forall_map_apply_le hab hr
-          hrp h1) hvpr
-      have : v p ((r * b ^ (repPoly hr).natDegree) p.z.1) < 1 :=
-        (v p).map_mul .. ▸ mul_lt_one_of_lt_of_le this <| Pi.pow_apply b (repPoly hr).natDegree _ ▸
-          (v p).map_pow .. ▸ pow_le_one' (hAv.forall_le_of_ne p b hb (fun hbp => hap <| hab p.z.1
-            hbp)) _
-      have := (iff_not_comm.1 <| hAv.forall_iff_of_ne p (r * b ^ (repPoly hr).natDegree)
-        (Pi.mul_pow_mem_of_mem_closure_insert_div_of_natDegree_repPoly_le ha hb hab hr
-          (repPoly hr).natDegree.le_refl) hbrp).2 (ne_of_lt this)
-      sorry
+    · by_cases hvpab : v p (a p.z.1) = v p (b p.z.1)
+      · have : (r * b ^ (repPoly hr).natDegree) p.z.2 ≠ 0 :=
+          Pi.mul_apply r .. ▸ Pi.pow_apply b (repPoly hr).natDegree _ ▸
+            mul_ne_zero hrp0 (pow_ne_zero _ <| h2 p hap hvpab)
+        have :  v p ((r * b ^ (repPoly hr).natDegree) p.z.1) = 1 :=
+          (hAv.forall_iff_of_ne p (r * b ^ (repPoly hr).natDegree)
+            (Pi.mul_pow_mem_of_mem_closure_insert_div_of_natDegree_repPoly_le ha hb hab hr
+              (repPoly hr).natDegree.le_refl) hbrp).2 this
+        simp only [Pi.mul_apply, Pi.pow_apply, map_mul, map_pow, h3 hvpab, one_pow, mul_one] at this
+        exact this
+      · sorry
+      -- contrapose
+      -- intro hvpr
+      -- have : v p (r p.z.1) < 1 :=
+      --   lt_of_le_of_ne (hAv.map_apply_le_one_of_mem_closure_insert_div_of_forall_map_apply_le hab hr
+      --     hrp h1) hvpr
+      -- have : v p ((r * b ^ (repPoly hr).natDegree) p.z.1) < 1 :=
+      --   (v p).map_mul .. ▸ mul_lt_one_of_lt_of_le this <| Pi.pow_apply b (repPoly hr).natDegree _ ▸
+      --     (v p).map_pow .. ▸ pow_le_one' (hAv.forall_le_of_ne p b hb (fun hbp => hap <| hab p.z.1
+      --       hbp)) _
+      -- have := (iff_not_comm.1 <| hAv.forall_iff_of_ne p (r * b ^ (repPoly hr).natDegree)
+      --   (Pi.mul_pow_mem_of_mem_closure_insert_div_of_natDegree_repPoly_le ha hb hab hr
+      --     (repPoly hr).natDegree.le_refl) hbrp).2 (ne_of_lt this)
+
 
 
 
