@@ -546,10 +546,7 @@ lemma isIndex.map_apply_eq_one_iff_apply_ne_zero_of_forall_map_apply_le_of_foral
               (repPoly hr).natDegree.le_refl) hbrp).2 this
         simp only [Pi.mul_apply, Pi.pow_apply, map_mul, map_pow, h3 hvpab, one_pow, mul_one] at this
         exact this
-      ·
-        have := lt_of_le_of_ne (h1 p hap) hvpab
-        have := h4 hvpab
-        have hrp2 : (repPoly hr).coeff 0 p.z.2 ≠ 0 := by
+      · have hrp2 : (repPoly hr).coeff 0 p.z.2 ≠ 0 := by
           have := repPoly_eval_eq hr ▸ hrp0
           simpa only [Pi.polynomial_eval_apply', Pi.div_apply, h4 hvpab, zero_div, zero_pow_eq,
             mul_ite, mul_one, mul_zero, Finset.sum_ite_eq', Finset.mem_range, add_pos_iff,
@@ -574,23 +571,18 @@ lemma isIndex.map_apply_eq_one_iff_apply_ne_zero_of_forall_map_apply_le_of_foral
         have hvpr : v p ((repPoly hr).coeff 0 p.z.1) = 1 :=
           (hAv.forall_iff_of_ne p ((repPoly hr).coeff 0) (coeff_repPoly_mem hr 0) hrp1).2 hrp2
         refine repPoly_eval_eq hr ▸ Pi.polynomial_eval_apply' (repPoly hr) .. ▸ ?_
-        ·
-          have := (v p).map_sum_eq_of_lt
-            (Finset.mem_range.2 <| Nat.zero_lt_succ (repPoly hr).natDegree) (f :=
-              fun n => (repPoly hr).coeff n p.z.1 * (a / b) p.z.1 ^ n)
+        · have := (v p).map_sum_eq_of_lt
+            (Finset.mem_range.2 <| Nat.zero_lt_succ (repPoly hr).natDegree)
+            (f := fun n => (repPoly hr).coeff n p.z.1 * (a / b) p.z.1 ^ n)
           simp only [pow_zero, mul_one, hvpr, ne_eq, one_ne_zero, not_false_eq_true,
-            Nat.succ_eq_add_one, Finset.mem_sdiff, Finset.mem_range, Finset.mem_singleton, map_mul,
-            map_pow, and_imp, forall_const] at this
-          refine this ?_
-          · intro n hnr hn
-            sorry
-
-
-
-
-
-
-      --have := hAv.forall_iff_of_ne p b hb
+            Finset.mem_sdiff, Finset.mem_singleton, map_mul, map_pow, and_imp, forall_const] at this
+          refine this fun n hnr hn => ?_
+          · by_cases hrnp : (repPoly hr).coeff n p.z.1 = 0
+            · exact hrnp ▸ (v p).map_zero ▸ (zero_mul ((v p _) ^ n)).symm ▸ rfl
+            · exact Pi.div_apply a .. ▸ (v p).map_div (a _) .. ▸
+                mul_lt_one_of_nonneg_of_lt_one_right (hAv.forall_le_of_ne p ((repPoly hr).coeff n)
+                  (coeff_repPoly_mem hr n) hrnp) (zero_le _) (pow_lt_one' ((div_lt_one
+                    (lt_of_le_of_ne (zero_le _) hvpb.symm)).2 (lt_of_le_of_ne (h1 p hap) hvpab)) hn)
   · sorry
 
 end SpringLike'
