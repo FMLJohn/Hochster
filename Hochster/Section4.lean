@@ -469,7 +469,13 @@ lemma isIndex.false_of_apply_eq_zero_of_apply_ne_zero {X : Type*} [TopologicalSp
     {i : X → Type*} [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
     {A : Subring (Π x : X, i x)} {hA : SpringLike' A} (hAv : hA.isIndex v) {a b : Π x : X, i x}
     (ha : a ∈ A) (hb : b ∈ A) {p : σ(X)} (hap1 : a p.z.1 = 0) (hap2 : a p.z.2 ≠ 0)
-    (hbp1 : b p.z.1 ≠ 0) (hbp2 : b p.z.2 = 0) : False := sorry
+    (hbp1 : b p.z.1 ≠ 0) (hbp2 : b p.z.2 = 0) : False := by
+  have : v p ((a + b) p.z.1) = 1 :=
+    (hAv.forall_iff_of_ne p (a + b) (add_mem ha hb)
+      (Pi.add_apply a .. ▸ hap1.symm ▸ (zero_add (b p.z.1)).symm ▸ hbp1)).2
+        (Pi.add_apply a .. ▸ hbp2.symm ▸ (add_zero (a p.z.2)).symm ▸ hap2)
+  have : v p (b p.z.1) = 1 := zero_add (b p.z.1) ▸ hap1 ▸ Pi.add_apply a .. ▸ this
+  exact (hAv.forall_iff_of_ne p b hb hbp1).1 this hbp2
 
 lemma isIndex.map_apply_eq_one_iff_apply_ne_zero_of_forall_map_apply_le_of_forall_ne_zero
     {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
