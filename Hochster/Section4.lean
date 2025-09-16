@@ -592,19 +592,39 @@ lemma isIndex.map_apply_eq_one_iff_apply_ne_zero_of_forall_map_apply_le_of_foral
         zero_lt_one, or_true, this]
       exact hAv.forall_iff_of_ne p ((repPoly hr).coeff 0) (coeff_repPoly_mem hr 0) hrp
 
-lemma isIndex.exists_le_map_apply_of_forall_map_apply_le_of_forall_apply_ne_zero
+lemma isIndex.exists_le_map_apply_of_mem_closure_insert_div
     {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
     {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
     {hA : SpringLike' A} (hAv : hA.isIndex v) {a b r : Π x : X, i x} (ha : a ∈ A) (hb : b ∈ A)
-    (hab : ∀ x : X, b x = 0 → a x = 0) (hr : r ∈ closure (A.carrier.insert (a / b)))
-    (h1 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) ≤ v p (b p.z.1))
-    (h2 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) = v p (b p.z.1) → b p.z.2 ≠ 0) :
+    (hab : ∀ x : X, b x = 0 → a x = 0) (hr : r ∈ closure (A.carrier.insert (a / b))) :
     ∃ s > (0 : ℝ), ∀ p : σ(X), r p.z.1 ≠ 0 → s ≤ v p (r p.z.1) := by
   obtain ⟨s1, hs1, hvrs1⟩ := hAv.forall_exists_le ((repPoly hr).coeff 0) (coeff_repPoly_mem hr 0)
   obtain ⟨s2, hs2, hvbrs2⟩ := hAv.forall_exists_le (r * b ^ (repPoly hr).natDegree)
     (Pi.mul_pow_mem_of_mem_closure_insert_div_of_natDegree_repPoly_le ha hb hab hr
       (repPoly hr).natDegree.le_refl)
   refine ⟨min s1 s2, lt_min hs1 hs2, fun p hrp => ?_⟩
-  · sorry
+  · by_cases hbp : b p.z.1 = 0
+    · by_cases hrp0 : (repPoly hr).coeff 0 p.z.1 = 0
+      · have := repPoly_eval_eq hr ▸ hrp
+        simp only [Pi.polynomial_eval_apply', Pi.div_apply, hbp, div_zero, zero_pow_eq, mul_ite,
+          mul_one, mul_zero, Finset.sum_ite_eq', Finset.mem_range, add_pos_iff, zero_lt_one,
+          or_true] at this
+        exact False.elim (this hrp0)
+      · refine repPoly_eval_eq hr ▸ ?_
+        · simp only [Pi.polynomial_eval_apply', Pi.div_apply, hbp, div_zero, zero_pow_eq, mul_ite,
+            mul_one, mul_zero, Finset.sum_ite_eq', Finset.mem_range, add_pos_iff, zero_lt_one,
+            or_true, inf_le_iff]
+          exact Or.intro_left _ (hvrs1 p hrp0)
+    · have : s2 ≤ ↑(v p (r p.z.1) * v p (b p.z.1) ^ (repPoly hr).natDegree) :=
+        (v p).map_pow .. ▸ Pi.pow_apply b (repPoly hr).natDegree _ ▸ (v p).map_mul .. ▸
+          Pi.mul_apply r .. ▸ hvbrs2 p (Pi.mul_apply r .. ▸ Pi.pow_apply b (repPoly hr).natDegree _
+            ▸ mul_ne_zero hrp (pow_ne_zero _ hbp))
+      have : s2 ≤ v p (r p.z.1) := by
+        refine this.trans <| ?_
+        · simp only [NNRat.cast_mul, NNRat.cast_pow]
+          exact mul_le_of_le_one_right (v p (r p.z.1)).cast_nonneg <|
+            pow_le_one₀ (v p (b p.z.1)).cast_nonneg <| NNRat.cast_le_one.2 <|
+              hAv.forall_le_of_ne p b hb hbp
+      exact inf_le_of_right_le this
 
 end SpringLike'
