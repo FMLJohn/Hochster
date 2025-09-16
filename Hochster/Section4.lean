@@ -583,6 +583,13 @@ lemma isIndex.map_apply_eq_one_iff_apply_ne_zero_of_forall_map_apply_le_of_foral
                 mul_lt_one_of_nonneg_of_lt_one_right (hAv.forall_le_of_ne p ((repPoly hr).coeff n)
                   (coeff_repPoly_mem hr n) hrnp) (zero_le _) (pow_lt_one' ((div_lt_one
                     (lt_of_le_of_ne (zero_le _) hvpb.symm)).2 (lt_of_le_of_ne (h1 p hap) hvpab)) hn)
-  · sorry
+  · refine repPoly_eval_eq hr ▸ ?_
+    · have : a p.z.2 = 0 :=
+        (IsClosed.closure_subset_iff ⟨hA.forall_isOpen a ha⟩).2 (Set.singleton_subset_iff.mpr hap)
+          p.mem_closure
+      simp only [Pi.polynomial_eval_apply', Pi.div_apply, Set.mem_setOf_eq ▸ hap, zero_div,
+        zero_pow_eq, mul_ite, mul_one, mul_zero, Finset.sum_ite_eq', Finset.mem_range, add_pos_iff,
+        zero_lt_one, or_true, this]
+      exact hAv.forall_iff_of_ne p ((repPoly hr).coeff 0) (coeff_repPoly_mem hr 0) hrp
 
 end SpringLike'
