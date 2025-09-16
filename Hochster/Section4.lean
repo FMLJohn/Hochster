@@ -549,6 +549,11 @@ lemma isIndex.map_apply_eq_one_iff_apply_ne_zero_of_forall_map_apply_le_of_foral
       ·
         have := lt_of_le_of_ne (h1 p hap) hvpab
         have := h4 hvpab
+        have hrp2 : (repPoly hr).coeff 0 p.z.2 ≠ 0 := by
+          have := repPoly_eval_eq hr ▸ hrp0
+          simpa only [Pi.polynomial_eval_apply', Pi.div_apply, h4 hvpab, zero_div, zero_pow_eq,
+            mul_ite, mul_one, mul_zero, Finset.sum_ite_eq', Finset.mem_range, add_pos_iff,
+            zero_lt_one, or_true] using this
         have hrp1 : (repPoly hr).coeff 0 p.z.1 ≠ 0 := by
           intro h
           have hbrp1 : ((r - (repPoly hr).coeff 0) * b ^ (repPoly hr).natDegree) p.z.1 ≠ 0 :=
@@ -564,13 +569,27 @@ lemma isIndex.map_apply_eq_one_iff_apply_ne_zero_of_forall_map_apply_le_of_foral
             sub_mul r .. ▸ sub_mem (Pi.mul_pow_mem_of_mem_closure_insert_div_of_natDegree_repPoly_le
               ha hb hab hr (repPoly hr).natDegree.le_refl) (A.mul_mem (coeff_repPoly_mem hr 0)
                 (A.pow_mem hb _))
-          sorry
-        have hrp2 : (repPoly hr).coeff 0 p.z.2 ≠ 0 := by
-          have := repPoly_eval_eq hr ▸ hrp0
-          simpa only [Pi.polynomial_eval_apply', Pi.div_apply, h4 hvpab, zero_div, zero_pow_eq,
-            mul_ite, mul_one, mul_zero, Finset.sum_ite_eq', Finset.mem_range, add_pos_iff,
-            zero_lt_one, or_true] using this
-        sorry
+          exact false_of_apply_eq_zero_of_apply_ne_zero hAv (coeff_repPoly_mem hr 0) hbrpA h hrp2
+            hbrp1 hbrp2
+        have hvpr : v p ((repPoly hr).coeff 0 p.z.1) = 1 :=
+          (hAv.forall_iff_of_ne p ((repPoly hr).coeff 0) (coeff_repPoly_mem hr 0) hrp1).2 hrp2
+        refine repPoly_eval_eq hr ▸ Pi.polynomial_eval_apply' (repPoly hr) .. ▸ ?_
+        ·
+          have := (v p).map_sum_eq_of_lt
+            (Finset.mem_range.2 <| Nat.zero_lt_succ (repPoly hr).natDegree) (f :=
+              fun n => (repPoly hr).coeff n p.z.1 * (a / b) p.z.1 ^ n)
+          simp only [pow_zero, mul_one, hvpr, ne_eq, one_ne_zero, not_false_eq_true,
+            Nat.succ_eq_add_one, Finset.mem_sdiff, Finset.mem_range, Finset.mem_singleton, map_mul,
+            map_pow, and_imp, forall_const] at this
+          refine this ?_
+          · intro n hnr hn
+            sorry
+
+
+
+
+
+
       --have := hAv.forall_iff_of_ne p b hb
   · sorry
 
