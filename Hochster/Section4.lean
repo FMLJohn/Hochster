@@ -482,7 +482,7 @@ lemma isIndex.map_apply_eq_one_iff_apply_ne_zero_of_forall_map_apply_le_of_foral
       (iff_not_comm.1 <| hAv.forall_iff_of_ne p a ha hap).2 <| ne_of_lt <| lt_of_lt_of_le
         (lt_of_le_of_ne (h1 p hap) hvpab) (hAv.forall_le_of_ne p b hb fun hbp =>
           hap <| hab p.z.1 hbp)
-    refine ⟨fun hvpr => ?_, ?_⟩
+    refine ⟨fun hvpr => ?_, fun hrp0 => ?_⟩
     · by_cases hvpab : v p (a p.z.1) = v p (b p.z.1)
       · have : v p ((r * b ^ (repPoly hr).natDegree) p.z.1) = 1 :=
           (v p).map_mul .. ▸ hvpr.symm ▸ (one_mul (v p _)).symm ▸
@@ -525,8 +525,7 @@ lemma isIndex.map_apply_eq_one_iff_apply_ne_zero_of_forall_map_apply_le_of_foral
             ite_eq_right_iff, Classical.not_imp]
           exact ⟨fun hr0 => (hr0 ▸ hrp0) rfl, hrp0⟩
     · by_cases hvpab : v p (a p.z.1) = v p (b p.z.1)
-      · intro hrp0
-        have : (r * b ^ (repPoly hr).natDegree) p.z.2 ≠ 0 :=
+      · have : (r * b ^ (repPoly hr).natDegree) p.z.2 ≠ 0 :=
           Pi.mul_apply r .. ▸ Pi.pow_apply b (repPoly hr).natDegree _ ▸
             mul_ne_zero hrp0 (pow_ne_zero _ <| h2 p hap hvpab)
         have :  v p ((r * b ^ (repPoly hr).natDegree) p.z.1) = 1 :=
@@ -535,9 +534,14 @@ lemma isIndex.map_apply_eq_one_iff_apply_ne_zero_of_forall_map_apply_le_of_foral
               (repPoly hr).natDegree.le_refl) hbrp).2 this
         simp only [Pi.mul_apply, Pi.pow_apply, map_mul, map_pow, h3 hvpab, one_pow, mul_one] at this
         exact this
-      · contrapose
-        intro hvpr hrp0
+      ·
+        have := lt_of_le_of_ne (h1 p hap) hvpab
+        have := h4 hvpab
+        have : (repPoly hr).coeff 0 p.z.1 ≠ 0 := by
+          intro h
+          sorry
         sorry
+
 
 
 
