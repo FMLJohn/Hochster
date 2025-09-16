@@ -553,7 +553,7 @@ lemma isIndex.map_apply_eq_one_iff_apply_ne_zero_of_forall_map_apply_le_of_foral
               ha hb hab hr (repPoly hr).natDegree.le_refl) (A.mul_mem (coeff_repPoly_mem hr 0)
                 (A.pow_mem hb _))
           sorry
-        have : (repPoly hr).coeff 0 p.z.2 ≠ 0 := by
+        have hrp2 : (repPoly hr).coeff 0 p.z.2 ≠ 0 := by
           have := repPoly_eval_eq hr ▸ hrp0
           simpa only [Pi.polynomial_eval_apply', Pi.div_apply, h4 hvpab, zero_div, zero_pow_eq,
             mul_ite, mul_one, mul_zero, Finset.sum_ite_eq', Finset.mem_range, add_pos_iff,
