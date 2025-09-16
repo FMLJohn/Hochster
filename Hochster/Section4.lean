@@ -465,6 +465,12 @@ lemma isIndex.map_apply_le_one_of_mem_closure_insert_div_of_forall_map_apply_le
     · simpa only [h0] using hAv.forall_le_of_ne p _ (coeff_repPoly_mem hr 0) hrp
     · simp only [h0, reduceIte, map_zero, zero_le]
 
+lemma isIndex.false_of_apply_eq_zero_of_apply_ne_zero {X : Type*} [TopologicalSpace X]
+    {i : X → Type*} [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
+    {A : Subring (Π x : X, i x)} {hA : SpringLike' A} (hAv : hA.isIndex v) {a b : Π x : X, i x}
+    (ha : a ∈ A) (hb : b ∈ A) {p : σ(X)} (hap1 : a p.z.1 = 0) (hap2 : a p.z.2 ≠ 0)
+    (hbp1 : b p.z.1 ≠ 0) (hbp2 : b p.z.2 = 0) : False := sorry
+
 lemma isIndex.map_apply_eq_one_iff_apply_ne_zero_of_forall_map_apply_le_of_forall_ne_zero
     {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
     {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
