@@ -539,18 +539,21 @@ lemma isIndex.map_apply_eq_one_iff_apply_ne_zero_of_forall_map_apply_le_of_foral
         have := h4 hvpab
         have : (repPoly hr).coeff 0 p.z.1 ≠ 0 := by
           intro h
+          have : ((r - (repPoly hr).coeff 0) * b ^ (repPoly hr).natDegree) p.z.1 ≠ 0 :=
+            Pi.mul_apply (r - _) .. ▸ Pi.sub_apply r .. ▸ h.symm ▸ (sub_zero (r _)).symm ▸
+              Pi.mul_apply r .. ▸ hbrp
+          have : ((r - (repPoly hr).coeff 0) * b ^ (repPoly hr).natDegree) p.z.2 = 0 := by
+            refine Pi.mul_apply (r - _) .. ▸ Pi.sub_apply r .. ▸
+              mul_eq_zero_of_left (congrFun (repPoly_eval_eq hr).symm p.z.2 ▸ ?_) _
+            · simp only [Pi.polynomial_eval_apply', Pi.div_apply, h4 hvpab, zero_div, zero_pow_eq,
+                mul_ite, mul_one, mul_zero, Finset.sum_ite_eq', Finset.mem_range, add_pos_iff,
+                zero_lt_one, or_true, reduceIte, sub_self]
+          have : (r - (repPoly hr).coeff 0) * b ^ (repPoly hr).natDegree ∈ A :=
+            sub_mul r .. ▸ sub_mem (Pi.mul_pow_mem_of_mem_closure_insert_div_of_natDegree_repPoly_le
+              ha hb hab hr (repPoly hr).natDegree.le_refl) (A.mul_mem (coeff_repPoly_mem hr 0)
+                (A.pow_mem hb _))
           sorry
         sorry
-
-
-
-
-
-
-
-
-
-
       --have := hAv.forall_iff_of_ne p b hb
   · sorry
 
