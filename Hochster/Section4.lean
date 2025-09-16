@@ -599,6 +599,12 @@ lemma isIndex.exists_le_map_apply_of_forall_map_apply_le_of_forall_apply_ne_zero
     (hab : ∀ x : X, b x = 0 → a x = 0) (hr : r ∈ closure (A.carrier.insert (a / b)))
     (h1 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) ≤ v p (b p.z.1))
     (h2 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) = v p (b p.z.1) → b p.z.2 ≠ 0) :
-    ∃ s > (0 : ℝ), ∀ p : σ(X), r p.z.1 ≠ 0 → s ≤ v p (r p.z.1) := sorry
+    ∃ s > (0 : ℝ), ∀ p : σ(X), r p.z.1 ≠ 0 → s ≤ v p (r p.z.1) := by
+  obtain ⟨s1, hs1, hvrs1⟩ := hAv.forall_exists_le ((repPoly hr).coeff 0) (coeff_repPoly_mem hr 0)
+  obtain ⟨s2, hs2, hvbrs2⟩ := hAv.forall_exists_le (r * b ^ (repPoly hr).natDegree)
+    (Pi.mul_pow_mem_of_mem_closure_insert_div_of_natDegree_repPoly_le ha hb hab hr
+      (repPoly hr).natDegree.le_refl)
+  refine ⟨min s1 s2, lt_min hs1 hs2, fun p hrp => ?_⟩
+  · sorry
 
 end SpringLike'
