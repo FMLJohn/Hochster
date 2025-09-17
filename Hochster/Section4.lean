@@ -627,4 +627,12 @@ lemma isIndex.exists_le_map_apply_of_mem_closure_insert_div
               hAv.forall_le_of_ne p b hb hbp
       exact inf_le_of_right_le this
 
+def isIndex.closureInsertDivIsIndex {X : Type*} [TopologicalSpace X] {i : X → Type*}
+    [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
+    {A : Subring (Π x : X, i x)} {hA : SpringLike' A} (hAv : hA.isIndex v)
+    {a b : Π x : X, i x} (ha : a ∈ A) (hb : b ∈ A) (hab : ∀ x : X, b x = 0 → a x = 0)
+    (h1 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) ≤ v p (b p.z.1))
+    (h2 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) = v p (b p.z.1) → b p.z.2 ≠ 0) :
+    (hAv.closureInsertDiv ha hb hab h1 h2).isIndex v := sorry
+
 end SpringLike'
