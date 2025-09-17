@@ -633,6 +633,13 @@ def isIndex.closureInsertDivIsIndex {X : Type*} [TopologicalSpace X] {i : X → 
     {a b : Π x : X, i x} (ha : a ∈ A) (hb : b ∈ A) (hab : ∀ x : X, b x = 0 → a x = 0)
     (h1 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) ≤ v p (b p.z.1))
     (h2 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) = v p (b p.z.1) → b p.z.2 ≠ 0) :
-    (hAv.closureInsertDiv ha hb hab h1 h2).isIndex v := sorry
+    (hAv.closureInsertDiv ha hb hab h1 h2).isIndex v where
+  forall_isRankOneDiscrete := hAv.forall_isRankOneDiscrete
+  forall_le_of_ne _ _ hr hrp := map_apply_le_one_of_mem_closure_insert_div_of_forall_map_apply_le
+    hAv hab hr hrp h1
+  forall_iff_of_ne _ _ hr hrp :=
+    map_apply_eq_one_iff_apply_ne_zero_of_forall_map_apply_le_of_forall_ne_zero hAv ha hb hab hr
+      hrp h1 h2
+  forall_exists_le _ hr := exists_le_map_apply_of_mem_closure_insert_div hAv ha hb hab hr
 
 end SpringLike'
