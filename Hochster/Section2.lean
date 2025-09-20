@@ -107,7 +107,7 @@ lemma generateFrom_isConstructible_eq_generateFrom_union_compl_image
     refine Set.eq_of_subset_of_subset (BooleanSubalgebra.closure_mono fun s ⟨hs1, hs2⟩ => ?_) ?_
     · exact Or.intro_left _ ⟨hs1, (QuasiSeparatedSpace.isRetrocompact_iff_isCompact hs1).1 hs2⟩
     · intro s hs
-      simp only [Set.mem_setOf_eq]
+      change IsConstructible s
       refine BooleanSubalgebra.mem_closure.1 hs ?_
       · refine fun t ht => Or.elim ht (fun ⟨ht1, ht2⟩ => ?_) fun ⟨u, ⟨hu1, hu2⟩, hut⟩ => ?_
         · exact BooleanSubalgebra.subset_closure ⟨ht1,

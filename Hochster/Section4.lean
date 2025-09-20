@@ -1,5 +1,4 @@
-import Mathlib.Data.Real.Basic
-import Mathlib.RingTheory.Valuation.Discrete.Basic
+import Mathlib
 
 import Hochster.Section3
 
@@ -463,7 +462,7 @@ lemma map_apply_le_one_of_mem_closure_insert_div_of_forall_map_apply_le
       mul_zero, Finset.sum_ite_eq']
     by_cases h0 : 0 ∈ (repPoly hr).support
     · simpa only [h0] using hAv.forall_le_of_ne p _ (coeff_repPoly_mem hr 0) hrp
-    · simp only [h0, reduceIte, map_zero, zero_le]
+    · simp [h0, reduceIte, map_zero]
 
 lemma false_of_apply_eq_zero_of_apply_ne_zero {X : Type*} [TopologicalSpace X]
     {i : X → Type*} [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
