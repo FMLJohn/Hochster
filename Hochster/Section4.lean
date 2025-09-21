@@ -1,5 +1,4 @@
-import Mathlib.Data.Real.Basic
-import Mathlib.RingTheory.Valuation.Discrete.Basic
+import Mathlib
 
 import Hochster.Section3
 
@@ -388,14 +387,14 @@ lemma isClosed_vanishing_set_of_forall_map_apply_le_of_forall_ne_zero
         have habry : -((repPoly hr).coeff 0 y * b y ^ (repPoly hr).natDegree) =
             ∑ n ∈ Finset.range ((repPoly hr).natDegree + 1) \ {0},
               (repPoly hr).coeff n y * a y ^ n * b y ^ ((repPoly hr).natDegree - n) := by
-          have := mul_eq_zero_of_left ((Finset.sum_sdiff (f := fun n => (repPoly hr).coeff .. * _)
-            <| Finset.singleton_subset_iff.mpr <| Finset.mem_range.mpr <| (1 : ℕ).le_add_left _) ▸
-            Pi.polynomial_eval_apply' (repPoly hr) _ y ▸ Set.mem_setOf_eq ▸ repPoly_eval_eq hr ▸
-              hry) (b y ^ (repPoly hr).natDegree)
+          have := mul_eq_zero_of_left ((Finset.sum_sdiff (f := fun n =>
+            (repPoly hr).coeff n y * (a / b) y ^ n) <| Finset.singleton_subset_iff.mpr <|
+            Finset.mem_range.mpr <| (1 : ℕ).le_add_left _) ▸ Pi.polynomial_eval_apply' (repPoly hr)
+              _ y ▸ Set.mem_setOf_eq ▸ repPoly_eval_eq hr ▸ hry) (b y ^ (repPoly hr).natDegree)
           simp only [add_mul, add_eq_zero_iff_neg_eq', Finset.sum_singleton, pow_zero, mul_one,
             Finset.sum_mul] at this
-          exact this ▸ Finset.sum_congr rfl fun n hn => mul_assoc ((repPoly hr).coeff ..) .. ▸
-            (mul_assoc ((repPoly hr).coeff ..) ..).symm ▸ (Nat.add_sub_of_le <|
+          exact this ▸ Finset.sum_congr rfl fun n hn => mul_assoc ((repPoly hr).coeff n y) .. ▸
+            (mul_assoc ((repPoly hr).coeff n y) ..).symm ▸ (Nat.add_sub_of_le <|
               Finset.mem_range_succ_iff.1 (Finset.mem_sdiff.1 hn).1) ▸ Nat.add_sub_self_left .. ▸
               pow_add (b y) .. ▸ mul_assoc ((a y / _) ^ n) .. ▸ mul_pow (a y / _) .. ▸
               (div_mul_cancel₀ (a y) (fun hby => hay <| hab y hby)).symm ▸ rfl
@@ -463,7 +462,7 @@ lemma map_apply_le_one_of_mem_closure_insert_div_of_forall_map_apply_le
       mul_zero, Finset.sum_ite_eq']
     by_cases h0 : 0 ∈ (repPoly hr).support
     · simpa only [h0] using hAv.forall_le_of_ne p _ (coeff_repPoly_mem hr 0) hrp
-    · simp only [h0, reduceIte, map_zero, zero_le]
+    · simp [h0, reduceIte, map_zero]
 
 lemma false_of_apply_eq_zero_of_apply_ne_zero {X : Type*} [TopologicalSpace X]
     {i : X → Type*} [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
@@ -554,7 +553,7 @@ lemma map_apply_eq_one_iff_apply_ne_zero_of_forall_map_apply_le_of_forall_ne_zer
         have hrp1 : (repPoly hr).coeff 0 p.z.1 ≠ 0 := by
           intro h
           have hbrp1 : ((r - (repPoly hr).coeff 0) * b ^ (repPoly hr).natDegree) p.z.1 ≠ 0 :=
-            Pi.mul_apply (r - _) .. ▸ Pi.sub_apply r .. ▸ h.symm ▸ (sub_zero (r _)).symm ▸
+            Pi.mul_apply (r - _) .. ▸ Pi.sub_apply r .. ▸ h.symm ▸ (sub_zero (r p.z.1)).symm ▸
               Pi.mul_apply r .. ▸ hbrp
           have hbrp2 : ((r - (repPoly hr).coeff 0) * b ^ (repPoly hr).natDegree) p.z.2 = 0 := by
             refine Pi.mul_apply (r - _) .. ▸ Pi.sub_apply r .. ▸
