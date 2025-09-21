@@ -93,7 +93,7 @@ lemma CompactSpace_of_forall :
             forall_imp (forall_exists ⟨s, hsT⟩).choose (Subtype.coe_prop
               (forall_exists ⟨s, hsT⟩).choose) s hsT rfl
         · intro forall_mem i his r mem eq
-          have : i = (forall_exists ⟨r, mem⟩).choose := (Subtype.ext_iff_val.1 eq).symm
+          have : i = (forall_exists ⟨r, mem⟩).choose := (Subtype.ext_iff.1 eq).symm
           rw [this, (forall_exists ⟨r, mem⟩).choose_spec]
           exact forall_mem r mem
       rw [← eq]
