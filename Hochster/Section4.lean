@@ -680,11 +680,22 @@ lemma wefwefwef
     | succ n hn =>
         intro S hSA F G hSn
         obtain ⟨s, hsS⟩ := (hSn ▸ S.card_ne_zero.1) n.succ_ne_zero
-        have := hn (S \ {s}) (fun t htS => hSA t (S.mem_sdiff.1 htS).1)
+        have := (hn (S \ {s}) (fun t htS => hSA t (S.mem_sdiff.1 htS).1)
           (fun ⟨t, htS⟩ => F ⟨t, (S.mem_sdiff.1 htS).1⟩)
           (fun ⟨t, htS⟩ => G ⟨t, (S.mem_sdiff.1 htS).1⟩)
           (add_tsub_cancel_right n 1 ▸ Finset.card_singleton s ▸ hSn ▸
-            ({s} : Finset _).card_sdiff_of_subset (S.singleton_subset_iff.mpr hsS))
+            ({s} : Finset _).card_sdiff_of_subset (S.singleton_subset_iff.mpr hsS))).1
+        have : closure (A ∪ { a | ∃ s ∈ S, s.1 / s.2 = a }) =
+            closure ((closure (A ∪ { a | ∃ t ∈ S \ {s}, t.1 / t.2 = a })).carrier.insert
+              (s.1 / s.2)) := by
+          simp only [Set.insert, ← Set.insert_def, ← Set.union_singleton,
+            closure_union _ {s.1 / s.2}]
+          erw [(closure (A ∪ { a | ∃ t ∈ S \ {s}, t.1 / t.2 = a })).closure_eq]
+          simp only [← closure_union _ {s.1 / s.2}, Set.union_assoc]
+          have : { a | ∃ s ∈ S, s.1 / s.2 = a } =
+              { a | ∃ t ∈ S \ {s}, t.1 / t.2 = a } ∪ {s.1 / s.2} := by
+            sorry
+          sorry
         sorry
 
 end SpringLike'.isIndex
