@@ -1,4 +1,5 @@
-import Mathlib
+import Mathlib.Data.NNRat.Order
+import Mathlib.RingTheory.Valuation.Discrete.Basic
 
 import Hochster.Section3
 
@@ -656,5 +657,28 @@ lemma forall_map_apply_le_and_forall_apply_ne_zero_iff_exists_nonempty_isIndex
       ⟨hAv.closureInsertDivIsIndex ha hb hab (fun p hap => (h p hap).1) (fun p hap => (h p hap).2)⟩⟩
   · exact ⟨p.map_apply_le_of_pi_valuation_of_v_extension hab hap hAabv, fun hvpab =>
       p.apply_ne_zero_of_pi_valuation_of_v_extension_of_map_apply_eq hab hap hAabv hvpab⟩
+
+lemma wefwefwef
+    {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
+    {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
+    {hA : SpringLike' A} (hAv : hA.isIndex v) {S : Finset ((Π x : X, i x) × (Π x : X, i x))}
+    (hSA : ∀ s ∈ S, s.1 ∈ A ∧ s.2 ∈ A)
+    (F : Π s : S, SpringLike' (closure (A.carrier.insert (s.1.1 / s.1.2))))
+    (G : Π s : S, (F s).isIndex v) :
+    Nonempty (SpringLike' (closure (A.carrier ∪ { s.1 / s.2 | s ∈ S }))) := by
+  suffices ∀ n (S : Finset ((Π x : X, i x) × (Π x : X, i x))) (hSA : ∀ s ∈ S, s.1 ∈ A ∧ s.2 ∈ A)
+    (F : Π s : S, SpringLike' (closure (A.carrier.insert (s.1.1 / s.1.2))))
+    (G : Π s : S, (F s).isIndex v), S.card = n →
+      Nonempty (SpringLike' (closure (A ∪ { s.1 / s.2 | s ∈ S }))) from this S.card S hSA F G rfl
+  · intro n
+    induction n with
+    | zero =>
+        intro S _ _ _ hS0
+        simpa only [S.card_eq_zero.1 hS0, Finset.notMem_empty, false_and, exists_const,
+          Set.setOf_false, Set.union_empty, closure_eq, nonempty_prop] using hA
+    | succ n hn =>
+        intro S hSA F G hSn
+        obtain ⟨s, hsS⟩ := (hSn ▸ S.card_ne_zero.1) n.succ_ne_zero
+        sorry
 
 end SpringLike'.isIndex
