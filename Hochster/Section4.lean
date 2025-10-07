@@ -658,6 +658,7 @@ lemma forall_map_apply_le_and_forall_apply_ne_zero_iff_exists_nonempty_isIndex
   · exact ⟨p.map_apply_le_of_pi_valuation_of_v_extension hab hap hAabv, fun hvpab =>
       p.apply_ne_zero_of_pi_valuation_of_v_extension_of_map_apply_eq hab hap hAabv hvpab⟩
 
+open Classical in
 lemma wefwefwef
     {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
     {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
@@ -679,6 +680,11 @@ lemma wefwefwef
     | succ n hn =>
         intro S hSA F G hSn
         obtain ⟨s, hsS⟩ := (hSn ▸ S.card_ne_zero.1) n.succ_ne_zero
+        have := hn (S \ {s}) (fun t htS => hSA t (S.mem_sdiff.1 htS).1)
+          (fun ⟨t, htS⟩ => F ⟨t, (S.mem_sdiff.1 htS).1⟩)
+          (fun ⟨t, htS⟩ => G ⟨t, (S.mem_sdiff.1 htS).1⟩)
+          (add_tsub_cancel_right n 1 ▸ Finset.card_singleton s ▸ hSn ▸
+            ({s} : Finset _).card_sdiff_of_subset (S.singleton_subset_iff.mpr hsS))
         sorry
 
 end SpringLike'.isIndex
