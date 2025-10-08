@@ -675,43 +675,58 @@ lemma exists_isIndex_iff_exists_isIndex_of_subset_of_isIndex_of_isIndex
         ⟨hBab, hBabv⟩)⟩
 
 open Classical in
-lemma wefwefwef
+lemma exists_isIndex_of_forall_springLike'_closure_insert_div_of_forall_isIndex
     {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
     {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
     {hA : SpringLike' A} (hAv : hA.isIndex v) {S : Finset ((Π x : X, i x) × (Π x : X, i x))}
-    (hSA : ∀ s ∈ S, s.1 ∈ A ∧ s.2 ∈ A)
-    (F : Π s : S, SpringLike' (closure (A.carrier.insert (s.1.1 / s.1.2))))
+    (hSA : ∀ s ∈ S, s.1 ∈ A ∧ s.2 ∈ A) (hSX : ∀ s ∈ S, ∀ x : X, s.2 x = 0 → s.1 x = 0)
+    {F : Π s : S, SpringLike' (closure (A.carrier.insert (s.1.1 / s.1.2)))}
     (G : Π s : S, (F s).isIndex v) :
-    Nonempty (SpringLike' (closure (A.carrier ∪ { s.1 / s.2 | s ∈ S }))) := by
-  suffices ∀ n (S : Finset ((Π x : X, i x) × (Π x : X, i x))) (hSA : ∀ s ∈ S, s.1 ∈ A ∧ s.2 ∈ A)
+    ∃ hAS : SpringLike' (closure (A.carrier ∪ { s.1 / s.2 | s ∈ S })), hAS.isIndex v := by
+  suffices ∀ n (S : Finset ((Π x : X, i x) × (Π x : X, i x)))
+    (hSA : ∀ s ∈ S, s.1 ∈ A ∧ s.2 ∈ A) (hSX : ∀ s ∈ S, ∀ x : X, s.2 x = 0 → s.1 x = 0)
     (F : Π s : S, SpringLike' (closure (A.carrier.insert (s.1.1 / s.1.2))))
     (G : Π s : S, (F s).isIndex v), S.card = n →
-      Nonempty (SpringLike' (closure (A ∪ { s.1 / s.2 | s ∈ S }))) from this S.card S hSA F G rfl
+      ∃ hAS : SpringLike' (closure (A.carrier ∪ { s.1 / s.2 | s ∈ S })), hAS.isIndex v from
+        this S.card S hSA hSX F G rfl
   · intro n
     induction n with
     | zero =>
-        intro S _ _ _ hS0
-        simpa only [S.card_eq_zero.1 hS0, Finset.notMem_empty, false_and, exists_const,
-          Set.setOf_false, Set.union_empty, closure_eq, nonempty_prop] using hA
+        intro S _ _ _ _ hS0
+        simp only [Subsemiring.coe_carrier_toSubmonoid, coe_toSubsemiring, S.card_eq_zero.1 hS0,
+          Finset.notMem_empty, false_and, exists_const, Set.setOf_false, Set.union_empty,
+          closure_eq]
+        use hA
     | succ n hn =>
-        intro S hSA F G hSn
+        intro S hSA hSX F G hSn
         obtain ⟨s, hsS⟩ := (hSn ▸ S.card_ne_zero.1) n.succ_ne_zero
-        have := (hn (S \ {s}) (fun t htS => hSA t (S.mem_sdiff.1 htS).1)
-          (fun ⟨t, htS⟩ => F ⟨t, (S.mem_sdiff.1 htS).1⟩)
-          (fun ⟨t, htS⟩ => G ⟨t, (S.mem_sdiff.1 htS).1⟩)
-          (add_tsub_cancel_right n 1 ▸ Finset.card_singleton s ▸ hSn ▸
-            ({s} : Finset _).card_sdiff_of_subset (S.singleton_subset_iff.mpr hsS))).1
+        obtain ⟨hASs, hASsv⟩ : ∃ hASs : SpringLike' (closure (A.carrier ∪
+            { a | ∃ t ∈ S \ {s}, t.1 / t.2 = a })), hASs.isIndex v :=
+          hn (S \ {s}) (fun t htS => hSA t (S.mem_sdiff.1 htS).1)
+            (fun t htS => hSX t (S.mem_sdiff.1 htS).1) (fun ⟨t, htS⟩ => F ⟨t, (S.mem_sdiff.1 htS).1⟩)
+            (fun ⟨t, htS⟩ => G ⟨t, (S.mem_sdiff.1 htS).1⟩)
+            (add_tsub_cancel_right n 1 ▸ Finset.card_singleton s ▸ hSn ▸
+              ({s} : Finset _).card_sdiff_of_subset (S.singleton_subset_iff.mpr hsS))
         have : closure (A ∪ { a | ∃ s ∈ S, s.1 / s.2 = a }) =
             closure ((closure (A ∪ { a | ∃ t ∈ S \ {s}, t.1 / t.2 = a })).carrier.insert
               (s.1 / s.2)) := by
-          simp only [Set.insert, ← Set.insert_def, ← Set.union_singleton,
-            closure_union _ {s.1 / s.2}]
+          simp only [Set.insert, ← Set.insert_def, ← Set.union_singleton, closure_union _ {_}]
           erw [(closure (A ∪ { a | ∃ t ∈ S \ {s}, t.1 / t.2 = a })).closure_eq]
           simp only [← closure_union _ {s.1 / s.2}, Set.union_assoc]
           have : { a | ∃ s ∈ S, s.1 / s.2 = a } =
               { a | ∃ t ∈ S \ {s}, t.1 / t.2 = a } ∪ {s.1 / s.2} := by
-            sorry
-          sorry
-        sorry
+            ext a
+            refine ⟨fun ⟨t, htS, hta⟩ => hta ▸ ?_, fun haSs => Or.elim haSs ?_ ?_⟩
+            · by_cases hts : t = s
+              · exact hts ▸ Or.intro_right _ rfl
+              · exact Or.intro_left _ ⟨t, S.mem_sdiff.2 ⟨htS, Finset.notMem_singleton.2 hts⟩, rfl⟩
+            · exact fun ⟨t, htS, hta⟩ => ⟨t, (Finset.mem_sdiff.1 htS).1, hta⟩
+            · exact fun has => ⟨s, hsS, (funext <| congrFun has).symm⟩
+          exact this ▸ rfl
+        exact this ▸ (hASsv.forall_map_apply_le_and_forall_apply_ne_zero_iff_exists_isIndex
+          (mem_closure_of_mem <| Or.intro_left _ (hSA s hsS).1)
+          (mem_closure_of_mem <| Or.intro_left _ (hSA s hsS).2) (hSX s hsS)).1
+            ((hAv.forall_map_apply_le_and_forall_apply_ne_zero_iff_exists_isIndex (hSA s hsS).1
+              (hSA s hsS).2 (hSX s hsS)).2 ⟨F ⟨s, hsS⟩, G ⟨s, hsS⟩⟩)
 
 end SpringLike'.isIndex
