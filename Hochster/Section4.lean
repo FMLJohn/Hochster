@@ -643,20 +643,36 @@ def closureInsertDivIsIndex {X : Type*} [TopologicalSpace X] {i : X → Type*}
   forall_exists_le _ hr := exists_le_map_apply_of_mem_closure_insert_div hAv ha hb hab hr
 
 /-- This is Theorem 3 in the paper. -/
-lemma forall_map_apply_le_and_forall_apply_ne_zero_iff_exists_nonempty_isIndex
+lemma forall_map_apply_le_and_forall_apply_ne_zero_iff_exists_isIndex
     {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
     {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
     {hA : SpringLike' A} (hAv : hA.isIndex v) {a b : Π x : X, i x}
     (ha : a ∈ A) (hb : b ∈ A) (hab : ∀ x : X, b x = 0 → a x = 0) :
     (∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) ≤ v p (b p.z.1) ∧
       (v p (a p.z.1) = v p (b p.z.1) → b p.z.2 ≠ 0)) ↔
-        ∃ hAab : SpringLike' (closure (A.carrier.insert (a / b))),
-          Nonempty (hAab.isIndex v) := by
-  refine ⟨fun h => ?_, fun ⟨hAab, ⟨hAabv⟩⟩ p hap => ?_⟩
+        ∃ hAab : SpringLike' (closure (A.carrier.insert (a / b))), hAab.isIndex v := by
+  refine ⟨fun h => ?_, fun ⟨hAab, hAabv⟩ p hap => ?_⟩
   · exact ⟨hAv.closureInsertDiv ha hb hab (fun p hap => (h p hap).1) (fun p hap => (h p hap).2),
-      ⟨hAv.closureInsertDivIsIndex ha hb hab (fun p hap => (h p hap).1) (fun p hap => (h p hap).2)⟩⟩
+      hAv.closureInsertDivIsIndex ha hb hab (fun p hap => (h p hap).1) (fun p hap => (h p hap).2)⟩
   · exact ⟨p.map_apply_le_of_pi_valuation_of_v_extension hab hap hAabv, fun hvpab =>
       p.apply_ne_zero_of_pi_valuation_of_v_extension_of_map_apply_eq hab hap hAabv hvpab⟩
+
+lemma exists_isIndex_iff_exists_isIndex_of_subset_of_isIndex_of_isIndex
+    {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
+    {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A B : Subring (Π x : X, i x)}
+    {hA : SpringLike' A} {hB : SpringLike' B} (hAB : A.carrier ⊆ B.carrier)
+    (hAv : hA.isIndex v) (hBv : hB.isIndex v) {a b : Π x : X, i x} (ha : a ∈ A) (hb : b ∈ A)
+    (hab : ∀ x : X, b x = 0 → a x = 0) :
+    (∃ hAab : SpringLike' (closure (A.carrier.insert (a / b))), hAab.isIndex v) ↔
+      (∃ hBab : SpringLike' (closure (B.carrier.insert (a / b))), hBab.isIndex v) :=
+  ⟨fun ⟨hAab, hAabv⟩ =>
+    (forall_map_apply_le_and_forall_apply_ne_zero_iff_exists_isIndex hBv (hAB ha) (hAB hb) hab).1
+      ((forall_map_apply_le_and_forall_apply_ne_zero_iff_exists_isIndex hAv ha hb hab).2
+        ⟨hAab, hAabv⟩),
+  fun ⟨hBab, hBabv⟩ =>
+    (forall_map_apply_le_and_forall_apply_ne_zero_iff_exists_isIndex hAv ha hb hab).1
+      ((forall_map_apply_le_and_forall_apply_ne_zero_iff_exists_isIndex hBv (hAB ha) (hAB hb) hab).2
+        ⟨hBab, hBabv⟩)⟩
 
 open Classical in
 lemma wefwefwef
