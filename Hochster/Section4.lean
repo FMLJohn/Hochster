@@ -439,7 +439,7 @@ def closureInsertDiv {X : Type*} [TopologicalSpace X] {i : X → Type*}
     (h1 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) ≤ v p (b p.z.1))
     (h2 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) = v p (b p.z.1) → b p.z.2 ≠ 0) :
     SpringLike' (closure (A.carrier.insert (a / b))) :=
-  hA.induced fun _ hr =>
+  hA.springLike'_closure_union_of_forall_isOpen_isCompact fun _ hr =>
     ⟨(hAv.isClosed_vanishing_set_of_forall_map_apply_le_of_forall_ne_zero ha hb hab hr h1 h2).1,
       hA.isCompact_support_of_mem_closure_insert_div ha hb hab hr⟩
 
@@ -657,7 +657,7 @@ lemma forall_map_apply_le_and_forall_apply_ne_zero_iff_exists_isIndex
   · exact ⟨p.map_apply_le_of_pi_valuation_of_v_extension hab hap hAabv, fun hvpab =>
       p.apply_ne_zero_of_pi_valuation_of_v_extension_of_map_apply_eq hab hap hAabv hvpab⟩
 
-lemma exists_isIndex_iff_exists_isIndex_of_subset_of_isIndex_of_isIndex
+lemma exists_isIndex_iff_exists_isIndex_of_subset
     {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
     {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A B : Subring (Π x : X, i x)}
     {hA : SpringLike' A} {hB : SpringLike' B} (hAB : A.carrier ⊆ B.carrier)

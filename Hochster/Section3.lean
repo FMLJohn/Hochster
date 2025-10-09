@@ -135,7 +135,7 @@ def springLike (𝔸 : SpringCat) : SpringLike 𝔸.X 𝔸.A where
         Ideal.Quotient.eq_zero_iff_mem, Set.mem_setOf_eq]
     exact this ▸ 𝔸.isEmbedding.eq_induced ▸ isTopologicalBasis_basic_opens.induced 𝔸.f
 
-def springLike' (𝔸 : SpringCat) : SpringLike' 𝔸.inclusionRingHom.range where
+lemma springLike' (𝔸 : SpringCat) : SpringLike' 𝔸.inclusionRingHom.range where
   spectralSpace := inferInstance
   -- forall_eq_top := fun _ => by
   --   ext
@@ -259,7 +259,7 @@ noncomputable def spring.isAffine.homeomorph {X A : Type*}
     [TopologicalSpace X] [CommRing A] {hXA : SpringLike X A} (h : hXA.spring.isAffine) :
     X ≃ₜ PrimeSpectrum A := h.homeomorph
 
-def springLike' {X A : Type*} [TopologicalSpace X] [CommRing A] (hXA : SpringLike X A) :
+lemma springLike' {X A : Type*} [TopologicalSpace X] [CommRing A] (hXA : SpringLike X A) :
     SpringLike' hXA.h.range where
   spectralSpace := hXA.spectralSpace
   -- forall_eq_top := fun x => by
@@ -470,7 +470,7 @@ lemma Pi.ringHomToPiFractionRing_apply_ne_zero_iff_of_forall_isDomain {α : Type
 
 namespace SpringLike'
 
-def piFractionRing {X : Type*} [TopologicalSpace X]
+lemma springLike'_map_ringHomToPiFractionRing {X : Type*} [TopologicalSpace X]
     {i : X → Type*} [(x : X) → CommRing (i x)] [(x : X) → IsDomain (i x)]
     {A : Subring (Π x : X, i x)} (hA : SpringLike' A) :
     SpringLike' (A.map (Pi.ringHomToPiFractionRing i)) where
@@ -489,7 +489,7 @@ def piFractionRing {X : Type*} [TopologicalSpace X]
     · exact ⟨Pi.ringHomToPiFractionRing i a, Subring.mem_map.2 ⟨a, ha, rfl⟩, has ▸ Set.ext
         fun x => (Pi.ringHomToPiFractionRing_apply_ne_zero_iff_of_forall_isDomain a x).symm⟩
 
-def induced {X : Type*} [TopologicalSpace X]
+lemma springLike'_closure_union_of_forall_isOpen_isCompact {X : Type*} [TopologicalSpace X]
     {i : X → Type*} [(x : X) → CommRing (i x)] [(x : X) → IsDomain (i x)]
     {A : Subring (Π x : X, i x)} (hA : SpringLike' A) {B : Set (Π x : X, i x)}
     (hBA : ∀ c ∈ Subring.closure (B ∪ A),
