@@ -432,10 +432,11 @@ lemma isClosed_vanishing_set_of_forall_map_apply_le_of_forall_ne_zero
               Nat.le_refl _⟩).1 (Pi.mul_pow_natDegree_repPoly_apply_eq_zero_of_apply_eq_zero hry hr)
                 hxy, hbx⟩
 
-def closureInsertDiv {X : Type*} [TopologicalSpace X] {i : X → Type*}
-    [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
-    {A : Subring (Π x : X, i x)} {hA : SpringLike' A} (hAv : hA.isIndex v)
-    {a b : Π x : X, i x} (ha : a ∈ A) (hb : b ∈ A) (hab : ∀ x : X, b x = 0 → a x = 0)
+lemma springLike'_closure_insert_div_of_forall_map_apply_le_of_forall_ne_zero
+    {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
+    {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
+    {hA : SpringLike' A} (hAv : hA.isIndex v) {a b : Π x : X, i x}
+    (ha : a ∈ A) (hb : b ∈ A) (hab : ∀ x : X, b x = 0 → a x = 0)
     (h1 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) ≤ v p (b p.z.1))
     (h2 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) = v p (b p.z.1) → b p.z.2 ≠ 0) :
     SpringLike' (closure (A.carrier.insert (a / b))) :=
@@ -627,13 +628,15 @@ lemma exists_le_map_apply_of_mem_closure_insert_div
               hAv.forall_le_of_ne p b hb hbp
       exact inf_le_of_right_le this
 
-def closureInsertDivIsIndex {X : Type*} [TopologicalSpace X] {i : X → Type*}
-    [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
-    {A : Subring (Π x : X, i x)} {hA : SpringLike' A} (hAv : hA.isIndex v)
-    {a b : Π x : X, i x} (ha : a ∈ A) (hb : b ∈ A) (hab : ∀ x : X, b x = 0 → a x = 0)
+lemma springLike'_closure_insert_div_isIndex_of_forall_map_apply_le_of_forall_ne_zero
+    {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
+    {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
+    {hA : SpringLike' A} (hAv : hA.isIndex v) {a b : Π x : X, i x}
+    (ha : a ∈ A) (hb : b ∈ A) (hab : ∀ x : X, b x = 0 → a x = 0)
     (h1 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) ≤ v p (b p.z.1))
     (h2 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) = v p (b p.z.1) → b p.z.2 ≠ 0) :
-    (hAv.closureInsertDiv ha hb hab h1 h2).isIndex v where
+    (hAv.springLike'_closure_insert_div_of_forall_map_apply_le_of_forall_ne_zero
+      ha hb hab h1 h2).isIndex v where
   forall_isRankOneDiscrete := hAv.forall_isRankOneDiscrete
   forall_le_of_ne _ _ hr hrp := map_apply_le_one_of_mem_closure_insert_div_of_forall_map_apply_le
     hAv hab hr hrp h1
@@ -652,8 +655,10 @@ lemma forall_map_apply_le_and_forall_apply_ne_zero_iff_exists_isIndex
       (v p (a p.z.1) = v p (b p.z.1) → b p.z.2 ≠ 0)) ↔
         ∃ hAab : SpringLike' (closure (A.carrier.insert (a / b))), hAab.isIndex v := by
   refine ⟨fun h => ?_, fun ⟨hAab, hAabv⟩ p hap => ?_⟩
-  · exact ⟨hAv.closureInsertDiv ha hb hab (fun p hap => (h p hap).1) (fun p hap => (h p hap).2),
-      hAv.closureInsertDivIsIndex ha hb hab (fun p hap => (h p hap).1) (fun p hap => (h p hap).2)⟩
+  · exact ⟨hAv.springLike'_closure_insert_div_of_forall_map_apply_le_of_forall_ne_zero ha hb hab
+      (fun p hap => (h p hap).1) (fun p hap => (h p hap).2),
+      hAv.springLike'_closure_insert_div_isIndex_of_forall_map_apply_le_of_forall_ne_zero ha hb hab
+        (fun p hap => (h p hap).1) (fun p hap => (h p hap).2)⟩
   · exact ⟨p.map_apply_le_of_pi_valuation_of_v_extension hab hap hAabv, fun hvpab =>
       p.apply_ne_zero_of_pi_valuation_of_v_extension_of_map_apply_eq hab hap hAabv hvpab⟩
 
