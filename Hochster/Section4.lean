@@ -735,3 +735,19 @@ lemma exists_isIndex_of_forall_springLike'_closure_insert_div_of_forall_isIndex
               (hSA s hsS).2 (hSX s hsS)).2 ⟨F ⟨s, hsS⟩, G ⟨s, hsS⟩⟩)
 
 end SpringLike'.isIndex
+
+lemma wewew {A : Type*} [Ring A] (B : Subring A) (S : Set A) {a : A}
+    (haBS : a ∈ closure (B.carrier ∪ S)) :
+    ∃ F : Finset A, F.toSet ⊆ S ∧ a ∈ closure (B.carrier ∪ F) := by
+  refine closure_induction (fun b hbBS => ?_) ?_ ?_ ?_ (fun b hbBS ⟨F, hFS, hbBF⟩ => ?_) ?_ haBS
+  · exact ⟨((Set.finite_singleton b).inter_of_left S).toFinset,
+      fun c hcbS => Set.mem_of_mem_inter_right <|
+        ((Set.finite_singleton b).inter_of_left S).mem_toFinset.1 hcbS,
+      mem_closure_of_mem <| Or.elim hbBS (fun hbB => Set.mem_union_left _ hbB)
+        (fun hbS => Set.mem_union_right _
+          (((Set.finite_singleton b).inter_of_left S).mem_toFinset.2 <| Set.mem_inter rfl hbS))⟩
+  · exact ⟨∅, Finset.coe_empty ▸ ⟨Set.empty_subset S, zero_mem (closure (B.carrier ∪ ∅))⟩⟩
+  · exact ⟨∅, Finset.coe_empty ▸ ⟨Set.empty_subset S, one_mem (closure (B.carrier ∪ ∅))⟩⟩
+  · sorry
+  · exact ⟨F, hFS, Subring.neg_mem (closure (B.carrier ∪ F.toSet)) hbBF⟩
+  · sorry
