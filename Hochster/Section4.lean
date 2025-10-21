@@ -769,4 +769,16 @@ lemma SpringLike'.isIndex.wefwfwef
     ∃ h : SpringLike' (closure (A.carrier ∪
       { c : Π x : X, i x | ∃ a b, c = a / b ∧ a ∈ A ∧ b ∈ A ∧ (∀ x : X, b x = 0 → a x = 0) ∧
         (∃ hAab : SpringLike' (closure (A.carrier ∪ {a / b})), hAab.isIndex v) })),
-          h.isIndex v := sorry
+          h.isIndex v := by
+  refine ⟨?_, ?_⟩
+  · refine {
+    spectralSpace := hA.spectralSpace
+    forall_isOpen := by
+      intro c hcA
+      obtain ⟨F, hF, hcAF⟩ :=
+        exists_finset_subset_and_mem_closure_union_of_mem_closure_union hcA
+      sorry
+    forall_isCompact := sorry
+    isTopologicalBasis := sorry
+  }
+  · sorry
