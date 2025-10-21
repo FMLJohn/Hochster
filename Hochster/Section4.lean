@@ -760,3 +760,13 @@ lemma Subring.exists_finset_subset_and_mem_closure_union_of_mem_closure_union {R
     · exact F1.coe_union F2 ▸ closure_mono (Set.union_assoc .. ▸ Set.subset_union_left) haAF1
     · exact F1.coe_union F2 ▸ closure_mono (Set.union_comm F1.toSet F2.toSet ▸ Set.union_assoc .. ▸
         Set.subset_union_left) hbAF2
+
+open Classical in
+lemma SpringLike'.isIndex.wefwfwef
+    {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
+    {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
+    {hA : SpringLike' A} (hAv : hA.isIndex v) :
+    ∃ h : SpringLike' (closure (A.carrier ∪
+      { c : Π x : X, i x | ∃ a b, c = a / b ∧ a ∈ A ∧ b ∈ A ∧ (∀ x : X, b x = 0 → a x = 0) ∧
+        (∃ hAab : SpringLike' (closure (A.carrier ∪ {a / b})), hAab.isIndex v) })),
+          h.isIndex v := sorry
