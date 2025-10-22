@@ -734,6 +734,47 @@ lemma exists_isIndex_of_forall_springLike'_closure_insert_div_of_forall_isIndex
             ((hAv.forall_map_apply_le_and_forall_apply_ne_zero_iff_exists_isIndex (hSA s hsS).1
               (hSA s hsS).2 (hSX s hsS)).2 ⟨F ⟨s, hsS⟩, G ⟨s, hsS⟩⟩)
 
+open Classical in
+lemma exists_isIndex_of_forall_exist_eq_and_mem_and_mem_and_forall_imp_and_exists_isIndex
+    {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
+    {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
+    {hA : SpringLike' A} (hAv : hA.isIndex v) {F : Finset (Π x : X, i x)}
+    (h : ∀ f ∈ F, ∃ a b, f = a / b ∧ a ∈ A ∧ b ∈ A ∧ (∀ x : X, b x = 0 → a x = 0) ∧
+      (∃ hAf : SpringLike' (closure (A.carrier.insert f)), hAf.isIndex v)) :
+    ∃ hAF : SpringLike' (closure (A.carrier ∪ F.toSet)), hAF.isIndex v := by
+  choose! a b hFab hFAa hFAb hFXba hFAv using h
+  let S : Finset ((Π x : X, i x) × (Π x : X, i x)) := F.image (fun f => (a f, b f))
+  have hSA : ∀ s ∈ S, s.1 ∈ A ∧ s.2 ∈ A := by
+    intro s hsS
+    obtain ⟨f, hfF, habfs⟩ := Finset.mem_image.1 hsS
+    exact habfs ▸ ⟨hFAa f hfF, hFAb f hfF⟩
+  have hSX : ∀ s ∈ S, ∀ x : X, s.2 x = 0 → s.1 x = 0 := by
+    intro s hsS x hsx
+    obtain ⟨f, hfF, habfs⟩ := Finset.mem_image.1 hsS
+    have : b f x = s.2 x := habfs ▸ rfl
+    have : a f x = 0 := hFXba f hfF x (this ▸ hsx)
+    exact habfs ▸ this
+  let G : Π s : S, SpringLike' (closure (A.carrier.insert (s.1.1 / s.1.2))) := by
+    intro s
+    obtain ⟨f, hfF, habfs⟩ := Finset.mem_image.1 s.2
+    refine habfs ▸ ((hFab f hfF) ▸ hFAv f hfF).choose
+  let H : Π s : S, (G s).isIndex v := by
+    intro s
+    obtain ⟨f, hfF, habfs⟩ := Finset.mem_image.1 s.2
+    have : (G s).isIndex v = (hFab f hfF ▸ hFAv f hfF).choose.isIndex v := by
+      congr
+      · exact habfs ▸ rfl
+      · exact habfs ▸ rfl
+    exact this ▸ ((hFab f hfF) ▸ hFAv f hfF).choose_spec
+  have : F.toSet = { s.1 / s.2 | s ∈ S } := by
+    ext f
+    refine ⟨fun hfF => ?_, fun ⟨s, hsS, hsf⟩ => ?_⟩
+    · exact ⟨(a f, b f), Finset.mem_image_of_mem (fun f => (a f, b f)) hfF, (hFab f hfF).symm⟩
+    · obtain ⟨f, hfF, habfs⟩ := Finset.mem_image.1 hsS
+      exact hsf ▸ habfs ▸ (hFab f hfF) ▸ hfF
+  exact this ▸ exists_isIndex_of_forall_springLike'_closure_insert_div_of_forall_isIndex
+    hAv hSA hSX H
+
 end SpringLike'.isIndex
 
 open Classical in
@@ -768,7 +809,7 @@ lemma SpringLike'.isIndex.wefwfwef
     {hA : SpringLike' A} (hAv : hA.isIndex v) :
     ∃ h : SpringLike' (closure (A.carrier ∪
       { c : Π x : X, i x | ∃ a b, c = a / b ∧ a ∈ A ∧ b ∈ A ∧ (∀ x : X, b x = 0 → a x = 0) ∧
-        (∃ hAab : SpringLike' (closure (A.carrier ∪ {a / b})), hAab.isIndex v) })),
+        (∃ hAc : SpringLike' (closure (A.carrier.insert c)), hAc.isIndex v) })),
           h.isIndex v := by
   refine ⟨?_, ?_⟩
   · refine {
@@ -777,6 +818,8 @@ lemma SpringLike'.isIndex.wefwfwef
       intro c hcA
       obtain ⟨F, hF, hcAF⟩ :=
         exists_finset_subset_and_mem_closure_union_of_mem_closure_union hcA
+      let S : Finset ((Π x : X, i x) × (Π x : X, i x)) :=
+        sorry
       sorry
     forall_isCompact := sorry
     isTopologicalBasis := sorry
