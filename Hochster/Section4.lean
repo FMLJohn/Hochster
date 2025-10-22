@@ -828,7 +828,9 @@ lemma SpringLike'.isIndex.wefwfwef
       (fun U ⟨a, haA, haU⟩ => ⟨a, mem_closure_of_mem <| Or.intro_left _ haA, haU⟩) }
   exact {
     forall_isRankOneDiscrete := hAv.forall_isRankOneDiscrete
-    forall_le_of_ne := sorry
-    forall_iff_of_ne := sorry
-    forall_exists_le := sorry
-  }
+    forall_le_of_ne := fun p a haA hap =>
+      (hXAv (fun f hfF => hXA2 a haA hfF)).forall_le_of_ne p a (hXA3 a haA) hap
+    forall_iff_of_ne := fun p a haA hap =>
+      (hXAv (fun f hfF => hXA2 a haA hfF)).forall_iff_of_ne p a (hXA3 a haA) hap
+    forall_exists_le := fun a haA =>
+      (hXAv (fun f hfF => hXA2 a haA hfF)).forall_exists_le a (hXA3 a haA) }
