@@ -802,13 +802,13 @@ lemma Subring.exists_finset_subset_and_mem_closure_union_of_mem_closure_union {R
     · exact F1.coe_union F2 ▸ closure_mono (Set.union_comm F1.toSet F2.toSet ▸ Set.union_assoc .. ▸
         Set.subset_union_left) hbAF2
 
-lemma SpringLike'.isIndex.wefwfwef
+lemma SpringLike'.isIndex.exists_springLike'_closure_union_isIndex
     {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
     {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
     {hA : SpringLike' A} (hAv : hA.isIndex v) :
     ∃ h : SpringLike' (closure (A.carrier ∪
       { c : Π x : X, i x | ∃ a b, c = a / b ∧ a ∈ A ∧ b ∈ A ∧ (∀ x : X, b x = 0 → a x = 0) ∧
-        (∃ hAc : SpringLike' (closure (A.carrier.insert c)), hAc.isIndex v) })),
+        ∃ hAc : SpringLike' (closure (A.carrier.insert c)), hAc.isIndex v })),
           h.isIndex v := by
   choose hXA1 hXA2 hXA3 using @exists_finset_subset_and_mem_closure_union_of_mem_closure_union
     (Π x : X, i x) _ (A := A) (S := { c : Π x : X, i x | ∃ a b, c = a / b ∧ a ∈ A ∧ b ∈ A ∧
