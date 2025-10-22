@@ -802,7 +802,6 @@ lemma Subring.exists_finset_subset_and_mem_closure_union_of_mem_closure_union {R
     · exact F1.coe_union F2 ▸ closure_mono (Set.union_comm F1.toSet F2.toSet ▸ Set.union_assoc .. ▸
         Set.subset_union_left) hbAF2
 
-open Classical in
 lemma SpringLike'.isIndex.wefwfwef
     {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
     {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
@@ -811,17 +810,25 @@ lemma SpringLike'.isIndex.wefwfwef
       { c : Π x : X, i x | ∃ a b, c = a / b ∧ a ∈ A ∧ b ∈ A ∧ (∀ x : X, b x = 0 → a x = 0) ∧
         (∃ hAc : SpringLike' (closure (A.carrier.insert c)), hAc.isIndex v) })),
           h.isIndex v := by
-  refine ⟨?_, ?_⟩
-  · refine {
+  choose hXA1 hXA2 hXA3 using @exists_finset_subset_and_mem_closure_union_of_mem_closure_union
+    (Π x : X, i x) _ (A := A) (S := { c : Π x : X, i x | ∃ a b, c = a / b ∧ a ∈ A ∧ b ∈ A ∧
+      (∀ x : X, b x = 0 → a x = 0) ∧ (∃ hAc : SpringLike' (closure (A.carrier.insert c)),
+        hAc.isIndex v) })
+  choose hXA4 hXAv using
+    @exists_isIndex_of_forall_exist_eq_and_mem_and_mem_and_forall_imp_and_exists_isIndex
+      X _ i _ v A hA hAv
+  use {
     spectralSpace := hA.spectralSpace
-    forall_isOpen := by
-      intro c hcA
-      obtain ⟨F, hF, hcAF⟩ :=
-        exists_finset_subset_and_mem_closure_union_of_mem_closure_union hcA
-      let S : Finset ((Π x : X, i x) × (Π x : X, i x)) :=
-        sorry
-      sorry
-    forall_isCompact := sorry
-    isTopologicalBasis := sorry
+    forall_isOpen := fun c hcA => (hXA4 (fun f hfF => hXA2 c hcA hfF)).forall_isOpen c (hXA3 c hcA)
+    forall_isCompact := fun c hcA =>
+      (hXA4 (fun f hfF => hXA2 c hcA hfF)).forall_isCompact c (hXA3 c hcA)
+    isTopologicalBasis := IsTopologicalBasis.of_isOpen_of_subset
+      (fun U ⟨c, hcA, hcU⟩ => hcU ▸
+        (hXA4 (fun f hfF => hXA2 c hcA hfF)).forall_isOpen c (hXA3 c hcA)) hA.isTopologicalBasis
+      (fun U ⟨a, haA, haU⟩ => ⟨a, mem_closure_of_mem <| Or.intro_left _ haA, haU⟩) }
+  exact {
+    forall_isRankOneDiscrete := hAv.forall_isRankOneDiscrete
+    forall_le_of_ne := sorry
+    forall_iff_of_ne := sorry
+    forall_exists_le := sorry
   }
-  · sorry
