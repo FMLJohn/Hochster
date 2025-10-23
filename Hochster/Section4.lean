@@ -834,3 +834,12 @@ lemma SpringLike'.isIndex.exists_springLike'_closure_union_isIndex
       (hXAv (fun f hfF => hXA2 a haA hfF)).forall_iff_of_ne p a (hXA3 a haA) hap
     forall_exists_le := fun a haA =>
       (hXAv (fun f hfF => hXA2 a haA hfF)).forall_exists_le a (hXA3 a haA) }
+
+def IndExtForV {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
+    (v : Π p : σ(X), Valuation (i p.z.1) NNRat) (A : Subring (Π x : X, i x)) :
+    ℕ → Subring (Π x : X, i x)
+  | 0 => A
+  | n + 1 => closure ((IndExtForV v A n).carrier ∪
+      { c : Π x : X, i x | ∃ a b, c = a / b ∧
+        a ∈ IndExtForV v A n ∧ b ∈ IndExtForV v A n ∧ (∀ x : X, b x = 0 → a x = 0) ∧
+        ∃ hAc : SpringLike' (closure ((IndExtForV v A n).carrier.insert c)), hAc.isIndex v })
