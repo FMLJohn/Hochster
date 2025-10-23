@@ -844,13 +844,6 @@ def IndExtForV {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → F
         a ∈ IndExtForV v A n ∧ b ∈ IndExtForV v A n ∧ (∀ x : X, b x = 0 → a x = 0) ∧
         ∃ hAc : SpringLike' (closure ((IndExtForV v A n).carrier.insert c)), hAc.isIndex v })
 
-lemma IndExtForV.subset_of_le {X : Type*} [TopologicalSpace X] {i : X → Type*}
-    [(x : X) → Field (i x)] (v : Π p : σ(X), Valuation (i p.z.1) NNRat)
-    (A : Subring (Π x : X, i x)) {m n : ℕ} (hmn : m ≤ n) :
-    (IndExtForV v A m).carrier ⊆ (IndExtForV v A n).carrier :=
-  Nat.le_induction (subset_of_eq rfl) (fun _ _ hAmnv =>
-    hAmnv.trans <| subset_closure.trans <| closure_mono Set.subset_union_left) n hmn
-
 lemma SpringLike'.isIndex.exists_springLike'_indExtForV_isIndex
     {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
     {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
@@ -862,7 +855,16 @@ lemma SpringLike'.isIndex.exists_springLike'_indExtForV_isIndex
       obtain ⟨hAn, hAnv⟩ := hn
       exact hAnv.exists_springLike'_closure_union_isIndex
 
-lemma IndExtForV.mono_of_isIndex_of_isIndex {X : Type*} [TopologicalSpace X]
+namespace IndExtForV
+
+lemma subset_of_le {X : Type*} [TopologicalSpace X] {i : X → Type*}
+    [(x : X) → Field (i x)] (v : Π p : σ(X), Valuation (i p.z.1) NNRat)
+    (A : Subring (Π x : X, i x)) {m n : ℕ} (hmn : m ≤ n) :
+    (IndExtForV v A m).carrier ⊆ (IndExtForV v A n).carrier :=
+  Nat.le_induction (subset_of_eq rfl) (fun _ _ hAmnv =>
+    hAmnv.trans <| subset_closure.trans <| closure_mono Set.subset_union_left) n hmn
+
+lemma mono_of_isIndex_of_isIndex {X : Type*} [TopologicalSpace X]
     {i : X → Type*} [(x : X) → Field (i x)] (v : Π p : σ(X), Valuation (i p.z.1) NNRat)
     {A B : Subring (Π x : X, i x)} {hA : SpringLike' A} {hB : SpringLike' B}
     (hAB : A.carrier ⊆ B.carrier) (hAv : hA.isIndex v) (hBv : hB.isIndex v) (n : ℕ) :
@@ -877,3 +879,47 @@ lemma IndExtForV.mono_of_isIndex_of_isIndex {X : Type*} [TopologicalSpace X]
           obtain ⟨hBn, hBnv⟩ := hBv.exists_springLike'_indExtForV_isIndex n
           exact hcab ▸ (hAnv.exists_isIndex_iff_exists_isIndex_of_subset hn hBnv hAanv hAbnv hXba).1
             <| hcab ▸ hAabcnv
+
+end IndExtForV
+
+def ISupExtForV {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
+    (v : Π p : σ(X), Valuation (i p.z.1) NNRat) (A : Subring (Π x : X, i x)) :
+    Subring (Π x : X, i x) :=
+  iSup fun n => IndExtForV v A n
+
+lemma ISupExtForV.eq_iUnion_indExtForV {X : Type*} [TopologicalSpace X]
+    {i : X → Type*} [(x : X) → Field (i x)] (v : Π p : σ(X), Valuation (i p.z.1) NNRat)
+    (A : Subring (Π x : X, i x)) :
+    (ISupExtForV v A).carrier = ⋃ n, (IndExtForV v A n).carrier :=
+  coe_iSup_of_directed fun m n =>
+    ⟨max m n, IndExtForV.subset_of_le v A (le_max_left m n),
+      IndExtForV.subset_of_le v A (le_max_right m n)⟩
+
+lemma mem_iSupExtForV_iff {X : Type*} [TopologicalSpace X] {i : X → Type*}
+    [(x : X) → Field (i x)] (v : Π p : σ(X), Valuation (i p.z.1) NNRat)
+    (A : Subring (Π x : X, i x)) (r : Π x : X, i x) :
+    r ∈ ISupExtForV v A ↔ ∃ n, r ∈ IndExtForV v A n :=
+  mem_iSup_of_directed fun m n =>
+    ⟨max m n, IndExtForV.subset_of_le v A (le_max_left m n),
+      IndExtForV.subset_of_le v A (le_max_right m n)⟩
+
+lemma SpringLike'.isIndex.exists_springLike'_iSupExtForV_isIndex
+    {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
+    {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
+    {hA : SpringLike' A} (hAv : hA.isIndex v) :
+    ∃ hA : SpringLike' (ISupExtForV v A), hA.isIndex v := by
+  choose hAX hAXv using fun r => (mem_iSupExtForV_iff v A r).1
+  choose hAn hAnv using hAv.exists_springLike'_indExtForV_isIndex
+  use {
+    spectralSpace := hA.spectralSpace
+    forall_isOpen := fun r hrA => (hAn (hAX r hrA)).forall_isOpen r (hAXv r hrA)
+    forall_isCompact := fun r hrA => (hAn (hAX r hrA)).forall_isCompact r (hAXv r hrA)
+    isTopologicalBasis := IsTopologicalBasis.of_isOpen_of_subset
+      (fun U ⟨r, hrA, hrU⟩ => hrU ▸ (hAn (hAX r hrA)).forall_isOpen r (hAXv r hrA))
+      hA.isTopologicalBasis (fun U ⟨r, hrA, hrU⟩ => ⟨r, (mem_iSupExtForV_iff v A r).2 ⟨0, hrA⟩, hrU⟩)
+  }
+  exact {
+    forall_isRankOneDiscrete := hAv.forall_isRankOneDiscrete
+    forall_le_of_ne := fun p r hrA hrp => (hAnv (hAX r hrA)).forall_le_of_ne p r (hAXv r hrA) hrp
+    forall_iff_of_ne := fun p r hrA hrp => (hAnv (hAX r hrA)).forall_iff_of_ne p r (hAXv r hrA) hrp
+    forall_exists_le := fun r hrA => (hAnv (hAX r hrA)).forall_exists_le r (hAXv r hrA) }
