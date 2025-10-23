@@ -843,3 +843,14 @@ def IndExtForV {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → F
       { c : Π x : X, i x | ∃ a b, c = a / b ∧
         a ∈ IndExtForV v A n ∧ b ∈ IndExtForV v A n ∧ (∀ x : X, b x = 0 → a x = 0) ∧
         ∃ hAc : SpringLike' (closure ((IndExtForV v A n).carrier.insert c)), hAc.isIndex v })
+
+lemma SpringLike'.isIndex.exists_springLike'_indExtForV_isIndex
+    {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
+    {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
+    {hA : SpringLike' A} (hAv : hA.isIndex v) (n : ℕ) :
+    ∃ hAn : SpringLike' (IndExtForV v A n), hAn.isIndex v := by
+  induction n with
+  | zero => exact ⟨hA, hAv⟩
+  | succ n hn =>
+      obtain ⟨hAn, hAnv⟩ := hn
+      exact hAnv.exists_springLike'_closure_union_isIndex
