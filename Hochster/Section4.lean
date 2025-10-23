@@ -912,14 +912,14 @@ lemma SpringLike'.isIndex.exists_springLike'_iSupExtForV_isIndex
   choose hAn hAnv using hAv.exists_springLike'_indExtForV_isIndex
   use {
     spectralSpace := hA.spectralSpace
-    forall_isOpen := fun r hrA => (hAn (hAX r hrA)).forall_isOpen r (hAXv r hrA)
-    forall_isCompact := fun r hrA => (hAn (hAX r hrA)).forall_isCompact r (hAXv r hrA)
+    forall_isOpen := fun r hrA => (hAn <| hAX r hrA).forall_isOpen r (hAXv r hrA)
+    forall_isCompact := fun r hrA => (hAn <| hAX r hrA).forall_isCompact r (hAXv r hrA)
     isTopologicalBasis := IsTopologicalBasis.of_isOpen_of_subset
-      (fun U ⟨r, hrA, hrU⟩ => hrU ▸ (hAn (hAX r hrA)).forall_isOpen r (hAXv r hrA))
+      (fun U ⟨r, hrA, hrU⟩ => hrU ▸ (hAn <| hAX r hrA).forall_isOpen r <| hAXv r hrA)
       hA.isTopologicalBasis (fun U ⟨r, hrA, hrU⟩ => ⟨r, (mem_iSupExtForV_iff v A r).2 ⟨0, hrA⟩, hrU⟩)
   }
   exact {
     forall_isRankOneDiscrete := hAv.forall_isRankOneDiscrete
-    forall_le_of_ne := fun p r hrA hrp => (hAnv (hAX r hrA)).forall_le_of_ne p r (hAXv r hrA) hrp
-    forall_iff_of_ne := fun p r hrA hrp => (hAnv (hAX r hrA)).forall_iff_of_ne p r (hAXv r hrA) hrp
-    forall_exists_le := fun r hrA => (hAnv (hAX r hrA)).forall_exists_le r (hAXv r hrA) }
+    forall_le_of_ne := fun p r hrA hrp => (hAnv <| hAX r hrA).forall_le_of_ne p r (hAXv r hrA) hrp
+    forall_iff_of_ne := fun p r hrA hrp => (hAnv <| hAX r hrA).forall_iff_of_ne p r (hAXv r hrA) hrp
+    forall_exists_le := fun r hrA => (hAnv <| hAX r hrA).forall_exists_le r <| hAXv r hrA }
