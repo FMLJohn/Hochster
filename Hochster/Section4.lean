@@ -844,6 +844,13 @@ def IndExtForV {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → F
         a ∈ IndExtForV v A n ∧ b ∈ IndExtForV v A n ∧ (∀ x : X, b x = 0 → a x = 0) ∧
         ∃ hAc : SpringLike' (closure ((IndExtForV v A n).carrier.insert c)), hAc.isIndex v })
 
+lemma IndExtForV.subset_of_le {X : Type*} [TopologicalSpace X] {i : X → Type*}
+    [(x : X) → Field (i x)] (v : Π p : σ(X), Valuation (i p.z.1) NNRat)
+    (A : Subring (Π x : X, i x)) {m n : ℕ} (hmn : m ≤ n) :
+    (IndExtForV v A m).carrier ⊆ (IndExtForV v A n).carrier :=
+  Nat.le_induction (subset_of_eq rfl) (fun _ _ hAmnv =>
+    hAmnv.trans <| subset_closure.trans <| closure_mono Set.subset_union_left) n hmn
+
 lemma SpringLike'.isIndex.exists_springLike'_indExtForV_isIndex
     {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
     {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
@@ -854,3 +861,19 @@ lemma SpringLike'.isIndex.exists_springLike'_indExtForV_isIndex
   | succ n hn =>
       obtain ⟨hAn, hAnv⟩ := hn
       exact hAnv.exists_springLike'_closure_union_isIndex
+
+lemma IndExtForV.mono_of_isIndex_of_isIndex {X : Type*} [TopologicalSpace X]
+    {i : X → Type*} [(x : X) → Field (i x)] (v : Π p : σ(X), Valuation (i p.z.1) NNRat)
+    {A B : Subring (Π x : X, i x)} {hA : SpringLike' A} {hB : SpringLike' B}
+    (hAB : A.carrier ⊆ B.carrier) (hAv : hA.isIndex v) (hBv : hB.isIndex v) (n : ℕ) :
+    (IndExtForV v A n).carrier ⊆ (IndExtForV v B n).carrier := by
+  induction n with
+  | zero => exact hAB
+  | succ n hn =>
+      refine closure_mono <| Set.union_subset_union hn ?_
+      · intro c ⟨a, b, hcab, hAanv, hAbnv, hXba, hAabcnv⟩
+        refine ⟨a, b, hcab, hn hAanv, hn hAbnv, hXba, ?_⟩
+        · obtain ⟨hAn, hAnv⟩ := hAv.exists_springLike'_indExtForV_isIndex n
+          obtain ⟨hBn, hBnv⟩ := hBv.exists_springLike'_indExtForV_isIndex n
+          exact hcab ▸ (hAnv.exists_isIndex_iff_exists_isIndex_of_subset hn hBnv hAanv hAbnv hXba).1
+            <| hcab ▸ hAabcnv
