@@ -924,7 +924,7 @@ lemma SpringLike'.isIndex.exists_springLike'_iSupExtForV_isIndex
     forall_iff_of_ne := fun p r hrA hrp => (hAnv <| hAX r hrA).forall_iff_of_ne p r (hAXv r hrA) hrp
     forall_exists_le := fun r hrA => (hAnv <| hAX r hrA).forall_exists_le r <| hAXv r hrA }
 
-lemma SpringLike'.isIndex.exists_springLike'_iSwewe
+lemma SpringLike'.isIndex.exists_springLikevwwe
     {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
     {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
     {hA : SpringLike' A} (hAv : hA.isIndex v) {a b : ISupExtForV v A}
