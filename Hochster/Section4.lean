@@ -938,4 +938,6 @@ lemma SpringLike'.isIndex.exists_springLikevwwe
     IndExtForV.subset_of_le v A (le_max_right m n) hAbnv
   obtain ⟨hAmn, hAmnv⟩ := hAv.exists_springLike'_indExtForV_isIndex (max m n)
   obtain ⟨r, hr, hXbrv⟩ := hAmnv.forall_exists_le b.1 hAbmnv
+  have : ∃ N : ℕ, ∀ p : σ(X), a.1 p.z.1 ≠ 0 → v p ((a.1 ^ N) p.z.1) < r := by
+    sorry
   sorry
