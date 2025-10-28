@@ -923,3 +923,19 @@ lemma SpringLike'.isIndex.exists_springLike'_iSupExtForV_isIndex
     forall_le_of_ne := fun p r hrA hrp => (hAnv <| hAX r hrA).forall_le_of_ne p r (hAXv r hrA) hrp
     forall_iff_of_ne := fun p r hrA hrp => (hAnv <| hAX r hrA).forall_iff_of_ne p r (hAXv r hrA) hrp
     forall_exists_le := fun r hrA => (hAnv <| hAX r hrA).forall_exists_le r <| hAXv r hrA }
+
+lemma SpringLike'.isIndex.exists_springLike'_iSwewe
+    {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
+    {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
+    {hA : SpringLike' A} (hAv : hA.isIndex v) {a b : ISupExtForV v A}
+    (hXab : ∀ x : X, b.1 x = 0 → a.1 x = 0) :
+    a ∈ (Ideal.span {b}).radical := by
+  obtain ⟨m, hAamv⟩ := (mem_iSupExtForV_iff v A a.1).1 a.2
+  obtain ⟨n, hAbnv⟩ := (mem_iSupExtForV_iff v A b.1).1 b.2
+  have hAamnv : a.1 ∈ IndExtForV v A (max m n) :=
+    IndExtForV.subset_of_le v A (le_max_left m n) hAamv
+  have hAbmnv : b.1 ∈ IndExtForV v A (max m n) :=
+    IndExtForV.subset_of_le v A (le_max_right m n) hAbnv
+  obtain ⟨hAmn, hAmnv⟩ := hAv.exists_springLike'_indExtForV_isIndex (max m n)
+  obtain ⟨r, hr, hXbrv⟩ := hAmnv.forall_exists_le b.1 hAbmnv
+  sorry
