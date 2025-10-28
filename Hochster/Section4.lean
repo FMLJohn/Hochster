@@ -58,11 +58,25 @@ structure SpringLike'.isIndex {X : Type*} [TopologicalSpace X] {i : X → Type*}
     [(x : X) → Field (i x)] {A : Subring (Π x : X, i x)} (hA : SpringLike' A)
     (v : Π p : σ(X), Valuation (i p.z.1) NNRat) where
   forall_isRankOneDiscrete (p : σ(X)) : (v p).IsRankOneDiscrete
+  exists_forall_eq : ∃ γ : NNRatˣ, ∀ p : σ(X), (forall_isRankOneDiscrete p).generator = γ
   forall_le_of_ne (p : σ(X)) : ∀ a ∈ A, a p.z.1 ≠ 0 → v p (a p.z.1) ≤ 1
   forall_iff_of_ne (p : σ(X)) : ∀ a ∈ A, a p.z.1 ≠ 0 → (v p (a p.z.1) = 1 ↔ a p.z.2 ≠ 0)
   forall_exists_le : ∀ a ∈ A, ∃ r > (0 : ℝ), ∀ p : σ(X), a p.z.1 ≠ 0 → r ≤ v p (a p.z.1)
 
 namespace MemClosurePairs
+
+lemma wwwe {X : Type*} [TopologicalSpace X]
+    {i : X → Type*} [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
+    {A : Subring (Π x : X, i x)} {a : Π x : X, i x} (haA : a ∈ A) {p : σ(X)} (hap : a p.z.1 ≠ 0)
+    {hA : SpringLike' A} (hAv : hA.isIndex v) :
+    v p (a p.z.1) ≤ hAv.exists_forall_eq.choose := by
+  obtain ⟨γ, hXγv⟩ := hAv.exists_forall_eq
+  obtain ⟨β, hβpv, hβ⟩ := hAv.forall_isRankOneDiscrete p
+  have := hAv.forall_le_of_ne p a haA hap
+  --have : v p (a p.z.1) ∈ (v p).valueGroup := sorry
+  have : v p (a p.z.1) ≠ 0 := (v p).ne_zero_iff.2 hap
+  --have := MonoidWithZeroHom.mem_valueGroup (v p)
+  sorry
 
 lemma map_apply_le_of_pi_valuation_of_v_extension {X : Type*} [TopologicalSpace X]
     {i : X → Type*} [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
@@ -638,6 +652,7 @@ lemma springLike'_closure_insert_div_isIndex_of_forall_map_apply_le_of_forall_ne
     (hAv.springLike'_closure_insert_div_of_forall_map_apply_le_of_forall_ne_zero
       ha hb hab h1 h2).isIndex v where
   forall_isRankOneDiscrete := hAv.forall_isRankOneDiscrete
+  exists_forall_eq := hAv.exists_forall_eq
   forall_le_of_ne _ _ hr hrp := map_apply_le_one_of_mem_closure_insert_div_of_forall_map_apply_le
     hAv hab hr hrp h1
   forall_iff_of_ne _ _ hr hrp :=
@@ -828,6 +843,7 @@ lemma SpringLike'.isIndex.exists_springLike'_closure_union_isIndex
       (fun U ⟨a, haA, haU⟩ => ⟨a, mem_closure_of_mem <| Or.intro_left _ haA, haU⟩) }
   exact {
     forall_isRankOneDiscrete := hAv.forall_isRankOneDiscrete
+    exists_forall_eq := hAv.exists_forall_eq
     forall_le_of_ne := fun p a haA hap =>
       (hXAv (fun f hfF => hXA2 a haA hfF)).forall_le_of_ne p a (hXA3 a haA) hap
     forall_iff_of_ne := fun p a haA hap =>
@@ -920,6 +936,7 @@ lemma SpringLike'.isIndex.exists_springLike'_iSupExtForV_isIndex
   }
   exact {
     forall_isRankOneDiscrete := hAv.forall_isRankOneDiscrete
+    exists_forall_eq := hAv.exists_forall_eq
     forall_le_of_ne := fun p r hrA hrp => (hAnv <| hAX r hrA).forall_le_of_ne p r (hAXv r hrA) hrp
     forall_iff_of_ne := fun p r hrA hrp => (hAnv <| hAX r hrA).forall_iff_of_ne p r (hAXv r hrA) hrp
     forall_exists_le := fun r hrA => (hAnv <| hAX r hrA).forall_exists_le r <| hAXv r hrA }
