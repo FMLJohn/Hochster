@@ -63,20 +63,67 @@ structure SpringLike'.isIndex {X : Type*} [TopologicalSpace X] {i : X → Type*}
   forall_iff_of_ne (p : σ(X)) : ∀ a ∈ A, a p.z.1 ≠ 0 → (v p (a p.z.1) = 1 ↔ a p.z.2 ≠ 0)
   forall_exists_le : ∀ a ∈ A, ∃ r > (0 : ℝ), ∀ p : σ(X), a p.z.1 ≠ 0 → r ≤ v p (a p.z.1)
 
-namespace MemClosurePairs
+theorem Valuation.IsRankOneDiscrete.apply_le_generator_of_apply_lt_one
+    {Γ : Type*} [LinearOrderedCommGroupWithZero Γ] {A : Type*} [Ring A]
+    {v : Valuation A Γ} [hv : v.IsRankOneDiscrete] {a : A} (hva : v a < 1) :
+    v a ≤ hv.generator := by
+  by_cases hva0 : v a = 0
+  · exact hva0 ▸ zero_le'
+  · let va : Γˣ := ⟨v a, (v a)⁻¹, mul_inv_cancel₀ hva0, inv_mul_cancel₀ hva0⟩
+    obtain ⟨n, hvn⟩ : va ∈ Subgroup.zpowers hv.generator :=
+      hv.exists_generator_lt_one.choose_spec.1 ▸ MonoidWithZeroHom.mem_valueGroup v ⟨a, rfl⟩
+    have : va ≤ hv.generator := by
+      by_cases hn : 1 ≤ n
+      · exact hvn ▸ (Units.val_le_val.1 <| hv.generator.val_zpow_eq_zpow_val 1 ▸
+          hv.generator.val_zpow_eq_zpow_val n ▸
+          (zpow_le_zpow_iff_right_of_lt_one₀ hv.generator.zero_lt hv.generator_lt_one).2 hn).trans
+          ((pow_one hv.generator).symm ▸ le_refl hv.generator)
+      · have : 1 ≤ va :=
+          hvn ▸ (Units.val_le_val.1 <| Units.val_one (α := Γ) ▸
+            hv.generator.val_zpow_eq_zpow_val n ▸
+            (one_le_zpow_iff_right_of_lt_one₀ hv.generator.zero_lt hv.generator_lt_one).2
+              (not_lt.mp hn))
+        exact (not_le_of_gt hva this).elim
+    exact this
 
-lemma wwwe {X : Type*} [TopologicalSpace X]
+namespace SpringLike'.isIndex
+
+lemma choose_ne_zero_of_nonempty {X : Type*} [TopologicalSpace X] [hX : Nonempty X]
+    {i : X → Type*} [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
+    {A : Subring (Π x : X, i x)} {hA : SpringLike' A} (hAv : hA.isIndex v) :
+    hAv.exists_forall_eq.choose.val ≠ 0 := by
+  let p : σ(X) := ⟨(Classical.choice hX, Classical.choice hX),
+    Specializes.mem_closure fun _ hx => hx⟩
+  exact hAv.exists_forall_eq.choose_spec p ▸ (hAv.forall_isRankOneDiscrete p).generator_ne_zero
+
+lemma choose_lt_one_of_nonempty {X : Type*} [TopologicalSpace X] [hX : Nonempty X]
+    {i : X → Type*} [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
+    {A : Subring (Π x : X, i x)} {hA : SpringLike' A} (hAv : hA.isIndex v) :
+    hAv.exists_forall_eq.choose < 1 := by
+  let p : σ(X) := ⟨(Classical.choice hX, Classical.choice hX),
+    Specializes.mem_closure fun _ hx => hx⟩
+  exact hAv.exists_forall_eq.choose_spec p ▸ (hAv.forall_isRankOneDiscrete p).generator_lt_one
+
+lemma choose_ne_one_of_nonempty {X : Type*} [TopologicalSpace X] [hX : Nonempty X]
+    {i : X → Type*} [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
+    {A : Subring (Π x : X, i x)} {hA : SpringLike' A} (hAv : hA.isIndex v) :
+    hAv.exists_forall_eq.choose ≠ 1 :=
+  ne_of_lt <| choose_lt_one_of_nonempty hAv
+
+lemma map_apply_le_choose_of_apply_ne_zero_of_map_apply_ne_one {X : Type*} [TopologicalSpace X]
     {i : X → Type*} [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
     {A : Subring (Π x : X, i x)} {a : Π x : X, i x} (haA : a ∈ A) {p : σ(X)} (hap : a p.z.1 ≠ 0)
-    {hA : SpringLike' A} (hAv : hA.isIndex v) :
+    (hvpa : v p (a p.z.1) ≠ 1) {hA : SpringLike' A} (hAv : hA.isIndex v) :
     v p (a p.z.1) ≤ hAv.exists_forall_eq.choose := by
   obtain ⟨γ, hXγv⟩ := hAv.exists_forall_eq
   obtain ⟨β, hβpv, hβ⟩ := hAv.forall_isRankOneDiscrete p
-  have := hAv.forall_le_of_ne p a haA hap
-  --have : v p (a p.z.1) ∈ (v p).valueGroup := sorry
-  have : v p (a p.z.1) ≠ 0 := (v p).ne_zero_iff.2 hap
-  --have := MonoidWithZeroHom.mem_valueGroup (v p)
-  sorry
+  exact hAv.exists_forall_eq.choose_spec p ▸
+    (hAv.forall_isRankOneDiscrete p).apply_le_generator_of_apply_lt_one <|
+      lt_of_le_of_ne (hAv.forall_le_of_ne p a haA hap) hvpa
+
+end SpringLike'.isIndex
+
+namespace MemClosurePairs
 
 lemma map_apply_le_of_pi_valuation_of_v_extension {X : Type*} [TopologicalSpace X]
     {i : X → Type*} [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
@@ -919,7 +966,9 @@ lemma mem_iSupExtForV_iff {X : Type*} [TopologicalSpace X] {i : X → Type*}
     ⟨max m n, IndExtForV.subset_of_le v A (le_max_left m n),
       IndExtForV.subset_of_le v A (le_max_right m n)⟩
 
-lemma SpringLike'.isIndex.exists_springLike'_iSupExtForV_isIndex
+namespace SpringLike'.isIndex
+
+lemma exists_springLike'_iSupExtForV_isIndex
     {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
     {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
     {hA : SpringLike' A} (hAv : hA.isIndex v) :
@@ -941,7 +990,7 @@ lemma SpringLike'.isIndex.exists_springLike'_iSupExtForV_isIndex
     forall_iff_of_ne := fun p r hrA hrp => (hAnv <| hAX r hrA).forall_iff_of_ne p r (hAXv r hrA) hrp
     forall_exists_le := fun r hrA => (hAnv <| hAX r hrA).forall_exists_le r <| hAXv r hrA }
 
-lemma SpringLike'.isIndex.exists_springLikevwwe
+lemma exists_springLikevwwe
     {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
     {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
     {hA : SpringLike' A} (hAv : hA.isIndex v) {a b : ISupExtForV v A}
@@ -958,3 +1007,5 @@ lemma SpringLike'.isIndex.exists_springLikevwwe
   have : ∃ N : ℕ, ∀ p : σ(X), a.1 p.z.1 ≠ 0 → v p ((a.1 ^ N) p.z.1) < r := by
     sorry
   sorry
+
+end SpringLike'.isIndex
