@@ -88,27 +88,23 @@ theorem Valuation.IsRankOneDiscrete.apply_le_generator_of_apply_lt_one
 
 namespace SpringLike'.isIndex
 
-lemma choose_ne_zero_of_nonempty {X : Type*} [TopologicalSpace X] [hX : Nonempty X]
+lemma choose_ne_zero {X : Type*} [TopologicalSpace X] (p : σ(X))
     {i : X → Type*} [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
     {A : Subring (Π x : X, i x)} {hA : SpringLike' A} (hAv : hA.isIndex v) :
-    hAv.exists_forall_eq.choose.val ≠ 0 := by
-  let p : σ(X) := ⟨(Classical.choice hX, Classical.choice hX),
-    Specializes.mem_closure fun _ hx => hx⟩
-  exact hAv.exists_forall_eq.choose_spec p ▸ (hAv.forall_isRankOneDiscrete p).generator_ne_zero
+    hAv.exists_forall_eq.choose.val ≠ 0 :=
+  hAv.exists_forall_eq.choose_spec p ▸ (hAv.forall_isRankOneDiscrete p).generator_ne_zero
 
-lemma choose_lt_one_of_nonempty {X : Type*} [TopologicalSpace X] [hX : Nonempty X]
+lemma choose_lt_one {X : Type*} [TopologicalSpace X] (p : σ(X))
     {i : X → Type*} [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
     {A : Subring (Π x : X, i x)} {hA : SpringLike' A} (hAv : hA.isIndex v) :
-    hAv.exists_forall_eq.choose < 1 := by
-  let p : σ(X) := ⟨(Classical.choice hX, Classical.choice hX),
-    Specializes.mem_closure fun _ hx => hx⟩
-  exact hAv.exists_forall_eq.choose_spec p ▸ (hAv.forall_isRankOneDiscrete p).generator_lt_one
+    hAv.exists_forall_eq.choose < 1 :=
+  hAv.exists_forall_eq.choose_spec p ▸ (hAv.forall_isRankOneDiscrete p).generator_lt_one
 
-lemma choose_ne_one_of_nonempty {X : Type*} [TopologicalSpace X] [hX : Nonempty X]
+lemma choose_ne_one {X : Type*} [TopologicalSpace X] (p : σ(X))
     {i : X → Type*} [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
     {A : Subring (Π x : X, i x)} {hA : SpringLike' A} (hAv : hA.isIndex v) :
     hAv.exists_forall_eq.choose ≠ 1 :=
-  ne_of_lt <| choose_lt_one_of_nonempty hAv
+  ne_of_lt <| choose_lt_one p hAv
 
 lemma map_apply_le_choose_of_apply_ne_zero_of_map_apply_ne_one {X : Type*} [TopologicalSpace X]
     {i : X → Type*} [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
