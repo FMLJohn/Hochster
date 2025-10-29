@@ -61,7 +61,7 @@ structure SpringLike'.isIndex {X : Type*} [TopologicalSpace X] {i : X → Type*}
   exists_forall_eq : ∃ γ : NNRatˣ, ∀ p : σ(X), (forall_isRankOneDiscrete p).generator = γ
   forall_le_of_ne (p : σ(X)) : ∀ a ∈ A, a p.z.1 ≠ 0 → v p (a p.z.1) ≤ 1
   forall_iff_of_ne (p : σ(X)) : ∀ a ∈ A, a p.z.1 ≠ 0 → (v p (a p.z.1) = 1 ↔ a p.z.2 ≠ 0)
-  forall_exists_le : ∀ a ∈ A, ∃ r > (0 : ℝ), ∀ p : σ(X), a p.z.1 ≠ 0 → r ≤ v p (a p.z.1)
+  forall_exists_le : ∀ a ∈ A, ∃ q > (0 : NNRat), ∀ p : σ(X), a p.z.1 ≠ 0 → q ≤ v p (a p.z.1)
 
 theorem Valuation.IsRankOneDiscrete.apply_le_generator_of_apply_lt_one
     {Γ : Type*} [LinearOrderedCommGroupWithZero Γ] {A : Type*} [Ring A]
@@ -655,12 +655,12 @@ lemma exists_le_map_apply_of_mem_closure_insert_div
     {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
     {hA : SpringLike' A} (hAv : hA.isIndex v) {a b r : Π x : X, i x} (ha : a ∈ A) (hb : b ∈ A)
     (hab : ∀ x : X, b x = 0 → a x = 0) (hr : r ∈ closure (A.carrier.insert (a / b))) :
-    ∃ s > (0 : ℝ), ∀ p : σ(X), r p.z.1 ≠ 0 → s ≤ v p (r p.z.1) := by
+    ∃ s > (0 : NNRat), ∀ p : σ(X), r p.z.1 ≠ 0 → s ≤ v p (r p.z.1) := by
   obtain ⟨s1, hs1, hvrs1⟩ := hAv.forall_exists_le ((repPoly hr).coeff 0) (coeff_repPoly_mem hr 0)
   obtain ⟨s2, hs2, hvbrs2⟩ := hAv.forall_exists_le (r * b ^ (repPoly hr).natDegree)
     (Pi.mul_pow_mem_of_mem_closure_insert_div_of_natDegree_repPoly_le ha hb hab hr
       (repPoly hr).natDegree.le_refl)
-  refine ⟨min s1 s2, lt_min hs1 hs2, fun p hrp => ?_⟩
+  refine ⟨min s1 s2, lt_min (NNRat.cast_pos.2 hs1) (NNRat.cast_pos.2 hs2), fun p hrp => ?_⟩
   · by_cases hbp : b p.z.1 = 0
     · by_cases hrp0 : (repPoly hr).coeff 0 p.z.1 = 0
       · have := repPoly_eval_eq hr ▸ hrp
@@ -672,18 +672,16 @@ lemma exists_le_map_apply_of_mem_closure_insert_div
         · simp only [Pi.polynomial_eval_apply', Pi.div_apply, hbp, div_zero, zero_pow_eq, mul_ite,
             mul_one, mul_zero, Finset.sum_ite_eq', Finset.mem_range, add_pos_iff, zero_lt_one,
             or_true, inf_le_iff]
-          exact Or.intro_left _ (hvrs1 p hrp0)
-    · have : s2 ≤ ↑(v p (r p.z.1) * v p (b p.z.1) ^ (repPoly hr).natDegree) :=
+          exact Or.intro_left _ (NNRat.cast_le.2 <| hvrs1 p hrp0)
+    · have : s2 ≤ (v p (r p.z.1) * v p (b p.z.1) ^ (repPoly hr).natDegree) :=
         (v p).map_pow .. ▸ Pi.pow_apply b (repPoly hr).natDegree _ ▸ (v p).map_mul .. ▸
           Pi.mul_apply r .. ▸ hvbrs2 p (Pi.mul_apply r .. ▸ Pi.pow_apply b (repPoly hr).natDegree _
             ▸ mul_ne_zero hrp (pow_ne_zero _ hbp))
-      have : s2 ≤ v p (r p.z.1) := by
-        refine this.trans <| ?_
-        · simp only [NNRat.cast_mul, NNRat.cast_pow]
-          exact mul_le_of_le_one_right (v p (r p.z.1)).cast_nonneg <|
-            pow_le_one₀ (v p (b p.z.1)).cast_nonneg <| NNRat.cast_le_one.2 <|
-              hAv.forall_le_of_ne p b hb hbp
-      exact inf_le_of_right_le this
+      have : s2 ≤ v p (r p.z.1) :=
+        this.trans <| mul_le_of_le_one_right (v p (r p.z.1)).cast_nonneg <|
+          pow_le_one₀ (v p (b p.z.1)).cast_nonneg <| NNRat.cast_le_one.2 <|
+            hAv.forall_le_of_ne p b hb hbp
+      exact inf_le_of_right_le (NNRat.cast_le.2 this)
 
 lemma springLike'_closure_insert_div_isIndex_of_forall_map_apply_le_of_forall_ne_zero
     {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
@@ -999,9 +997,19 @@ lemma exists_springLikevwwe
   have hAbmnv : b.1 ∈ IndExtForV v A (max m n) :=
     IndExtForV.subset_of_le v A (le_max_right m n) hAbnv
   obtain ⟨hAmn, hAmnv⟩ := hAv.exists_springLike'_indExtForV_isIndex (max m n)
-  obtain ⟨r, hr, hXbrv⟩ := hAmnv.forall_exists_le b.1 hAbmnv
-  have : ∃ N : ℕ, ∀ p : σ(X), a.1 p.z.1 ≠ 0 → v p ((a.1 ^ N) p.z.1) < r := by
-    sorry
+  obtain ⟨q, hq, hXbqv⟩ := hAmnv.forall_exists_le b.1 hAbmnv
+  obtain ⟨N, hNXaqv⟩ :
+      ∃ N : ℕ, ∀ p : σ(X), a.1 p.z.1 ≠ 0 → v p (a.1 p.z.1) ≠ 1 → v p ((a.1 ^ N) p.z.1) < q := by
+    by_cases hσX : Nonempty σ(X)
+    · simp only [Pi.pow_apply, map_pow]
+      let s : NNRatˣ := ⟨q, q⁻¹, mul_inv_cancel₀ (ne_of_lt hq).symm,
+        inv_mul_cancel₀ (ne_of_lt hq).symm⟩
+      obtain ⟨N, hNs⟩ := exists_pow_lt (hAmnv.choose_lt_one <| Classical.choice hσX) s
+      exact ⟨N, fun p hap hvpa => lt_of_le_of_lt
+        (pow_le_pow_left' (hAmnv.map_apply_le_choose_of_apply_ne_zero_of_map_apply_ne_one
+          hAamnv hap hvpa) N)
+        (hAmnv.exists_forall_eq.choose.val_pow_eq_pow_val N ▸ Units.val_lt_val.2 hNs)⟩
+    · exact ⟨1, fun p => ((not_nonempty_iff.1 hσX).1 p).elim⟩
   sorry
 
 end SpringLike'.isIndex
