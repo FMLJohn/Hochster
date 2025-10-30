@@ -5,6 +5,8 @@ import Hochster.Section3
 
 open CommRing ConstructibleTop Polynomial SpringLike' Subring TopologicalSpace Topology Valuation
 
+section ContentBeforeThm3
+
 /--
 The type of pairs `(x, y) : X × X` such that `y ∈ closure {x}`.
 -/
@@ -118,6 +120,10 @@ lemma map_apply_le_choose_of_apply_ne_zero_of_map_apply_ne_one {X : Type*} [Topo
       lt_of_le_of_ne (hAv.forall_le_of_ne p a haA hap) hvpa
 
 end SpringLike'.isIndex
+
+end ContentBeforeThm3
+
+section ProvingThm3AndProp1
 
 namespace MemClosurePairs
 
@@ -1043,3 +1049,5 @@ lemma mem_radical_span_singleton_of_forall_imp {X : Type*} [TopologicalSpace X]
       Pi.pow_apply a.1 N x ▸ (hXab x hbx).symm ▸ (zero_pow_eq_zero.mpr <| Nat.ne_zero_of_lt hN))⟩⟩
 
 end SpringLike'.isIndex
+
+end ProvingThm3AndProp1
