@@ -984,11 +984,11 @@ lemma exists_springLike'_iSupExtForV_isIndex
     forall_iff_of_ne := fun p r hrA hrp => (hAnv <| hAX r hrA).forall_iff_of_ne p r (hAXv r hrA) hrp
     forall_exists_le := fun r hrA => (hAnv <| hAX r hrA).forall_exists_le r <| hAXv r hrA }
 
-lemma exists_springLikevwwe
-    {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
-    {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
-    {hA : SpringLike' A} (hAv : hA.isIndex v) {a b : ISupExtForV v A}
-    (hXab : ∀ x : X, b.1 x = 0 → a.1 x = 0) :
+/-- This is Proposition 1 in the paper. -/
+lemma mem_radical_span_singleton_of_forall_imp {X : Type*} [TopologicalSpace X]
+    {i : X → Type*} [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
+    {A : Subring (Π x : X, i x)} {hA : SpringLike' A} (hAv : hA.isIndex v)
+    {a b : ISupExtForV v A} (hXab : ∀ x : X, b.1 x = 0 → a.1 x = 0) :
     a ∈ (Ideal.span {b}).radical := by
   obtain ⟨m, hAamv⟩ := (mem_iSupExtForV_iff v A a.1).1 a.2
   obtain ⟨n, hAbnv⟩ := (mem_iSupExtForV_iff v A b.1).1 b.2
@@ -1013,19 +1013,33 @@ lemma exists_springLikevwwe
         exact lt_of_le_of_lt (pow_add (v p _) N 1 ▸ mul_le_of_le_one_right (zero_le _)
           ((pow_one (v p _)).symm ▸ hAmnv.forall_le_of_ne p a.1 hAamnv hap)) this
     · exact ⟨1, Nat.one_pos, fun p => ((not_nonempty_iff.1 hσX).1 p).elim⟩
-  have : ∃ hANabmn :
+  have hANabmnv : ∃ hANabmn :
       SpringLike' (closure ((IndExtForV v A (max m n)).carrier.insert (a.1 ^ N / b.1))),
-      hANabmn.isIndex v := by
+        hANabmn.isIndex v := by
     refine (hAmnv.forall_map_apply_le_and_forall_apply_ne_zero_iff_exists_isIndex
       ((IndExtForV v A (max m n)).pow_mem hAamnv N) hAbmnv
       (fun x hbx => Pi.pow_apply a.1 N x ▸ (hXab x hbx).symm ▸
-        (zero_pow_eq_zero.2 <| Nat.ne_zero_of_lt hN))).1 (fun p hNap => ⟨?_, fun hNabpv hbp => ?_⟩)
-    · sorry
+        (zero_pow_eq_zero.2 <| Nat.ne_zero_of_lt hN))).1 (fun p hNap => ?_)
     · have hap : a.1 p.z.1 ≠ 0 := fun hap =>
         (hap ▸ Pi.pow_apply a.1 N p.z.1 ▸ hNap) (zero_pow_eq_zero.2 <| Nat.ne_zero_of_lt hN)
-      have hvpa : v p (a.1 p.z.1) ≠ 1 :=
-        imp_not_comm.1 (hAmnv.forall_iff_of_ne p a hAamnv hap).1 (hXab p.z.2 hbp)
-      exact not_lt_of_ge (hXbqv p (fun hbp => hap <| hXab p.z.1 hbp)) (hNabpv ▸ hNXaqv p hap hvpa)
-  sorry
+      have hbp : b.1 p.z.1 ≠ 0 := fun h => hap <| hXab p.z.1 h
+      refine ⟨?_, fun hNabpv hbp => not_lt_of_ge (hXbqv p (fun hbp => hap <| hXab p.z.1 hbp))
+        (hNabpv ▸ hNXaqv p hap <| imp_not_comm.1 (hAmnv.forall_iff_of_ne p a hAamnv hap).1
+          (hXab p.z.2 hbp))⟩
+      · by_cases hvpa : v p (a.1 p.z.1) = 1
+        · have hvpb : v p (b.1 p.z.1) = 1 := (hAmnv.forall_iff_of_ne p b hAbmnv hbp).2 <|
+            (not_imp_not.2 <| hXab p.z.2) ((hAmnv.forall_iff_of_ne p a hAamnv hap).1 hvpa)
+          exact Pi.pow_apply a.1 N p.z.1 ▸ (v p).map_pow .. ▸ hvpa ▸ hvpb.symm ▸
+            (one_pow (M := NNRat) N).symm ▸ le_rfl
+        · exact le_of_lt <| lt_of_lt_of_le (hNXaqv p hap hvpa) (hXbqv p hbp)
+  have hANabv : a.1 ^ N / b.1 ∈ ISupExtForV v A :=
+    (mem_iSupExtForV_iff v A (a.1 ^ N / b.1)).2
+      ⟨max m n + 1, mem_closure_of_mem <| Or.intro_right _
+        ⟨a.1 ^ N, b.1, rfl, (IndExtForV v A (max m n)).pow_mem hAamnv N, hAbmnv, fun x hbx =>
+          Pi.pow_apply a.1 N x ▸ (hXab x hbx).symm ▸ (zero_pow_eq_zero.mpr <| Nat.ne_zero_of_lt hN),
+            hANabmnv⟩⟩
+  exact ⟨N, Ideal.mem_span_singleton'.mpr ⟨⟨a.1 ^ N / b.1, hANabv⟩,
+    SetLike.coe_eq_coe.mp <| Pi.div_mul_cancel_of_forall_imp (f := a.1 ^ N) (fun x hbx =>
+      Pi.pow_apply a.1 N x ▸ (hXab x hbx).symm ▸ (zero_pow_eq_zero.mpr <| Nat.ne_zero_of_lt hN))⟩⟩
 
 end SpringLike'.isIndex
