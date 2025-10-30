@@ -998,18 +998,34 @@ lemma exists_springLikevwwe
     IndExtForV.subset_of_le v A (le_max_right m n) hAbnv
   obtain ⟨hAmn, hAmnv⟩ := hAv.exists_springLike'_indExtForV_isIndex (max m n)
   obtain ⟨q, hq, hXbqv⟩ := hAmnv.forall_exists_le b.1 hAbmnv
-  obtain ⟨N, hNXaqv⟩ :
-      ∃ N : ℕ, ∀ p : σ(X), a.1 p.z.1 ≠ 0 → v p (a.1 p.z.1) ≠ 1 → v p ((a.1 ^ N) p.z.1) < q := by
+  obtain ⟨N, hN, hNXaqv⟩ :
+      ∃ N > 0, ∀ p : σ(X), a.1 p.z.1 ≠ 0 → v p (a.1 p.z.1) ≠ 1 → v p ((a.1 ^ N) p.z.1) < q := by
     by_cases hσX : Nonempty σ(X)
     · simp only [Pi.pow_apply, map_pow]
       let s : NNRatˣ := ⟨q, q⁻¹, mul_inv_cancel₀ (ne_of_lt hq).symm,
         inv_mul_cancel₀ (ne_of_lt hq).symm⟩
       obtain ⟨N, hNs⟩ := exists_pow_lt (hAmnv.choose_lt_one <| Classical.choice hσX) s
-      exact ⟨N, fun p hap hvpa => lt_of_le_of_lt
-        (pow_le_pow_left' (hAmnv.map_apply_le_choose_of_apply_ne_zero_of_map_apply_ne_one
-          hAamnv hap hvpa) N)
-        (hAmnv.exists_forall_eq.choose.val_pow_eq_pow_val N ▸ Units.val_lt_val.2 hNs)⟩
-    · exact ⟨1, fun p => ((not_nonempty_iff.1 hσX).1 p).elim⟩
+      refine ⟨N + 1, N.zero_lt_succ, fun p hap hvpa => ?_⟩
+      · have : v p (a.1 p.z.1) ^ N < q := lt_of_le_of_lt
+          (pow_le_pow_left' (hAmnv.map_apply_le_choose_of_apply_ne_zero_of_map_apply_ne_one
+            hAamnv hap hvpa) N)
+          (hAmnv.exists_forall_eq.choose.val_pow_eq_pow_val N ▸ Units.val_lt_val.2 hNs)
+        exact lt_of_le_of_lt (pow_add (v p _) N 1 ▸ mul_le_of_le_one_right (zero_le _)
+          ((pow_one (v p _)).symm ▸ hAmnv.forall_le_of_ne p a.1 hAamnv hap)) this
+    · exact ⟨1, Nat.one_pos, fun p => ((not_nonempty_iff.1 hσX).1 p).elim⟩
+  have : ∃ hANabmn :
+      SpringLike' (closure ((IndExtForV v A (max m n)).carrier.insert (a.1 ^ N / b.1))),
+      hANabmn.isIndex v := by
+    refine (hAmnv.forall_map_apply_le_and_forall_apply_ne_zero_iff_exists_isIndex
+      ((IndExtForV v A (max m n)).pow_mem hAamnv N) hAbmnv
+      (fun x hbx => Pi.pow_apply a.1 N x ▸ (hXab x hbx).symm ▸
+        (zero_pow_eq_zero.2 <| Nat.ne_zero_of_lt hN))).1 (fun p hNap => ⟨?_, fun hNabpv hbp => ?_⟩)
+    · sorry
+    · have hap : a.1 p.z.1 ≠ 0 := fun hap =>
+        (hap ▸ Pi.pow_apply a.1 N p.z.1 ▸ hNap) (zero_pow_eq_zero.2 <| Nat.ne_zero_of_lt hN)
+      have hvpa : v p (a.1 p.z.1) ≠ 1 :=
+        imp_not_comm.1 (hAmnv.forall_iff_of_ne p a hAamnv hap).1 (hXab p.z.2 hbp)
+      exact not_lt_of_ge (hXbqv p (fun hbp => hap <| hXab p.z.1 hbp)) (hNabpv ▸ hNXaqv p hap hvpa)
   sorry
 
 end SpringLike'.isIndex
