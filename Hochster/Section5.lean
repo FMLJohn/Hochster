@@ -10,7 +10,19 @@ structure SpringLike'.isSimple {X : Type*}
   forall_injective (x : X) : Function.Injective (h x)
   forall_finite (a : A) : { h x ⟨a.1 x, a.1, a.2, rfl⟩ | x : X }.Finite
 
-def SpringLike'.isIndex.iSupExtForVIsSimpleOfIsSimple {X : Type*} [TopologicalSpace X]
+namespace SpringLike'.isIndex
+
+def indExtForVIsSimpleOfIsSimple {X : Type*} [TopologicalSpace X] {i : X → Type*}
+    [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
+    {A : Subring (Π x : X, i x)} {hA : SpringLike' A} (h : hA.isSimple)
+    (hAv : hA.isIndex v) (n : ℕ) : (hAv.indExtForV n).isSimple where
+  F := sorry
+  field := sorry
+  h := sorry
+  forall_injective := sorry
+  forall_finite := sorry
+
+def iSupExtForVIsSimpleOfIsSimple {X : Type*} [TopologicalSpace X]
     {i : X → Type*} [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
     {A : Subring (Π x : X, i x)} {hA : SpringLike' A} (h : hA.isSimple) (hAv : hA.isIndex v) :
     hAv.iSupExtForV.isSimple where
@@ -19,3 +31,5 @@ def SpringLike'.isIndex.iSupExtForVIsSimpleOfIsSimple {X : Type*} [TopologicalSp
   h := sorry
   forall_injective := sorry
   forall_finite := sorry
+
+end SpringLike'.isIndex

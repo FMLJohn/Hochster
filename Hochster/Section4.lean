@@ -904,7 +904,9 @@ def IndExtForV {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → F
         a ∈ IndExtForV v A n ∧ b ∈ IndExtForV v A n ∧ (∀ x : X, b x = 0 → a x = 0) ∧
         ∃ hAc : SpringLike' (closure ((IndExtForV v A n).carrier.insert c)), hAc.isIndex v })
 
-lemma SpringLike'.isIndex.exists_springLike'_indExtForV_isIndex
+namespace SpringLike'.isIndex
+
+lemma exists_springLike'_indExtForV_isIndex
     {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
     {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
     {hA : SpringLike' A} (hAv : hA.isIndex v) (n : ℕ) :
@@ -914,6 +916,20 @@ lemma SpringLike'.isIndex.exists_springLike'_indExtForV_isIndex
   | succ n hn =>
       obtain ⟨hAn, hAnv⟩ := hn
       exact hAnv.exists_springLike'_closure_union_isIndex
+
+def indExtForV {X : Type*} [TopologicalSpace X] {i : X → Type*}
+    [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
+    {A : Subring (Π x : X, i x)} {hA : SpringLike' A} (hAv : hA.isIndex v) (n : ℕ) :
+    SpringLike' (IndExtForV v A n) :=
+  (hAv.exists_springLike'_indExtForV_isIndex n).choose
+
+lemma indExtForV_isIndex {X : Type*} [TopologicalSpace X] {i : X → Type*}
+    [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
+    {A : Subring (Π x : X, i x)} {hA : SpringLike' A} (hAv : hA.isIndex v) (n : ℕ) :
+    (hAv.indExtForV n).isIndex v :=
+  (hAv.exists_springLike'_indExtForV_isIndex n).choose_spec
+
+end SpringLike'.isIndex
 
 namespace IndExtForV
 
