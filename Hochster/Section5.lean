@@ -1,8 +1,9 @@
 import Mathlib.Algebra.Ring.Hom.Defs
+import Mathlib.CategoryTheory.EqToHom
 
 import Hochster.Section4
 
-open Field Subring
+open CategoryTheory Field Subring
 
 /--
 Note that this is different from the definition of a simple spring in the paper.
@@ -52,14 +53,54 @@ def indExtForVSuccIsSimpleOfIsSimple {X : Type*} [TopologicalSpace X]
         ⟨h.h x (a x), ⟨x, rfl⟩, h.h x (b x), ⟨x, rfl⟩,
           (Pi.mul_apply a b x ▸ habfx) ▸ ((h.h x).map_mul (a x) (b x)).symm⟩
 
+def indExtForVIsSimpleOfIsSimple {X : Type*}
+    [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
+    {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
+    {hA : SpringLike' A} (h : hA.isSimple) (hAv : hA.isIndex v) (n : ℕ) :
+    (hAv.indExtForV n).isSimple :=
+  n.recAuxOn h fun _ hn => hAv.indExtForVSuccIsSimpleOfIsSimple hn
+
+lemma indExtForVIsSimpleOfIsSimple_f {X : Type*}
+    [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
+    {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
+    {hA : SpringLike' A} (h : hA.isSimple) (hAv : hA.isIndex v) (n : ℕ) :
+    (hAv.indExtForVIsSimpleOfIsSimple h n).F = h.F := by
+   induction n with
+  | zero => rfl
+  | succ n hn => exact hn
+
+-- lemma indExtForVIsSimpleOfIsSimple_h {X : Type*}
+--     [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
+--     {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
+--     {hA : SpringLike' A} (h : hA.isSimple) (hAv : hA.isIndex v) (n : ℕ) :
+--     RingHom.comp (eqToIso <| hAv.indExtForVIsSimpleOfIsSimple_f h n) (hAv.indExtForVIsSimpleOfIsSimple h n).h := by
+--   induction n with
+--   | zero => rfl
+--   | succ n hn => exact hn
+
+lemma indExtForVIsSimpleOfIsSimple_h' {X : Type*}
+    [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
+    {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
+    {hA : SpringLike' A} (h : hA.isSimple) (hAv : hA.isIndex v) (n : ℕ) :
+    (hAv.indExtForVIsSimpleOfIsSimple h n).h ≍ h.h := by
+  induction n with
+  | zero => rfl
+  | succ n hn => exact hn
+
 def iSupExtForVIsSimpleOfIsSimple {X : Type*} [TopologicalSpace X]
     {i : X → Type*} [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
     {A : Subring (Π x : X, i x)} {hA : SpringLike' A} (h : hA.isSimple) (hAv : hA.isIndex v) :
     hAv.iSupExtForV.isSimple where
   F := h.F
   field := h.field
-  h := sorry
-  forall_injective := sorry
-  forall_finite := sorry
+  h := h.h
+  forall_injective := h.forall_injective
+  forall_finite := by
+    intro a hAav
+    obtain ⟨n, hAanv⟩ := (mem_iSupExtForV_iff v A a).1 hAav
+    have := (hAv.indExtForVIsSimpleOfIsSimple h n).forall_finite a hAanv
+    have := hAv.indExtForVIsSimpleOfIsSimple_h' h n
+    sorry
+
 
 end SpringLike'.isIndex
