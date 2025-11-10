@@ -86,7 +86,7 @@ lemma indExtForVIsSimpleOfIsSimple_h' {X : Type*}
   | zero => rfl
   | succ n hn => exact hn
 
-/-- This is the first statement in Theorem 4 of the paper. -/
+/-- This corresponds to the first statement in Theorem 4 of the paper. -/
 def iSupExtForVIsSimpleOfIsSimple {X : Type*} [TopologicalSpace X]
     {i : X → Type*} [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
     {A : Subring (Π x : X, i x)} {hA : SpringLike' A} (h : hA.isSimple) (hAv : hA.isIndex v) :
