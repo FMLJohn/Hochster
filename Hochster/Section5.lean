@@ -1,6 +1,8 @@
+import Mathlib.RingTheory.FreeCommRing
+
 import Hochster.Section4
 
-open Field Function RingHom Subring
+open Field FreeCommRing Function RingHom Submodule Subring
 
 /--
 Note that this is different from the definition of a simple spring in the paper.
@@ -108,3 +110,20 @@ def iSupExtForVIsSimpleOfIsSimple {X : Type*} [TopologicalSpace X]
       (indExtForVIsSimpleOfIsSimple_f h hAv n).mp).subset this
 
 end SpringLike'.isIndex
+
+example {R : Type*} [CommRing R] (r s : R) :
+    FreeCommRing (Fin 2) →+* R :=
+  lift fun i => if i = 0 then r else s
+
+lemma iSwwre33fergf {X : Type*} {x y : X} {i : X → Type*}
+    [(x : X) → Field (i x)] {A : Subring (Π x : X, i x)} {a b c : A}
+    {F : Type*} [Field F] {h : (x : X) → i x →+* F} (hahxy : h x (a.1 x) = h y (a.1 y))
+    (hbhxy : h x (b.1 x) = h y (b.1 y)) {m : FreeCommRing (Fin 2)}
+    (hm : m ∈ Ideal.span {((0 : Fin 2) : FreeCommRing _), ((1 : Fin 2) : FreeCommRing _)})
+    (habcm : (lift fun i => if i = 0 then a else b) m = c) :
+    h x (c.1 x) = h y (c.1 y) := by
+  refine habcm ▸ span_induction ?_ ?_ ?_ ?_ hm
+  · sorry
+  · sorry
+  · sorry
+  · sorry
