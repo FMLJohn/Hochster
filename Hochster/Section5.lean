@@ -115,15 +115,22 @@ example {R : Type*} [CommRing R] (r s : R) :
     FreeCommRing (Fin 2) →+* R :=
   lift fun i => if i = 0 then r else s
 
-lemma iSwwre33fergf {X : Type*} {x y : X} {i : X → Type*}
-    [(x : X) → Field (i x)] {A : Subring (Π x : X, i x)} {a b c : A}
-    {F : Type*} [Field F] {h : (x : X) → i x →+* F} (hahxy : h x (a.1 x) = h y (a.1 y))
-    (hbhxy : h x (b.1 x) = h y (b.1 y)) {m : FreeCommRing (Fin 2)}
-    (hm : m ∈ Ideal.span {((0 : Fin 2) : FreeCommRing _), ((1 : Fin 2) : FreeCommRing _)})
-    (habcm : (lift fun i => if i = 0 then a else b) m = c) :
+lemma Subring.map_apply_eq_map_apply_of_pi_of_eq_of_eq {X : Type*} {x y : X}
+    {i : X → Type*} [(x : X) → CommRing (i x)] {A : Subring (Π x : X, i x)}
+    {a b c : A} {F : Type*} [Ring F] {h : (x : X) → i x →+* F}
+    (hahxy : h x (a.1 x) = h y (a.1 y)) (hbhxy : h x (b.1 x) = h y (b.1 y))
+    {m : FreeCommRing (Fin 2)} (habcm : (lift fun i => if i = 0 then a else b) m = c) :
     h x (c.1 x) = h y (c.1 y) := by
-  refine habcm ▸ span_induction ?_ ?_ ?_ ?_ hm
-  · sorry
-  · sorry
-  · sorry
-  · sorry
+  refine habcm ▸ m.induction_on ?_ (fun m => ?_) (fun m n habhmxy habhnxy => ?_)
+    (fun m n habhmxy habhnxy => ?_)
+  · exact (lift fun i => if i = 0 then a else b).map_neg 1 ▸
+      (lift fun i => if i = 0 then a else b).map_one ▸ A.coe_neg 1 ▸ A.coe_one ▸
+      Pi.neg_apply (G := i) 1 x ▸ Pi.one_apply (M := i) x ▸ Pi.neg_apply (G := i) 1 y ▸
+      Pi.one_apply (M := i) y ▸ (h x).map_neg 1 ▸ (h y).map_neg 1 ▸ (h x).map_one ▸
+      (h y).map_one ▸ rfl
+  · by_cases hm : m = 0
+    · refine hm.symm ▸ lift_of (fun i => if i = 0 then a else b) 0 ▸ hahxy
+    · simp only [lift_of, hm]
+      exact hbhxy
+  · exact RingHom.map_add .. ▸ (h x).map_add .. ▸ (h y).map_add .. ▸ habhmxy ▸ habhnxy ▸ rfl
+  · exact RingHom.map_mul .. ▸ (h x).map_mul .. ▸ (h y).map_mul .. ▸ habhmxy ▸ habhnxy ▸ rfl
