@@ -170,4 +170,18 @@ lemma map_apply_eq_map_apply_of_mem_of_mem_of_apply_eq
   · exact (hahrt1 ▸ (hst12 ▸ hsy).1) ▸ (hahrt1 ▸ (hst12 ▸ hsx).1 : x ∈ { x | h x (a.1 x) = r1 })
   · exact (hbhrt2 ▸ (hst12 ▸ hsy).2) ▸ (hbhrt2 ▸ (hst12 ▸ hsx).2 : x ∈ { x | h x (b.1 x) = r2 })
 
+lemma map_apply_ne_zero_of_forall_mem_of_forall_ne_zero_of_apply_eq
+    {X : Type*} {x : X} {i : X → Type*} [(x : X) → CommRing (i x)]
+    {A : Subring (Π x : X, i x)} {a b c : A} {R : Type*} [Ring R]
+    {h : (x : X) → i x →+* R} (habhx : h x (a.1 x) ≠ 0 ∨ h x (b.1 x) ≠ 0)
+    {f : (s : Set X) → s ∈ NonVanishingConstSetsFromInter a b h → X}
+    (habhf : ∀ (s : Set X) (hs : s ∈ NonVanishingConstSetsFromInter a b h), f s hs ∈ s)
+    (habchf : ∀ (s : Set X) (hs : s ∈ NonVanishingConstSetsFromInter a b h),
+      h (f s hs) (c.1 (f s hs)) ≠ 0)
+    {m : FreeCommRing (Fin 2)} (habcm : (lift fun i => if i = 0 then a else b) m = c) :
+    h x (c.1 x) ≠ 0 := by
+  obtain ⟨s, hs, hsx⟩ := sUnion_eq a b h ▸
+    (Set.mem_setOf.2 habhx : x ∈ { x : X | h x (a.1 x) ≠ 0 ∨ h x (b.1 x) ≠ 0 })
+  exact map_apply_eq_map_apply_of_mem_of_mem_of_apply_eq hs hsx (habhf s hs) habcm ▸ habchf s hs
+
 end NonVanishingConstSetsFromInter
