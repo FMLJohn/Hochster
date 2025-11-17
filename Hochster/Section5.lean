@@ -136,10 +136,27 @@ lemma Subring.map_apply_eq_map_apply_of_pi_of_eq_of_eq {X : Type*} {x y : X}
   · exact RingHom.map_mul .. ▸ (h x).map_mul .. ▸ (h y).map_mul .. ▸ habhmxy ▸ habhnxy ▸ rfl
 
 def NonVanishingConstSetsFromInter {X : Type*} {i : X → Type*} [(x : X) → Ring (i x)]
-    {A : Subring (Π x : X, i x)} (a b : A) {F : Type*} [Ring F] (h : (x : X) → i x →+* F) :=
+    {A : Subring (Π x : X, i x)} (a b : A) {R : Type*} [Ring R] (h : (x : X) → i x →+* R) :=
   let s1 := { h x (a.1 x) | x : X }
   let s2 := { h x (b.1 x) | x : X }
-  let S1 := { s : Set X | ∃ f ∈ s1, s = { x : X | h x (a.1 x) = f } }
-  let S2 := { s : Set X | ∃ f ∈ s2, s = { x : X | h x (a.1 x) = f } }
+  let S1 := { s : Set X | ∃ r ∈ s1, s = { x : X | h x (a.1 x) = r } }
+  let S2 := { s : Set X | ∃ r ∈ s2, s = { x : X | h x (b.1 x) = r } }
   { s : Set X | s.Nonempty ∧ (∃ A ∈ S1, ∃ B ∈ S2, s = A ∩ B) ∧
-    (∀ x ∈ s, ¬a.1 x = 0 ∨ ¬b.1 x = 0) }
+    (∀ x ∈ s, h x (a.1 x) ≠ 0 ∨ h x (b.1 x) ≠ 0) }
+
+namespace NonVanishingConstSetsFromInter
+
+lemma sUnion_eq {X : Type*} {i : X → Type*} [(x : X) → Ring (i x)]
+    {A : Subring (Π x : X, i x)} (a b : A) {R : Type*} [Ring R] (h : (x : X) → i x →+* R) :
+    ⋃₀ (NonVanishingConstSetsFromInter a b h) = { x : X | h x (a.1 x) ≠ 0 ∨ h x (b.1 x) ≠ 0 } := by
+  ext x
+  refine ⟨fun ⟨s, ⟨_, _, habhsX⟩, hsx⟩ => habhsX x hsx, fun habhx =>
+    ⟨{ y | h y (a.1 y) = h x (a.1 x) } ∩ { y | h y (b.1 y) = h x (b.1 x) },
+      ⟨⟨x, rfl, rfl⟩, ?_, fun y ⟨hahy, hbhy⟩ => habhx.elim (fun hahx => ?_) (fun hbhx => ?_)⟩,
+        rfl, rfl⟩⟩
+  · exact ⟨{ y | h y (a.1 y) = h x (a.1 x) }, ⟨h x (a.1 x), ⟨x, rfl⟩, rfl⟩,
+      { y | h y (b.1 y) = h x (b.1 x) }, ⟨h x (b.1 x), ⟨x, rfl⟩, rfl⟩, rfl⟩
+  · exact Or.intro_left _ (hahy ▸ hahx)
+  · exact Or.intro_right _ (hbhy ▸ hbhx)
+
+end NonVanishingConstSetsFromInter
