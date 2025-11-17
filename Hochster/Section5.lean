@@ -159,4 +159,15 @@ lemma sUnion_eq {X : Type*} {i : X → Type*} [(x : X) → Ring (i x)]
   · exact Or.intro_left _ (hahy ▸ hahx)
   · exact Or.intro_right _ (hbhy ▸ hbhx)
 
+lemma map_apply_eq_map_apply_of_mem_of_mem_of_apply_eq
+    {X : Type*} {x y : X} {i : X → Type*} [(x : X) → CommRing (i x)]
+    {A : Subring (Π x : X, i x)} {a b c : A} {R : Type*} [Ring R] {h : (x : X) → i x →+* R}
+    {s : Set X} (habhs : s ∈ NonVanishingConstSetsFromInter a b h) (hsx : x ∈ s) (hsy : y ∈ s)
+    {m : FreeCommRing (Fin 2)} (habcm : (lift fun i => if i = 0 then a else b) m = c) :
+    h x (c.1 x) = h y (c.1 y) := by
+  obtain ⟨_, ⟨t1, ⟨r1, ⟨x1, hahrx1⟩, hahrt1⟩, t2, ⟨r2, ⟨x2, hbhrx2⟩, hbhrt2⟩, hst12⟩, _⟩ := habhs
+  refine A.map_apply_eq_map_apply_of_pi_of_eq_of_eq ?_ ?_ habcm
+  · exact (hahrt1 ▸ (hst12 ▸ hsy).1) ▸ (hahrt1 ▸ (hst12 ▸ hsx).1 : x ∈ { x | h x (a.1 x) = r1 })
+  · exact (hbhrt2 ▸ (hst12 ▸ hsy).2) ▸ (hbhrt2 ▸ (hst12 ▸ hsx).2 : x ∈ { x | h x (b.1 x) = r2 })
+
 end NonVanishingConstSetsFromInter
