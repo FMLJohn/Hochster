@@ -186,9 +186,18 @@ lemma map_apply_ne_zero_of_forall_mem_of_forall_ne_zero_of_apply_eq
 
 end NonVanishingConstSetsFromInter
 
-lemma SpringLike.isIndex.weewf {X : Type*} [TopologicalSpace X]
-    {i : X → Type*} [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
-    {A : Subring (Π x : X, i x)} (a b : A) {hA : SpringLike' A} {hAv : hA.isIndex v}
-    (h : hA.isSimple) :
+lemma SpringLike'.finite_nonVanishingConstSetsFromInter_of_isSimple
+    {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
+    {A : Subring (Π x : X, i x)} (a b : A) {hA : SpringLike' A} (h : hA.isSimple) :
     (NonVanishingConstSetsFromInter a b h.h).Finite := by
-  sorry
+  refine Set.Finite.subset
+    (s := { s | ∃ A ∈ { s | ∃ r ∈ { f | ∃ x, h.h x (a.1 x) = f }, s = { x | h.h x (a.1 x) = r } },
+      ∃ B ∈ { s | ∃ r ∈ { f | ∃ x, h.h x (b.1 x) = f }, s = { x | h.h x (b.1 x) = r } },
+        s = A ∩ B }) ?_ fun s hs => hs.2.1
+  · refine Set.Finite.subset
+      (s := ({ s | ∃ r ∈ { f | ∃ x, h.h x (a.1 x) = f }, s = { x | h.h x (a.1 x) = r } } ×ˢ
+        { s | ∃ r ∈ { f | ∃ x, h.h x (b.1 x) = f }, s = { x | h.h x (b.1 x) = r } }).image
+          fun (A, B) => A ∩ B) ?_ fun s ⟨A, hA, B, hB, hABs⟩ => ⟨(A, B), ⟨hA, hB⟩, hABs.symm⟩
+    · refine (Set.Finite.prod ?_ ?_).image _
+      · exact ((h.forall_finite a a.2).image _).subset fun s ⟨r, hr, hs⟩ => ⟨r, hr, hs.symm⟩
+      · exact ((h.forall_finite b b.2).image _).subset fun s ⟨r, hr, hs⟩ => ⟨r, hr, hs.symm⟩
