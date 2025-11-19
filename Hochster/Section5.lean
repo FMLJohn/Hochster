@@ -185,3 +185,10 @@ lemma map_apply_ne_zero_of_forall_mem_of_forall_ne_zero_of_apply_eq
   exact map_apply_eq_map_apply_of_mem_of_mem_of_apply_eq hs hsx (habhf s hs) habcm ▸ habchf s hs
 
 end NonVanishingConstSetsFromInter
+
+lemma SpringLike.isIndex.weewf {X : Type*} [TopologicalSpace X]
+    {i : X → Type*} [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
+    {A : Subring (Π x : X, i x)} (a b : A) {hA : SpringLike' A} {hAv : hA.isIndex v}
+    (h : hA.isSimple) :
+    (NonVanishingConstSetsFromInter a b h.h).Finite := by
+  sorry
