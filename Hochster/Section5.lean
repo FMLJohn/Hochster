@@ -115,6 +115,21 @@ example {R : Type*} [CommRing R] (r s : R) :
     FreeCommRing (Fin 2) →+* R :=
   lift fun i => if i = 0 then r else s
 
+lemma Subring.map_apply_eq_zero_of_pi_of_eq_of_eq_of_mem_span_of_eq
+    {X : Type*} {x : X} {i : X → Type*} [(x : X) → CommRing (i x)]
+    {A : Subring (Π x : X, i x)} {a b c : A} {R : Type*} [Ring R]
+    {h : (x : X) → i x →+* R} (hahx : h x (a.1 x) = 0) (hbhx : h x (b.1 x) = 0)
+    {m : FreeCommRing (Fin 2)} (hm : m ∈ Ideal.span { FreeCommRing.of 0, FreeCommRing.of 1 })
+    (habcm : (lift fun i => if i = 0 then a else b) m = c) : h x (c.1 x) = 0 := by
+  refine habcm ▸ span_induction (fun m hm => ?_) (h x).map_zero (fun m n _ _ hm hn => ?_)
+    (fun m n hn habhnx => ?_) hm
+  · exact hm.elim (fun hm => hm ▸ lift_of (fun i => if i = 0 then a else b) 0 ▸ hahx)
+      (fun hm => hm ▸ lift_of (fun i => if i = 0 then a else b) 1 ▸ hbhx)
+  · exact RingHom.map_add _ m n ▸ A.coe_add .. ▸ Pi.add_apply (M := i) .. ▸ (h x).map_add .. ▸
+      hm.symm ▸ hn.symm ▸ add_zero 0
+  · exact smul_eq_mul m n ▸ RingHom.map_mul _ m n ▸ A.coe_mul .. ▸ Pi.mul_apply (M := i) .. ▸
+      (h x).map_mul .. ▸ habhnx.symm ▸ mul_zero _
+
 lemma Subring.map_apply_eq_map_apply_of_pi_of_eq_of_eq {X : Type*} {x y : X}
     {i : X → Type*} [(x : X) → CommRing (i x)] {A : Subring (Π x : X, i x)}
     {a b c : A} {R : Type*} [Ring R] {h : (x : X) → i x →+* R}
