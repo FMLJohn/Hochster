@@ -216,3 +216,9 @@ lemma SpringLike'.finite_nonVanishingConstSetsFromInter_of_isSimple
     · refine (Set.Finite.prod ?_ ?_).image _
       · exact ((h.forall_finite a a.2).image _).subset fun s ⟨r, hr, hs⟩ => ⟨r, hr, hs.symm⟩
       · exact ((h.forall_finite b b.2).image _).subset fun s ⟨r, hr, hs⟩ => ⟨r, hr, hs.symm⟩
+
+lemma SpringLike'.finite_wwefwe
+    {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
+    {A : Subring (Π x : X, i x)} (a b : A) {hA : SpringLike' A} (h : hA.isSimple) :
+    ∃ c : A, c ∈ Ideal.span {a, b} ∧ ∀ x : X, c.1 x = 0 ↔ (a.1 x = 0 ∧ b.1 x = 0) := by
+  sorry
