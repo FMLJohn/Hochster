@@ -201,7 +201,11 @@ lemma map_apply_ne_zero_of_forall_mem_of_forall_ne_zero_of_apply_eq
 
 end NonVanishingConstSetsFromInter
 
-lemma SpringLike'.finite_nonVanishingConstSetsFromInter_of_isSimple
+open NonVanishingConstSetsFromInter
+
+namespace SpringLike'
+
+lemma finite_nonVanishingConstSetsFromInter_of_isSimple
     {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
     {A : Subring (Π x : X, i x)} (a b : A) {hA : SpringLike' A} (h : hA.isSimple) :
     (NonVanishingConstSetsFromInter a b h.h).Finite := by
@@ -217,25 +221,19 @@ lemma SpringLike'.finite_nonVanishingConstSetsFromInter_of_isSimple
       · exact ((h.forall_finite a a.2).image _).subset fun s ⟨r, hr, hs⟩ => ⟨r, hr, hs.symm⟩
       · exact ((h.forall_finite b b.2).image _).subset fun s ⟨r, hr, hs⟩ => ⟨r, hr, hs.symm⟩
 
-lemma SpringLike'.finite_wwefwe
+lemma exists_mem_span_and_forall_map_apply_eq_zero_iff_and_of_isSimple
     {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
     {A : Subring (Π x : X, i x)} (a b : A) {hA : SpringLike' A} (h : hA.isSimple) :
     ∃ c : A, c ∈ Ideal.span {a, b} ∧ ∀ x : X, h.h x (c.1 x) = 0 ↔
       (h.h x (a.1 x) = 0 ∧ h.h x (b.1 x) = 0) := by
   by_cases hX : Nonempty X
-  · choose f habfh using fun (s : Set X) (habhs : s ∈ NonVanishingConstSetsFromInter a b h.h)
-      => habhs.1
-    let habfh := fun (s : Set X) (habhs : s ∈ NonVanishingConstSetsFromInter a b h.h)
-      => habhs.2.2 (f s habhs) (habfh s habhs)
-    let fff := fun x : X =>
-      (hA.springLike.matchingIdeal x).comap (lift (α := Fin 2) fun i => if i = 0 then a else b)
-    let fffe := fun x : X =>
-      (hA.springLike.matchingIdeal_isPrime x).comap (lift (α := Fin 2) fun i => if i = 0 then a else b)
+  · choose f habfh using
+      fun (s : Set X) (habhs : s ∈ NonVanishingConstSetsFromInter a b h.h) => habhs.1
     have : ¬∃ x ∈ { x | ∃ (s : Set X) (habhs : s ∈ NonVanishingConstSetsFromInter a b h.h),
-        f s habhs = x }, Ideal.span { of 0, of 1 } ≤ (hA.springLike.matchingIdeal x).comap
+        f s habhs = x }, Ideal.span {of 0, of 1} ≤ (hA.springLike.matchingIdeal x).comap
           (lift fun i : Fin 2 => if i = 0 then a else b) := by
       refine not_exists.2 fun x ⟨⟨s, habhs, habfhx⟩, hAabx⟩ =>
-        (habfh s habhs).elim (fun hafhs => ?_) (fun hbfhs => ?_)
+        (habhs.2.2 (f s habhs) (habfh s habhs)).elim (fun hafhs => ?_) (fun hbfhs => ?_)
       · have : a.1 x = 0 :=
           ((lift_of _ 0 : (lift fun i => if i = 0 then a else b) (of 0) = a) ▸
             ((hA.springLike.mem_matchingIdeal_iff_eq_zero x
@@ -250,11 +248,29 @@ lemma SpringLike'.finite_wwefwe
                 <| hAabx <| Ideal.subset_span <| Set.mem_insert_of_mem (of 0) rfl) :
                   hA.springLike.h (if 1 = 0 then a else b) x = 0)
         exact hbfhs <| habfhx ▸ this ▸ (h.h x).map_zero
-    have hhh := Set.not_subset.1 <| (not_iff_not.2 <| (Ideal.span { of 0, of 1 }).subset_union_prime_finite
-      ((hA.finite_nonVanishingConstSetsFromInter_of_isSimple a b h).dependent_image f)
-        (Classical.choice hX) (Classical.choice hX)
-          (fun x _ _ _ => (hA.springLike.matchingIdeal_isPrime x).comap
-            (lift (α := Fin 2) fun i => if i = 0 then a else b))).2 this
-    obtain ⟨m, hm, habmfh⟩ := hhh
-    sorry
+    have ⟨m, hm, habmfh⟩ := Set.not_subset.1 <|
+      (not_iff_not.2 <| (Ideal.span _).subset_union_prime_finite
+        ((hA.finite_nonVanishingConstSetsFromInter_of_isSimple a b h).dependent_image f)
+          (Classical.choice hX) (Classical.choice hX)
+            (fun x _ _ _ => (hA.springLike.matchingIdeal_isPrime x).comap
+              (lift (α := Fin 2) fun i => if i = 0 then a else b))).2 this
+    refine ⟨(lift fun i => if i = 0 then a else b) m, ?_, fun x => ⟨?_, fun ⟨hahx, hbhx⟩ => ?_⟩⟩
+    · refine span_induction (fun m hm => ?_) ?_ (fun m n _ _ hm hn => ?_)
+        (fun m n _ hn => ?_) hm
+      · refine hm.elim (fun hm => ?_) (fun hm => ?_)
+        · exact hm ▸ lift_of (fun i => if i = 0 then a else b) 0 ▸ subset_span (Set.mem_insert a _)
+        · exact hm ▸ lift_of (fun i => if i = 0 then a else b) 1 ▸
+            subset_span (Set.mem_insert_of_mem a rfl)
+      · exact (lift fun i => if i = 0 then a else b).map_zero ▸ zero_mem _
+      · exact RingHom.map_add _ m n ▸ add_mem hm hn
+      · exact smul_eq_mul m n ▸ RingHom.map_mul _ m n ▸ (Ideal.span _).mul_mem_left _ hn
+    · refine not_imp_not.1 fun habhx =>
+        map_apply_ne_zero_of_forall_mem_of_forall_ne_zero_of_apply_eq (not_and_or.1 habhx) habfh
+          (fun s habhs => ?_) rfl
+      · exact (map_ne_zero_iff _ <| h.forall_injective <| f s habhs).2 fun habhms =>
+          habmfh <| Set.mem_iUnion₂.2 ⟨(f s habhs), ⟨s, habhs, rfl⟩,
+            (hA.springLike.mem_matchingIdeal_iff_eq_zero (f s habhs) _).2 habhms⟩
+    · exact map_apply_eq_zero_of_pi_of_eq_of_eq_of_mem_span_of_eq hahx hbhx hm rfl
   · exact ⟨0, zero_mem _, fun x => (not_nonempty_iff_imp_false.1 hX x).elim⟩
+
+end SpringLike'
