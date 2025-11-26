@@ -190,14 +190,14 @@ lemma map_apply_ne_zero_of_forall_mem_of_forall_ne_zero_of_apply_eq
     {A : Subring (Π x : X, i x)} {a b c : A} {R : Type*} [Ring R]
     {h : (x : X) → i x →+* R} (habhx : h x (a.1 x) ≠ 0 ∨ h x (b.1 x) ≠ 0)
     {f : (s : Set X) → s ∈ NonVanishingConstSetsFromInter a b h → X}
-    (habhf : ∀ (s : Set X) (hs : s ∈ NonVanishingConstSetsFromInter a b h), f s hs ∈ s)
-    (habchf : ∀ (s : Set X) (hs : s ∈ NonVanishingConstSetsFromInter a b h),
+    (habfh : ∀ (s : Set X) (hs : s ∈ NonVanishingConstSetsFromInter a b h), f s hs ∈ s)
+    (habcfh : ∀ (s : Set X) (hs : s ∈ NonVanishingConstSetsFromInter a b h),
       h (f s hs) (c.1 (f s hs)) ≠ 0)
     {m : FreeCommRing (Fin 2)} (habcm : (lift fun i => if i = 0 then a else b) m = c) :
     h x (c.1 x) ≠ 0 := by
   obtain ⟨s, hs, hsx⟩ := sUnion_eq a b h ▸
     (Set.mem_setOf.2 habhx : x ∈ { x : X | h x (a.1 x) ≠ 0 ∨ h x (b.1 x) ≠ 0 })
-  exact map_apply_eq_map_apply_of_mem_of_mem_of_apply_eq hs hsx (habhf s hs) habcm ▸ habchf s hs
+  exact map_apply_eq_map_apply_of_mem_of_mem_of_apply_eq hs hsx (habfh s hs) habcm ▸ habcfh s hs
 
 end NonVanishingConstSetsFromInter
 
@@ -220,5 +220,20 @@ lemma SpringLike'.finite_nonVanishingConstSetsFromInter_of_isSimple
 lemma SpringLike'.finite_wwefwe
     {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
     {A : Subring (Π x : X, i x)} (a b : A) {hA : SpringLike' A} (h : hA.isSimple) :
-    ∃ c : A, c ∈ Ideal.span {a, b} ∧ ∀ x : X, c.1 x = 0 ↔ (a.1 x = 0 ∧ b.1 x = 0) := by
-  sorry
+    ∃ c : A, c ∈ Ideal.span {a, b} ∧ ∀ x : X, h.h x (c.1 x) = 0 ↔
+      (h.h x (a.1 x) = 0 ∧ h.h x (b.1 x) = 0) := by
+  by_cases hX : Nonempty X
+  · choose f habfh using fun (s : Set X) (habhs : s ∈ NonVanishingConstSetsFromInter a b h.h)
+      => habhs.1
+    let habcfh := fun (s : Set X) (habhs : s ∈ NonVanishingConstSetsFromInter a b h.h)
+      => habhs.2.2 (f s habhs) (habfh s habhs)
+    let fff := fun x : X =>
+      (hA.springLike.matchingIdeal x).comap (lift (α := Fin 2) fun i => if i = 0 then a else b)
+    let fffe := fun x : X =>
+      (hA.springLike.matchingIdeal_isPrime x).comap (lift (α := Fin 2) fun i => if i = 0 then a else b)
+    have := (hA.finite_nonVanishingConstSetsFromInter_of_isSimple a b h).dependent_image f
+    have := (Ideal.span { of 0, of 1 }).subset_union_prime_finite this
+      (Classical.choice hX) (Classical.choice hX)
+      (fun x _ _ _ => (hA.springLike.matchingIdeal_isPrime x).comap (lift (α := Fin 2) fun i => if i = 0 then a else b))
+    sorry
+  · exact ⟨0, zero_mem _, fun x => (not_nonempty_iff_imp_false.1 hX x).elim⟩
