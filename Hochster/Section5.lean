@@ -225,15 +225,36 @@ lemma SpringLike'.finite_wwefwe
   by_cases hX : Nonempty X
   · choose f habfh using fun (s : Set X) (habhs : s ∈ NonVanishingConstSetsFromInter a b h.h)
       => habhs.1
-    let habcfh := fun (s : Set X) (habhs : s ∈ NonVanishingConstSetsFromInter a b h.h)
+    let habfh := fun (s : Set X) (habhs : s ∈ NonVanishingConstSetsFromInter a b h.h)
       => habhs.2.2 (f s habhs) (habfh s habhs)
     let fff := fun x : X =>
       (hA.springLike.matchingIdeal x).comap (lift (α := Fin 2) fun i => if i = 0 then a else b)
     let fffe := fun x : X =>
       (hA.springLike.matchingIdeal_isPrime x).comap (lift (α := Fin 2) fun i => if i = 0 then a else b)
-    have := (hA.finite_nonVanishingConstSetsFromInter_of_isSimple a b h).dependent_image f
-    have := (Ideal.span { of 0, of 1 }).subset_union_prime_finite this
-      (Classical.choice hX) (Classical.choice hX)
-      (fun x _ _ _ => (hA.springLike.matchingIdeal_isPrime x).comap (lift (α := Fin 2) fun i => if i = 0 then a else b))
+    have : ¬∃ x ∈ { x | ∃ (s : Set X) (habhs : s ∈ NonVanishingConstSetsFromInter a b h.h),
+        f s habhs = x }, Ideal.span { of 0, of 1 } ≤ (hA.springLike.matchingIdeal x).comap
+          (lift fun i : Fin 2 => if i = 0 then a else b) := by
+      refine not_exists.2 fun x ⟨⟨s, habhs, habfhx⟩, hAabx⟩ =>
+        (habfh s habhs).elim (fun hafhs => ?_) (fun hbfhs => ?_)
+      · have : a.1 x = 0 :=
+          ((lift_of _ 0 : (lift fun i => if i = 0 then a else b) (of 0) = a) ▸
+            ((hA.springLike.mem_matchingIdeal_iff_eq_zero x
+              <| (lift fun i => if i = 0 then a else b) (of 0)).1
+                <| hAabx <| Ideal.subset_span <| Set.mem_insert (of 0) _) :
+                  hA.springLike.h (if 0 = 0 then a else b) x = 0)
+        exact hafhs <| habfhx ▸ this ▸ (h.h x).map_zero
+      · have : b.1 x = 0 :=
+          ((lift_of _ 1 : (lift fun i => if i = 0 then a else b) (of 1) = b) ▸
+            ((hA.springLike.mem_matchingIdeal_iff_eq_zero x
+              <| (lift fun i => if i = 0 then a else b) (of 1)).1
+                <| hAabx <| Ideal.subset_span <| Set.mem_insert_of_mem (of 0) rfl) :
+                  hA.springLike.h (if 1 = 0 then a else b) x = 0)
+        exact hbfhs <| habfhx ▸ this ▸ (h.h x).map_zero
+    have hhh := Set.not_subset.1 <| (not_iff_not.2 <| (Ideal.span { of 0, of 1 }).subset_union_prime_finite
+      ((hA.finite_nonVanishingConstSetsFromInter_of_isSimple a b h).dependent_image f)
+        (Classical.choice hX) (Classical.choice hX)
+          (fun x _ _ _ => (hA.springLike.matchingIdeal_isPrime x).comap
+            (lift (α := Fin 2) fun i => if i = 0 then a else b))).2 this
+    obtain ⟨m, hm, habmfh⟩ := hhh
     sorry
   · exact ⟨0, zero_mem _, fun x => (not_nonempty_iff_imp_false.1 hX x).elim⟩
