@@ -273,4 +273,14 @@ lemma exists_mem_span_and_forall_map_apply_eq_zero_iff_and_of_isSimple
     · exact map_apply_eq_zero_of_pi_of_eq_of_eq_of_mem_span_of_eq hahx hbhx hm rfl
   · exact ⟨0, zero_mem _, fun x => (not_nonempty_iff_imp_false.1 hX x).elim⟩
 
+lemma exists_mem_span_and_forall_apply_eq_zero_iff_and_of_isSimple
+    {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
+    {A : Subring (Π x : X, i x)} (a b : A) {hA : SpringLike' A} (h : hA.isSimple) :
+    ∃ c : A, c ∈ Ideal.span {a, b} ∧ ∀ x : X, c.1 x = 0 ↔ (a.1 x = 0 ∧ b.1 x = 0) := by
+  obtain ⟨c, habc, habch⟩ :=
+    hA.exists_mem_span_and_forall_map_apply_eq_zero_iff_and_of_isSimple a b h
+  exact ⟨c, habc, fun x => (map_eq_zero_iff (h.h x) (h.forall_injective x)).symm.trans <|
+    (habch x).trans <| Iff.and (map_eq_zero_iff (h.h x) (h.forall_injective x))
+      (map_eq_zero_iff (h.h x) (h.forall_injective x))⟩
+
 end SpringLike'
