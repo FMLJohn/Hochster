@@ -2,7 +2,7 @@ import Mathlib.RingTheory.FreeCommRing
 
 import Hochster.Section4
 
-open Field FreeCommRing Function RingHom Submodule Subring
+open Field Finset FreeCommRing Function RingHom Submodule Subring
 
 /--
 Note that this is different from the definition of a simple spring in the paper.
@@ -283,6 +283,7 @@ lemma exists_mem_span_and_forall_apply_eq_zero_iff_and_of_isSimple
     (habch x).trans <| Iff.and (map_eq_zero_iff (h.h x) (h.forall_injective x))
       (map_eq_zero_iff (h.h x) (h.forall_injective x))⟩
 
+open Classical in
 lemma exists_mem_span_and_forall_apply_eq_zero_iff_wefew
     {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
     {A : Subring (Π x : X, i x)} {B : Set A} (hB : B.Finite) {hA : SpringLike' A}
@@ -291,9 +292,27 @@ lemma exists_mem_span_and_forall_apply_eq_zero_iff_wefew
   suffices ∀ (n : ℕ) (B : Set A) (hB : B.Finite), hB.toFinset.card = n →
     ∃ c : A, c ∈ Ideal.span B ∧ ∀ x : X, c.1 x = 0 ↔ ∀ b ∈ B, b.1 x = 0 from
       this hB.toFinset.card B hB rfl
-  intro n
-  induction n with
-  | zero => sorry
-  | succ n hn => sorry
+  · intro n
+    induction n with
+    | zero =>
+        exact fun B hB hB0 => ⟨0, zero_mem (Ideal.span B), fun x => ⟨fun _ b hbB =>
+          (Set.notMem_empty b <| (hB.toFinset_eq_empty.1 <| card_eq_zero.1 hB0) ▸ hbB).elim,
+            fun _ => A.coe_zero ▸ Pi.zero_apply (M := i) x ▸ rfl⟩⟩
+    | succ n hn =>
+        intro B hB hBn
+        by_cases hn1 : 1 ≤ n
+        · obtain ⟨b, hBb⟩ := card_ne_zero.1 <| hBn ▸ n.zero_ne_add_one.symm
+          have : (hB.diff (t := {b})).toFinset.card = n := by
+            have : hB.toFinset \ {b} = (hB.diff (t := {b})).toFinset := by
+              ext
+              simp only [mem_sdiff, Set.Finite.mem_toFinset, mem_singleton, Set.mem_diff,
+                Set.mem_singleton_iff]
+            exact this ▸ n.add_sub_cancel 1 ▸ card_singleton b ▸ hBn ▸
+              (card_sdiff_of_subset <| singleton_subset_iff.2 hBb)
+          sorry
+        · obtain ⟨b, hBb⟩ := card_eq_one.1 <| zero_add 1 ▸ (Nat.lt_one_iff.1 <| lt_of_not_ge hn1) ▸
+            hBn
+          exact (coe_singleton b ▸ hBb ▸ hB.coe_toFinset) ▸ ⟨b, subset_span (Set.mem_singleton b),
+            fun x => ⟨fun hbx _ h => Set.eq_of_mem_singleton h ▸ hbx, fun hx => hx b rfl⟩⟩
 
 end SpringLike'
