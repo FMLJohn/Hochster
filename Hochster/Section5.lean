@@ -283,4 +283,17 @@ lemma exists_mem_span_and_forall_apply_eq_zero_iff_and_of_isSimple
     (habch x).trans <| Iff.and (map_eq_zero_iff (h.h x) (h.forall_injective x))
       (map_eq_zero_iff (h.h x) (h.forall_injective x))⟩
 
+lemma exists_mem_span_and_forall_apply_eq_zero_iff_wefew
+    {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
+    {A : Subring (Π x : X, i x)} {B : Set A} (hB : B.Finite) {hA : SpringLike' A}
+    (h : hA.isSimple) :
+    ∃ c : A, c ∈ Ideal.span B ∧ ∀ x : X, c.1 x = 0 ↔ ∀ b ∈ B, b.1 x = 0 := by
+  suffices ∀ (n : ℕ) (B : Set A) (hB : B.Finite), hB.toFinset.card = n →
+    ∃ c : A, c ∈ Ideal.span B ∧ ∀ x : X, c.1 x = 0 ↔ ∀ b ∈ B, b.1 x = 0 from
+      this hB.toFinset.card B hB rfl
+  intro n
+  induction n with
+  | zero => sorry
+  | succ n hn => sorry
+
 end SpringLike'
