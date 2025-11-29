@@ -321,7 +321,7 @@ lemma PrimeSpectrum.zeroLocus_singleton {R : Type*} [CommSemiring R] (r : R) :
     zeroLocus {r} = { p | r ∈ p.asIdeal } := by
   simp [zeroLocus]
 
-lemma PrimeSpectrum.ConstructibleTop.isTopologicalBasis_inter_iInter (A : Type*) [CommSemiring A] :
+lemma PrimeSpectrum.ConstructibleTop.isTopologicalBasis_inter_biInter (A : Type*) [CommSemiring A] :
     IsTopologicalBasis (α := ConstructibleTop (PrimeSpectrum A))
       { s | ∃ a : A, ∃ B : Set A, B.Finite ∧
         s = { p | a ∉ p.asIdeal } ∩ ⋂ b ∈ B, { p | b ∈ p.asIdeal } } where
@@ -399,7 +399,7 @@ lemma SpringLike.spring_isAffine_iff_forall_mem_radical_of_subset
     by_contra neq
     · obtain ⟨s, ⟨t, ⟨a, B, hB, htaB⟩, hts⟩, hs1, hs2⟩ :=
         IsTopologicalBasis.exists_mem_compl_of_isClosed_of_ne_univ
-        (ConstructibleTop.isTopologicalBasis_inter_iInter A) hXA.spring.range_isClosed neq
+        (ConstructibleTop.isTopologicalBasis_inter_biInter A) hXA.spring.range_isClosed neq
       simp only [htaB, Set.compl_inter, Set.compl_iInter] at hts
       have : ⋂ b ∈ B, { x : X | hXA.h b x = 0 } ⊆ { x : X | hXA.h a x = 0 } := by
         intro x hxB

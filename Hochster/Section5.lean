@@ -284,7 +284,7 @@ lemma exists_mem_span_and_forall_apply_eq_zero_iff_and_of_isSimple
       (map_eq_zero_iff (h.h x) (h.forall_injective x))⟩
 
 open Classical in
-lemma exists_mem_span_and_forall_apply_eq_zero_iff_wefew
+lemma exists_mem_span_and_forall_apply_eq_zero_iff_forall_of_isSimple
     {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
     {A : Subring (Π x : X, i x)} {B : Set A} (hB : B.Finite) {hA : SpringLike' A}
     (h : hA.isSimple) :
@@ -309,10 +309,31 @@ lemma exists_mem_span_and_forall_apply_eq_zero_iff_wefew
                 Set.mem_singleton_iff]
             exact this ▸ n.add_sub_cancel 1 ▸ card_singleton b ▸ hBn ▸
               (card_sdiff_of_subset <| singleton_subset_iff.2 hBb)
-          sorry
+          obtain ⟨d, hBbd, hBXbd⟩ := hn (B \ {b}) hB.diff this
+          obtain ⟨c, hBbcd, hBXbcd⟩ :=
+            hA.exists_mem_span_and_forall_apply_eq_zero_iff_and_of_isSimple b d h
+          refine ⟨c, ?_, fun x => (hBXbcd x).trans ⟨fun ⟨hbx, hdx⟩ => fun e hBe => ?_,
+            fun hBX => ⟨hBX b (hB.mem_toFinset.1 hBb), ?_⟩⟩⟩
+          · have : {b, d} ⊆ (Ideal.span B : Set A) :=
+              fun a ha => ha.elim (fun hab => hab ▸ subset_span (hB.mem_toFinset.1 hBb))
+                (fun had => had ▸ span_mono B.diff_subset hBbd)
+            exact span_le.2 this hBbcd
+          · by_cases hbe : e = b
+            · exact hbe ▸ hbx
+            · exact (hBXbd x).1 hdx e (B.mem_diff_of_mem hBe hbe)
+          · exact (hBXbd x).2 fun e hBbe => hBX e (B.diff_subset hBbe)
         · obtain ⟨b, hBb⟩ := card_eq_one.1 <| zero_add 1 ▸ (Nat.lt_one_iff.1 <| lt_of_not_ge hn1) ▸
             hBn
           exact (coe_singleton b ▸ hBb ▸ hB.coe_toFinset) ▸ ⟨b, subset_span (Set.mem_singleton b),
             fun x => ⟨fun hbx _ h => Set.eq_of_mem_singleton h ▸ hbx, fun hx => hx b rfl⟩⟩
+
+lemma exists_mem_span_and_eq_biInter_of_isSimple {X : Type*} [TopologicalSpace X]
+    {i : X → Type*} [(x : X) → Field (i x)] {A : Subring (Π x : X, i x)}
+    {B : Set A} (hB : B.Finite) {hA : SpringLike' A} (h : hA.isSimple) :
+    ∃ c : A, c ∈ Ideal.span B ∧ { x : X | c.1 x = 0 } = ⋂ b ∈ B, { x : X | b.1 x = 0 } := by
+  obtain ⟨c, hBc, hBXc⟩ := exists_mem_span_and_forall_apply_eq_zero_iff_forall_of_isSimple hB h
+  refine ⟨c, hBc, ?_⟩
+  · ext x
+    simpa only [Set.mem_iInter] using hBXc x
 
 end SpringLike'
