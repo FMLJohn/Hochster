@@ -336,4 +336,25 @@ lemma exists_mem_span_and_eq_biInter_of_isSimple {X : Type*} [TopologicalSpace X
   · ext x
     simpa only [Set.mem_iInter] using hBXc x
 
+/-- This corresponds to the second statement in Theorem 4 of the paper. -/
+lemma springLike_spring_isAffine_of_isSimple_of_forall_imp
+    {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
+    {A : Subring (Π x : X, i x)} {hA : SpringLike' A} (h1 : hA.isSimple)
+    (h2 : ∀ a b : A, (∀ x : X, b.1 x = 0 → a.1 x = 0) → a ∈ (Ideal.span {b}).radical) :
+    hA.springLike.spring.isAffine := by
+  refine hA.springLike_spring_isAffine_iff_forall_mem_radical_of_subset.2 fun a B hB haBX => ?_
+  · obtain ⟨c, hBc, hBXc⟩ := exists_mem_span_and_eq_biInter_of_isSimple hB h1
+    exact (Ideal.radical_mono <| span_le.2 <| Set.singleton_subset_iff.2 hBc)
+      (h2 a c fun x hcx => haBX <| hBXc ▸ Set.mem_setOf.2 hcx)
+
+/-- This corresponds to the third statement in Theorem 4 of the paper. -/
+lemma isIndex.iSupExtForV_springLike_spring_isAffine_of_isSimple
+    {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
+    {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
+    {hA : SpringLike' A} (h : hA.isSimple) (hAv : hA.isIndex v) :
+    hAv.iSupExtForV.springLike.spring.isAffine :=
+  hAv.iSupExtForV.springLike_spring_isAffine_of_isSimple_of_forall_imp
+    (hAv.iSupExtForVIsSimpleOfIsSimple h)
+    (fun _ _ => hAv.mem_radical_span_singleton_of_forall_imp)
+
 end SpringLike'
