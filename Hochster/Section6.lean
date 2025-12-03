@@ -1,6 +1,6 @@
 import Hochster.Section5
 
-open CategoryTheory Function TopologicalSpace
+open CategoryTheory Function Subring TopologicalSpace
 
 /-- The category of spaces with indeterminates. -/
 @[ext]
@@ -48,5 +48,22 @@ instance : Category SWICat where
   id_comp _ := rfl
   comp_id _ := rfl
   assoc _ _ _ := rfl
+
+open Classical in
+lemma springLike' (k : Type*) [Field k] (I : SWICat) :
+    SpringLike' (Subring.closure (R := I.X → MvPolynomial I.E k)
+      ({ fun x => MvPolynomial.C i | i : k } ∪
+        { fun x => if x ∈ I.g e then MvPolynomial.X e else 0 | e : I.E })) where
+  spectralSpace := I.spectralSpace
+  forall_isOpen := fun a ha => by
+    refine closure_induction ?_ ?_ ?_ ?_ ?_ ?_ ha
+    · sorry
+    · sorry
+    · sorry
+    · sorry
+    · sorry
+    · sorry
+  forall_isCompact := sorry
+  isTopologicalBasis := sorry
 
 end SWICat
