@@ -65,7 +65,7 @@ lemma indExtForVIsSimpleOfIsSimple_f {X : Type*}
     {v : Π p : σ(X), Valuation (i p.z.1) NNRat} {A : Subring (Π x : X, i x)}
     {hA : SpringLike' A} (h : hA.isSimple) (hAv : hA.isIndex v) (n : ℕ) :
     (hAv.indExtForVIsSimpleOfIsSimple h n).F = h.F := by
-   induction n with
+  induction n with
   | zero => rfl
   | succ n hn => exact hn
 
