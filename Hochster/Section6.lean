@@ -1,6 +1,6 @@
 import Hochster.Section5
 
-open CategoryTheory Function Subring TopologicalSpace
+open CategoryTheory Function MvPolynomial Subring TopologicalSpace
 
 /-- The category of spaces with indeterminates. -/
 @[ext]
@@ -56,14 +56,38 @@ lemma springLike' (k : Type*) [Field k] (I : SWICat) :
         { fun x => if x ∈ I.g e then MvPolynomial.X e else 0 | e : I.E })) where
   spectralSpace := I.spectralSpace
   forall_isOpen := fun a ha => by
-    refine closure_induction ?_ ?_ ?_ ?_ ?_ ?_ ha
+    refine closure_induction (fun a ha => ?_) ?_ ?_ ?_ ?_ ?_ ha
+    · refine ha.elim (fun ⟨i, hai⟩ => hai ▸ ?_) (fun ⟨e, hex⟩ => ?_)
+      · by_cases hi : i = 0
+        · exact hi ▸ C_0 (R := k) ▸ (Set.Subset.antisymm (fun _ h _ => h) fun _ h => h rfl) ▸
+            isOpen_const
+        · exact (Set.ext fun x => ⟨fun hix => Set.mem_univ x, fun hx => C_ne_zero.2 hi⟩) ▸
+            isOpen_univ
+      · have : { x : I.X | a x ≠ 0 } = I.g e := Set.ext fun x => hex ▸ by
+          simp only [ne_eq, ite_eq_right_iff, X_ne_zero, imp_false, not_not, Set.setOf_mem_eq]
+        exact this ▸ I.forall_isOpen e
+    · simp only [Pi.zero_apply, ne_eq, not_true_eq_false, Set.setOf_false, isOpen_empty]
+    · simp only [Pi.one_apply, ne_eq, one_ne_zero, not_false_eq_true, Set.setOf_true, isOpen_univ]
     · sorry
     · sorry
     · sorry
+  forall_isCompact := fun a ha => by
+    refine closure_induction (fun a ha => ?_) ?_ ?_ ?_ ?_ ?_ ha
+    · refine ha.elim (fun ⟨i, hai⟩ => hai ▸ ?_) (fun ⟨e, hex⟩ => ?_)
+      · by_cases hi : i = 0
+        · exact hi ▸ C_0 (R := k) ▸ (Set.Subset.antisymm (fun _ h _ => h) fun _ h => h rfl) ▸
+            isCompact_empty
+        · exact (Set.ext fun x => ⟨fun hix => Set.mem_univ x, fun hx => C_ne_zero.2 hi⟩) ▸
+            isCompact_univ
+      · have : { x : I.X | a x ≠ 0 } = I.g e := Set.ext fun x => hex ▸ by
+          simp only [ne_eq, ite_eq_right_iff, X_ne_zero, imp_false, not_not, Set.setOf_mem_eq]
+        exact this ▸ I.forall_isCompact e
+    · simp only [Pi.zero_apply, ne_eq, not_true_eq_false, Set.setOf_false, isCompact_empty]
+    · simp only [Pi.one_apply, ne_eq, one_ne_zero, not_false_eq_true, Set.setOf_true,
+        isCompact_univ]
     · sorry
     · sorry
     · sorry
-  forall_isCompact := sorry
   isTopologicalBasis := sorry
 
 end SWICat
