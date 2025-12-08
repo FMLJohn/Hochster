@@ -58,6 +58,31 @@ lemma t_apply_support_eq_g (k : Type*) [Field k] {I : SWICat} (e : I.E) :
     { x : I.X | T k e x ≠ 0 } = I.g e := by
   simp only [T, ne_eq, ite_eq_right_iff, X_ne_zero, imp_false, not_not, Set.setOf_mem_eq]
 
+end SWICat
+
+namespace Subring
+
+open Classical in
+theorem exists_mvPolynomial_of_mem_closure {R : Type*} [CommRing R] {A : Subring R}
+    {S : Set R} {r : R} (hr : r ∈ closure (A.carrier ∪ S)) :
+    ∃ p : MvPolynomial S R, MvPolynomial.eval (fun s : S => s.1) p = r ∧
+      ∀ m : S →₀ ℕ, p.coeff m ∈ A := by
+  refine closure_induction (fun r hr => ?_) ?_ ?_ ?_ ?_ ?_ hr
+  · refine hr.elim (fun hr => ?_) (fun hr => ?_)
+    · exact ⟨C r, (eval_C r).symm ▸ rfl, fun m =>
+        coeff_C m r ▸ ite_mem.2 ⟨fun _ => hr, fun _ => A.zero_mem⟩⟩
+    · exact ⟨X ⟨r, hr⟩, eval_X (f := fun s : S => s.1) _ ▸ rfl, fun m =>
+        coeff_X' (R := R) _ m ▸ ite_mem.2 ⟨fun _ => A.one_mem, fun _ => A.zero_mem⟩⟩
+  · sorry
+  · sorry
+  · sorry
+  · sorry
+  · sorry
+
+end Subring
+
+namespace SWICat
+
 open Classical in
 lemma springLike' (k : Type*) [Field k] (I : SWICat) :
     SpringLike' (Subring.closure ({ fun x => MvPolynomial.C i | i : k } ∪
