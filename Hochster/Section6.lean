@@ -65,7 +65,7 @@ namespace Subring
 open Classical in
 theorem exists_mvPolynomial_of_mem_closure {R : Type*} [CommRing R]
     {A : Subring R} {S : Set R} {r : R} (hr : r ∈ closure (A.carrier ∪ S)) :
-    ∃ p : MvPolynomial S R, MvPolynomial.eval (fun s : S => s.1) p = r ∧
+    ∃ p : MvPolynomial S R, p.eval (fun s : S => s.1) = r ∧
       ∀ m : S →₀ ℕ, p.coeff m ∈ A := by
   refine closure_induction (fun r hr => ?_) ⟨0, rfl, fun _ => A.zero_mem⟩ ?_
     (fun r s _ _ ⟨p, hpr, hASp⟩ ⟨q, hqs, hASq⟩ => ?_) (fun r _ ⟨p, hpr, hASp⟩ => ?_)
@@ -83,10 +83,41 @@ theorem exists_mvPolynomial_of_mem_closure {R : Type*} [CommRing R]
   · exact ⟨p * q, eval_mul (R := R) ▸ hpr ▸ hqs ▸ rfl, fun m =>
       p.coeff_mul q m ▸ A.sum_mem fun c hc => A.mul_mem (hASp c.1) (hASq c.2)⟩
 
+/--
+`Subring.repMvPoly hr = (Subring.exists_mvPolynomial_of_mem_closure hr).choose`.
+-/
+noncomputable def repMvPoly {R : Type*} [CommRing R] {A : Subring R}
+    {S : Set R} {r : R} (hr : r ∈ closure (A.carrier ∪ S)) :=
+  (exists_mvPolynomial_of_mem_closure hr).choose
+
+lemma repMvPoly_eval_eq {R : Type*} [CommRing R] {A : Subring R}
+    {S : Set R} {r : R} (hr : r ∈ closure (A.carrier ∪ S)) :
+    (repMvPoly hr).eval (fun s : S => s.1) = r :=
+  (exists_mvPolynomial_of_mem_closure hr).choose_spec.1
+
+lemma coeff_repMvPoly_mem {R : Type*} [CommRing R] {A : Subring R}
+    {S : Set R} {r : R} (hr : r ∈ closure (A.carrier ∪ S)) (m : S →₀ ℕ) :
+    (repMvPoly hr).coeff m ∈ A :=
+  (exists_mvPolynomial_of_mem_closure hr).choose_spec.2 m
+
 end Subring
 
+namespace SWICat
+
+lemma eeef (k : Type*) [Field k] {I : SWICat} (a : I.X → MvPolynomial I.E k)
+    (ha : a ∈ Subring.closure ({ fun x => MvPolynomial.C i | i : k } ∪ { T k e | e : I.E })) :
+    IsOpen { x : I.X | a x ≠ 0 } ∧ IsCompact { x : I.X | a x ≠ 0 } := by
+  let A : Subring (I.X → MvPolynomial I.E k) := {
+    carrier := { fun x => C i | i : k }
+    mul_mem' := fun ⟨i, hi⟩ ⟨j, hj⟩ => ⟨i * j, hi ▸ hj ▸ const_mul (C i) (C j) ▸ C_mul (R := k) ▸ rfl⟩
+    one_mem' := ⟨1, rfl⟩
+    add_mem' := fun ⟨i, hi⟩ ⟨j, hj⟩ => ⟨i + j, hi ▸ hj ▸ const_add (C i) (C j) ▸ C_add (R := k) ▸ rfl⟩
+    zero_mem' := ⟨0, (C (R := k)).map_zero ▸ rfl⟩
+    neg_mem' := fun ⟨i, hi⟩ => ⟨-i, hi ▸ C_neg _ i ▸ rfl⟩ }
+  sorry
+
 open Classical in
-lemma SWICat.springLike' (k : Type*) [Field k] (I : SWICat) :
+lemma springLike' (k : Type*) [Field k] (I : SWICat) :
     SpringLike' (Subring.closure ({ fun x => MvPolynomial.C i | i : k } ∪
       { T k e | e : I.E })) where
   spectralSpace := I.spectralSpace
@@ -120,3 +151,5 @@ lemma SWICat.springLike' (k : Type*) [Field k] (I : SWICat) :
     · sorry
     · sorry
   isTopologicalBasis := sorry
+
+end SWICat
