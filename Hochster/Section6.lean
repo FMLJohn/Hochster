@@ -63,28 +63,30 @@ end SWICat
 namespace Subring
 
 open Classical in
-theorem exists_mvPolynomial_of_mem_closure {R : Type*} [CommRing R] {A : Subring R}
-    {S : Set R} {r : R} (hr : r ∈ closure (A.carrier ∪ S)) :
+theorem exists_mvPolynomial_of_mem_closure {R : Type*} [CommRing R]
+    {A : Subring R} {S : Set R} {r : R} (hr : r ∈ closure (A.carrier ∪ S)) :
     ∃ p : MvPolynomial S R, MvPolynomial.eval (fun s : S => s.1) p = r ∧
       ∀ m : S →₀ ℕ, p.coeff m ∈ A := by
-  refine closure_induction (fun r hr => ?_) ?_ ?_ ?_ ?_ ?_ hr
+  refine closure_induction (fun r hr => ?_) ⟨0, rfl, fun _ => A.zero_mem⟩ ?_
+    (fun r s _ _ ⟨p, hpr, hASp⟩ ⟨q, hqs, hASq⟩ => ?_) (fun r _ ⟨p, hpr, hASp⟩ => ?_)
+    (fun r s _ _ ⟨p, hpr, hASp⟩ ⟨q, hqs, hASq⟩ => ?_) hr
   · refine hr.elim (fun hr => ?_) (fun hr => ?_)
     · exact ⟨C r, (eval_C r).symm ▸ rfl, fun m =>
         coeff_C m r ▸ ite_mem.2 ⟨fun _ => hr, fun _ => A.zero_mem⟩⟩
     · exact ⟨X ⟨r, hr⟩, eval_X (f := fun s : S => s.1) _ ▸ rfl, fun m =>
         coeff_X' (R := R) _ m ▸ ite_mem.2 ⟨fun _ => A.one_mem, fun _ => A.zero_mem⟩⟩
-  · sorry
-  · sorry
-  · sorry
-  · sorry
-  · sorry
+  · exact ⟨1, map_one _, fun m =>
+      coeff_one (R := R) m ▸ ite_mem.2 ⟨fun _ => A.one_mem, fun _ => A.zero_mem⟩⟩
+  · exact ⟨p + q, eval_add (R := R) ▸ hpr ▸ hqs ▸ rfl, fun m =>
+      p.coeff_add m q ▸ A.add_mem (hASp m) (hASq m)⟩
+  · exact ⟨-p, p.eval_neg _ ▸ hpr ▸ rfl, fun m => p.coeff_neg S m ▸ A.neg_mem (hASp m)⟩
+  · exact ⟨p * q, eval_mul (R := R) ▸ hpr ▸ hqs ▸ rfl, fun m =>
+      p.coeff_mul q m ▸ A.sum_mem fun c hc => A.mul_mem (hASp c.1) (hASq c.2)⟩
 
 end Subring
 
-namespace SWICat
-
 open Classical in
-lemma springLike' (k : Type*) [Field k] (I : SWICat) :
+lemma SWICat.springLike' (k : Type*) [Field k] (I : SWICat) :
     SpringLike' (Subring.closure ({ fun x => MvPolynomial.C i | i : k } ∪
       { T k e | e : I.E })) where
   spectralSpace := I.spectralSpace
@@ -118,5 +120,3 @@ lemma springLike' (k : Type*) [Field k] (I : SWICat) :
     · sorry
     · sorry
   isTopologicalBasis := sorry
-
-end SWICat
