@@ -132,18 +132,20 @@ end Subring
 namespace SWICat
 
 lemma wewfw (k : Type*) [Field k] {I : SWICat}
-    {p : MvPolynomial { T k e | e : I.E } (C.range.funcConst I.X)} :
-    IsOpen { x : I.X | ((p.map (subtype _)).eval fun s => s.1) x ≠ 0 } ∧
-        IsCompact { x : I.X | (p.eval fun s => s.1) x ≠ 0 } := by
-  refine p.monomial_add_induction_on (fun a ha => ?_) (fun m a p hmp ha hp hap => ?_)
-  · obtain ⟨i, _, hai⟩ := coeff_zero_C a ▸ ha 0
-    simp only [← hai, eval_C, ne_eq, isOpen_const, true_and]
+    {p : MvPolynomial { T k e | e : I.E } ((@C k I.E _).range.funcConst I.X)} :
+    IsOpen { x : I.X | ((p.map ((@C k I.E _).range.funcConst I.X).subtype).eval
+      fun s => s.1) x ≠ 0 } ∧
+        IsCompact { x : I.X | ((p.map ((@C k I.E _).range.funcConst I.X).subtype).eval
+          fun s => s.1) x ≠ 0 } := by
+  refine p.monomial_add_induction_on (fun ⟨a, i, _, hai⟩ => ?_)
+    (fun m ⟨a, p, ⟨i, hip⟩, hap⟩ q hmq ha ⟨hqX1, hqX2⟩ => ?_)
+  · simp only [← hai, map_C, subtype_apply, eval_C, ne_eq, isOpen_const, true_and]
     by_cases hi : i = 0
     · simp only [hi, not_true_eq_false, Set.setOf_false, Set.finite_empty, Set.Finite.isCompact]
-    · simpa only [hi, not_false_eq_true] using isCompact_univ
-  · have := hap m
-    sorry
-
+    · simp only [hi, not_false_eq_true, Set.setOf_true, isCompact_univ]
+  · refine (MvPolynomial.map (funcConst I.X (@C k I.E _).range).subtype).map_add .. ▸ ⟨?_, ?_⟩
+    · sorry
+    · sorry
 
 lemma eeef (k : Type*) [Field k] {I : SWICat} (a : I.X → MvPolynomial I.E k)
     (ha : a ∈ Subring.closure ((MvPolynomial.C.range.funcConst I.X).carrier ∪
