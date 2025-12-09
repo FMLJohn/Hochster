@@ -62,26 +62,40 @@ end SWICat
 
 namespace Subring
 
-open Classical in
+theorem exists_mvPolynomial_of_mem_closure' {R : Type*} [CommRing R]
+    {A : Subring R} {S : Set R} {r : R} (hr : r ∈ closure (A.carrier ∪ S)) :
+    ∃ p : MvPolynomial S A, (p.map A.subtype).eval (fun s : S => s.1) = r := by
+  refine closure_induction (fun r hr => ?_) ⟨0, rfl⟩ ?_ (fun r s _ _ ⟨p, hpr⟩ ⟨q, hqs⟩ => ?_)
+    (fun r _ ⟨p, hpr⟩ => ?_) (fun r s _ _ ⟨p, hpr⟩ ⟨q, hqs⟩ => ?_) hr
+  · refine hr.elim (fun hr => ?_) (fun hr => ?_)
+    · exact ⟨C ⟨r, hr⟩, map_C A.subtype _ ▸ A.subtype_apply _ ▸ eval_C r⟩
+    · exact ⟨X ⟨r, hr⟩, map_X A.subtype _ ▸ eval_X (f := fun s : S => s.1) _ ▸ rfl⟩
+  · exact ⟨1, map_one (MvPolynomial.map A.subtype) ▸ map_one _⟩
+  · exact ⟨p + q, map_add (MvPolynomial.map A.subtype) p q ▸ (p.map A.subtype).eval_add ▸
+      hpr ▸ hqs ▸ rfl⟩
+  · exact ⟨-p, map_neg (MvPolynomial.map A.subtype) p ▸ (p.map A.subtype).eval_neg .. ▸ hpr ▸ rfl⟩
+  · exact ⟨p * q, map_mul (MvPolynomial.map A.subtype) p q ▸ (p.map A.subtype).eval_mul ▸
+      hpr ▸ hqs ▸ rfl⟩
+
+/--
+`Subring.repMvPoly' hr = (Subring.exists_mvPolynomial_of_mem_closure' hr).choose`.
+-/
+noncomputable def repMvPoly' {R : Type*} [CommRing R] {A : Subring R}
+    {S : Set R} {r : R} (hr : r ∈ closure (A.carrier ∪ S)) :=
+  (exists_mvPolynomial_of_mem_closure' hr).choose
+
+lemma map_repMvPoly'_eval_eq {R : Type*} [CommRing R] {A : Subring R}
+    {S : Set R} {r : R} (hr : r ∈ closure (A.carrier ∪ S)) :
+    ((repMvPoly' hr).map A.subtype).eval (fun s : S => s.1) = r :=
+  (exists_mvPolynomial_of_mem_closure' hr).choose_spec
+
 theorem exists_mvPolynomial_of_mem_closure {R : Type*} [CommRing R]
     {A : Subring R} {S : Set R} {r : R} (hr : r ∈ closure (A.carrier ∪ S)) :
     ∃ p : MvPolynomial S R, p.eval (fun s : S => s.1) = r ∧
       ∀ m : S →₀ ℕ, p.coeff m ∈ A := by
-  refine closure_induction (fun r hr => ?_) ⟨0, rfl, fun _ => A.zero_mem⟩ ?_
-    (fun r s _ _ ⟨p, hpr, hASp⟩ ⟨q, hqs, hASq⟩ => ?_) (fun r _ ⟨p, hpr, hASp⟩ => ?_)
-    (fun r s _ _ ⟨p, hpr, hASp⟩ ⟨q, hqs, hASq⟩ => ?_) hr
-  · refine hr.elim (fun hr => ?_) (fun hr => ?_)
-    · exact ⟨C r, (eval_C r).symm ▸ rfl, fun m =>
-        coeff_C m r ▸ ite_mem.2 ⟨fun _ => hr, fun _ => A.zero_mem⟩⟩
-    · exact ⟨X ⟨r, hr⟩, eval_X (f := fun s : S => s.1) _ ▸ rfl, fun m =>
-        coeff_X' (R := R) _ m ▸ ite_mem.2 ⟨fun _ => A.one_mem, fun _ => A.zero_mem⟩⟩
-  · exact ⟨1, map_one _, fun m =>
-      coeff_one (R := R) m ▸ ite_mem.2 ⟨fun _ => A.one_mem, fun _ => A.zero_mem⟩⟩
-  · exact ⟨p + q, eval_add (R := R) ▸ hpr ▸ hqs ▸ rfl, fun m =>
-      p.coeff_add m q ▸ A.add_mem (hASp m) (hASq m)⟩
-  · exact ⟨-p, p.eval_neg _ ▸ hpr ▸ rfl, fun m => p.coeff_neg S m ▸ A.neg_mem (hASp m)⟩
-  · exact ⟨p * q, eval_mul (R := R) ▸ hpr ▸ hqs ▸ rfl, fun m =>
-      p.coeff_mul q m ▸ A.sum_mem fun c hc => A.mul_mem (hASp c.1) (hASq c.2)⟩
+  obtain ⟨p, hp⟩ := exists_mvPolynomial_of_mem_closure' hr
+  exact ⟨p.map A.subtype, hp, fun m => p.coeff_map A.subtype m ▸ A.subtype_apply _ ▸
+    SetLike.coe_mem (coeff m p)⟩
 
 /--
 `Subring.repMvPoly hr = (Subring.exists_mvPolynomial_of_mem_closure hr).choose`.
@@ -117,12 +131,28 @@ end Subring
 
 namespace SWICat
 
+lemma wewfw (k : Type*) [Field k] {I : SWICat}
+    {p : MvPolynomial { T k e | e : I.E } (C.range.funcConst I.X)} :
+    IsOpen { x : I.X | ((p.map (subtype _)).eval fun s => s.1) x ≠ 0 } ∧
+        IsCompact { x : I.X | (p.eval fun s => s.1) x ≠ 0 } := by
+  refine p.monomial_add_induction_on (fun a ha => ?_) (fun m a p hmp ha hp hap => ?_)
+  · obtain ⟨i, _, hai⟩ := coeff_zero_C a ▸ ha 0
+    simp only [← hai, eval_C, ne_eq, isOpen_const, true_and]
+    by_cases hi : i = 0
+    · simp only [hi, not_true_eq_false, Set.setOf_false, Set.finite_empty, Set.Finite.isCompact]
+    · simpa only [hi, not_false_eq_true] using isCompact_univ
+  · have := hap m
+    sorry
+
+
 lemma eeef (k : Type*) [Field k] {I : SWICat} (a : I.X → MvPolynomial I.E k)
     (ha : a ∈ Subring.closure ((MvPolynomial.C.range.funcConst I.X).carrier ∪
     { T k e | e : I.E })) :
     IsOpen { x : I.X | a x ≠ 0 } ∧ IsCompact { x : I.X | a x ≠ 0 } := by
-  refine repMvPoly_eval_eq ha ▸ ?_
+  obtain ⟨p, hp⟩ := exists_mvPolynomial_of_mem_closure ha
   sorry
+
+
 
 open Classical in
 lemma springLike' (k : Type*) [Field k] (I : SWICat) :
