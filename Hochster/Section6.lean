@@ -100,56 +100,66 @@ lemma coeff_repMvPoly_mem {R : Type*} [CommRing R] {A : Subring R}
     (repMvPoly hr).coeff m ∈ A :=
   (exists_mvPolynomial_of_mem_closure hr).choose_spec.2 m
 
+/--
+Given any `α : Type*`, ring `R` and `S : Subring R`,
+`(S.funcConst α).carrier := { fun _ => s | s ∈ S }`.
+-/
+def funcConst (α : Type*) {R : Type*} [Ring R] (S : Subring R) :
+    Subring (α → R) where
+  carrier := { fun _ => s | s ∈ S }
+  mul_mem' := fun ⟨s, hsS, hs⟩ ⟨t, htS, ht⟩ => ⟨s * t, S.mul_mem hsS htS, hs ▸ ht ▸ rfl⟩
+  one_mem' := ⟨1, S.one_mem, rfl⟩
+  add_mem' := fun ⟨s, hsS, hs⟩ ⟨t, htS, ht⟩ => ⟨s + t, S.add_mem hsS htS, hs ▸ ht ▸ rfl⟩
+  zero_mem' := ⟨0, S.zero_mem, rfl⟩
+  neg_mem' := fun ⟨s, hsS, hs⟩ => ⟨-s, S.neg_mem hsS, hs ▸ rfl⟩
+
 end Subring
 
 namespace SWICat
 
 lemma eeef (k : Type*) [Field k] {I : SWICat} (a : I.X → MvPolynomial I.E k)
-    (ha : a ∈ Subring.closure ({ fun x => MvPolynomial.C i | i : k } ∪ { T k e | e : I.E })) :
+    (ha : a ∈ Subring.closure ((MvPolynomial.C.range.funcConst I.X).carrier ∪
+    { T k e | e : I.E })) :
     IsOpen { x : I.X | a x ≠ 0 } ∧ IsCompact { x : I.X | a x ≠ 0 } := by
-  let A : Subring (I.X → MvPolynomial I.E k) := {
-    carrier := { fun x => C i | i : k }
-    mul_mem' := fun ⟨i, hi⟩ ⟨j, hj⟩ => ⟨i * j, hi ▸ hj ▸ const_mul (C i) (C j) ▸ C_mul (R := k) ▸ rfl⟩
-    one_mem' := ⟨1, rfl⟩
-    add_mem' := fun ⟨i, hi⟩ ⟨j, hj⟩ => ⟨i + j, hi ▸ hj ▸ const_add (C i) (C j) ▸ C_add (R := k) ▸ rfl⟩
-    zero_mem' := ⟨0, (C (R := k)).map_zero ▸ rfl⟩
-    neg_mem' := fun ⟨i, hi⟩ => ⟨-i, hi ▸ C_neg _ i ▸ rfl⟩ }
+  refine repMvPoly_eval_eq ha ▸ ?_
   sorry
 
 open Classical in
 lemma springLike' (k : Type*) [Field k] (I : SWICat) :
-    SpringLike' (Subring.closure ({ fun x => MvPolynomial.C i | i : k } ∪
+    SpringLike' (Subring.closure ((MvPolynomial.C.range.funcConst I.X).carrier ∪
       { T k e | e : I.E })) where
   spectralSpace := I.spectralSpace
   forall_isOpen := fun a ha => by
-    refine closure_induction (fun a ha => ?_) ?_ ?_ (fun a b _ _ ha hb => ?_) ?_ ?_ ha
-    · refine ha.elim (fun ⟨i, hai⟩ => hai ▸ ?_) (fun ⟨e, hex⟩ => ?_)
-      · by_cases hi : i = 0
-        · exact hi ▸ C_0 (R := k) ▸ (Set.Subset.antisymm (fun _ h _ => h) fun _ h => h rfl) ▸
-            isOpen_const
-        · exact (Set.ext fun x => ⟨fun hix => Set.mem_univ x, fun hx => C_ne_zero.2 hi⟩) ▸
-            isOpen_univ
-      · exact hex ▸ t_apply_support_eq_g k e ▸ I.forall_isOpen e
-    · simp only [Pi.zero_apply, ne_eq, not_true_eq_false, Set.setOf_false, isOpen_empty]
-    · simp only [Pi.one_apply, ne_eq, one_ne_zero, not_false_eq_true, Set.setOf_true, isOpen_univ]
-    · sorry
-    · sorry
-    · sorry
+    sorry
+    -- refine closure_induction (fun a ha => ?_) ?_ ?_ (fun a b _ _ ha hb => ?_) ?_ ?_ ha
+    -- · refine ha.elim (fun ⟨i, hai⟩ => hai ▸ ?_) (fun ⟨e, hex⟩ => ?_)
+    --   · by_cases hi : i = 0
+    --     · exact hi ▸ C_0 (R := k) ▸ (Set.Subset.antisymm (fun _ h _ => h) fun _ h => h rfl) ▸
+    --         isOpen_const
+    --     · exact (Set.ext fun x => ⟨fun hix => Set.mem_univ x, fun hx => C_ne_zero.2 hi⟩) ▸
+    --         isOpen_univ
+    --   · exact hex ▸ t_apply_support_eq_g k e ▸ I.forall_isOpen e
+    -- · simp only [Pi.zero_apply, ne_eq, not_true_eq_false, Set.setOf_false, isOpen_empty]
+    -- · simp only [Pi.one_apply, ne_eq, one_ne_zero, not_false_eq_true, Set.setOf_true, isOpen_univ]
+    -- · sorry
+    -- · sorry
+    -- · sorry
   forall_isCompact := fun a ha => by
-    refine closure_induction (fun a ha => ?_) ?_ ?_ ?_ ?_ ?_ ha
-    · refine ha.elim (fun ⟨i, hai⟩ => hai ▸ ?_) (fun ⟨e, hex⟩ => ?_)
-      · by_cases hi : i = 0
-        · exact hi ▸ C_0 (R := k) ▸ (Set.Subset.antisymm (fun _ h _ => h) fun _ h => h rfl) ▸
-            isCompact_empty
-        · exact (Set.ext fun x => ⟨fun hix => Set.mem_univ x, fun hx => C_ne_zero.2 hi⟩) ▸
-            isCompact_univ
-      · exact hex ▸ t_apply_support_eq_g k e ▸ I.forall_isCompact e
-    · simp only [Pi.zero_apply, ne_eq, not_true_eq_false, Set.setOf_false, isCompact_empty]
-    · simp only [Pi.one_apply, ne_eq, one_ne_zero, not_false_eq_true, Set.setOf_true,
-        isCompact_univ]
-    · sorry
-    · sorry
-    · sorry
+    sorry
+    -- refine closure_induction (fun a ha => ?_) ?_ ?_ ?_ ?_ ?_ ha
+    -- · refine ha.elim (fun ⟨i, hai⟩ => hai ▸ ?_) (fun ⟨e, hex⟩ => ?_)
+    --   · by_cases hi : i = 0
+    --     · exact hi ▸ C_0 (R := k) ▸ (Set.Subset.antisymm (fun _ h _ => h) fun _ h => h rfl) ▸
+    --         isCompact_empty
+    --     · exact (Set.ext fun x => ⟨fun hix => Set.mem_univ x, fun hx => C_ne_zero.2 hi⟩) ▸
+    --         isCompact_univ
+    --   · exact hex ▸ t_apply_support_eq_g k e ▸ I.forall_isCompact e
+    -- · simp only [Pi.zero_apply, ne_eq, not_true_eq_false, Set.setOf_false, isCompact_empty]
+    -- · simp only [Pi.one_apply, ne_eq, one_ne_zero, not_false_eq_true, Set.setOf_true,
+    --     isCompact_univ]
+    -- · sorry
+    -- · sorry
+    -- · sorry
   isTopologicalBasis := sorry
 
 end SWICat
