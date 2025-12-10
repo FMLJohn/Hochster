@@ -114,51 +114,30 @@ lemma coeff_repMvPoly_mem {R : Type*} [CommRing R] {A : Subring R}
     (repMvPoly hr).coeff m ∈ A :=
   (exists_mvPolynomial_of_mem_closure hr).choose_spec.2 m
 
-/--
-Given any `α : Type*`, ring `R` and `S : Subring R`,
-`(S.funcConst α).carrier := { fun _ => s | s ∈ S }`.
--/
-def funcConst (α : Type*) {R : Type*} [Ring R] (S : Subring R) :
-    Subring (α → R) where
-  carrier := { fun _ => s | s ∈ S }
-  mul_mem' := fun ⟨s, hsS, hs⟩ ⟨t, htS, ht⟩ => ⟨s * t, S.mul_mem hsS htS, hs ▸ ht ▸ rfl⟩
-  one_mem' := ⟨1, S.one_mem, rfl⟩
-  add_mem' := fun ⟨s, hsS, hs⟩ ⟨t, htS, ht⟩ => ⟨s + t, S.add_mem hsS htS, hs ▸ ht ▸ rfl⟩
-  zero_mem' := ⟨0, S.zero_mem, rfl⟩
-  neg_mem' := fun ⟨s, hsS, hs⟩ => ⟨-s, S.neg_mem hsS, hs ▸ rfl⟩
-
 end Subring
 
 namespace SWICat
 
 lemma wewfw (k : Type*) [Field k] {I : SWICat}
-    {p : MvPolynomial { T k e | e : I.E } ((@C k I.E _).range.funcConst I.X)} :
-    IsOpen { x : I.X | ((p.map ((@C k I.E _).range.funcConst I.X).subtype).eval
-      fun s => s.1) x ≠ 0 } ∧
-        IsCompact { x : I.X | ((p.map ((@C k I.E _).range.funcConst I.X).subtype).eval
-          fun s => s.1) x ≠ 0 } := by
-  refine p.monomial_add_induction_on (fun ⟨a, i, _, hai⟩ => ?_)
-    (fun m ⟨a, p, ⟨i, hip⟩, hap⟩ q hmq ha ⟨hqX1, hqX2⟩ => ?_)
-  · simp only [← hai, map_C, subtype_apply, eval_C, ne_eq, isOpen_const, true_and]
+    {p : MvPolynomial { T k e | e : I.E } k} :
+    IsOpen { x : I.X | (p.map (Pi.ringHom fun x => C)).eval (fun s => s.1) x ≠ 0 } ∧
+      IsCompact { x : I.X | (p.map (Pi.ringHom fun x => C)).eval (fun s => s.1) x ≠ 0 } := by
+  refine p.monomial_add_induction_on (fun i => ?_) (fun m i p hmp hi ⟨hp1, hp2⟩ => ?_)
+  · simp only [map_C, eval_C, Pi.ringHom_apply, ne_eq, map_eq_zero, isOpen_const, true_and]
     by_cases hi : i = 0
     · simp only [hi, not_true_eq_false, Set.setOf_false, Set.finite_empty, Set.Finite.isCompact]
     · simp only [hi, not_false_eq_true, Set.setOf_true, isCompact_univ]
-  · refine (MvPolynomial.map (funcConst I.X (@C k I.E _).range).subtype).map_add .. ▸ ⟨?_, ?_⟩
-    · sorry
-    · sorry
+  · sorry
 
 lemma eeef (k : Type*) [Field k] {I : SWICat} (a : I.X → MvPolynomial I.E k)
-    (ha : a ∈ Subring.closure ((MvPolynomial.C.range.funcConst I.X).carrier ∪
-    { T k e | e : I.E })) :
+    (ha : a ∈ Subring.closure ((Pi.ringHom fun x => C).range.carrier ∪ { T k e | e : I.E })) :
     IsOpen { x : I.X | a x ≠ 0 } ∧ IsCompact { x : I.X | a x ≠ 0 } := by
   obtain ⟨p, hp⟩ := exists_mvPolynomial_of_mem_closure ha
   sorry
 
-
-
 open Classical in
 lemma springLike' (k : Type*) [Field k] (I : SWICat) :
-    SpringLike' (Subring.closure ((MvPolynomial.C.range.funcConst I.X).carrier ∪
+    SpringLike' (Subring.closure ((Pi.ringHom fun x => C).range.carrier ∪
       { T k e | e : I.E })) where
   spectralSpace := I.spectralSpace
   forall_isOpen := fun a ha => by
