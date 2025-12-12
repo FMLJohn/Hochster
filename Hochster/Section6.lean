@@ -77,18 +77,6 @@ theorem exists_mvPolynomial_of_mem_closure' {R : Type*} [CommRing R]
   · exact ⟨p * q, map_mul (MvPolynomial.map A.subtype) p q ▸ (p.map A.subtype).eval_mul ▸
       hpr ▸ hqs ▸ rfl⟩
 
-/--
-`Subring.repMvPoly' hr = (Subring.exists_mvPolynomial_of_mem_closure' hr).choose`.
--/
-noncomputable def repMvPoly' {R : Type*} [CommRing R] {A : Subring R}
-    {S : Set R} {r : R} (hr : r ∈ closure (A.carrier ∪ S)) :=
-  (exists_mvPolynomial_of_mem_closure' hr).choose
-
-lemma map_repMvPoly'_eval_eq {R : Type*} [CommRing R] {A : Subring R}
-    {S : Set R} {r : R} (hr : r ∈ closure (A.carrier ∪ S)) :
-    ((repMvPoly' hr).map A.subtype).eval (fun s : S => s.1) = r :=
-  (exists_mvPolynomial_of_mem_closure' hr).choose_spec
-
 theorem exists_mvPolynomial_of_mem_closure {R : Type*} [CommRing R]
     {A : Subring R} {S : Set R} {r : R} (hr : r ∈ closure (A.carrier ∪ S)) :
     ∃ p : MvPolynomial S R, p.eval (fun s : S => s.1) = r ∧
@@ -113,6 +101,35 @@ lemma coeff_repMvPoly_mem {R : Type*} [CommRing R] {A : Subring R}
     {S : Set R} {r : R} (hr : r ∈ closure (A.carrier ∪ S)) (m : S →₀ ℕ) :
     (repMvPoly hr).coeff m ∈ A :=
   (exists_mvPolynomial_of_mem_closure hr).choose_spec.2 m
+
+lemma exists_mvPolynomial_of_le_range_of_mem_closure {A R : Type*}
+    [CommRing A] [CommRing R] {r : R} {S : Set R} {B : Subring R}
+    {h : A →+* R} (hBh : B ≤ h.range) (hBSr : r ∈ closure (B.carrier ∪ S)) :
+    ∃ p : MvPolynomial S A, (p.map h).eval (fun s : S => s.1) = r := by
+  refine closure_induction (fun r hr => ?_) ⟨0, rfl⟩ ?_ (fun r s _ _ ⟨p, hpr⟩ ⟨q, hqs⟩ => ?_)
+    (fun r _ ⟨p, hpr⟩ => ?_) (fun r s _ _ ⟨p, hpr⟩ ⟨q, hqs⟩ => ?_) hBSr
+  · refine hr.elim (fun hBr => ?_) (fun hrS => ?_)
+    · obtain ⟨a, har⟩ := hBh hBr
+      exact ⟨C a, har ▸ (map_C h a).symm ▸ eval_C (h a)⟩
+    · exact ⟨X ⟨r, hrS⟩, map_X h _ ▸ eval_X _⟩
+  · exact ⟨1, map_one (MvPolynomial.map h) ▸ map_one _⟩
+  · exact ⟨p + q, (MvPolynomial.map h).map_add p q ▸ eval_add (R := R) ▸ hqs ▸ hpr ▸ rfl⟩
+  · exact ⟨-p, (MvPolynomial.map h).map_neg p ▸ eval_neg (R := R) .. ▸ hpr ▸ rfl⟩
+  · exact ⟨p * q, (MvPolynomial.map h).map_mul p q ▸ eval_mul (R := R) ▸ hqs ▸ hpr ▸ rfl⟩
+
+/--
+`Subring.repMvPoly' hBh hBSr := (exists_mvPolynomial_of_le_range_of_mem_closure hBh hBSr).choose`.
+-/
+noncomputable def repMvPoly' {A R : Type*} [CommRing A] [CommRing R]
+    {r : R} {S : Set R} {B : Subring R} {h : A →+* R} (hBh : B ≤ h.range)
+    (hBSr : r ∈ closure (B.carrier ∪ S)) :=
+  (exists_mvPolynomial_of_le_range_of_mem_closure hBh hBSr).choose
+
+lemma map_repMvPoly'_eval_eq {A R : Type*} [CommRing A] [CommRing R]
+    {r : R} {S : Set R} {B : Subring R} {h : A →+* R} (hBh : B ≤ h.range)
+    (hBSr : r ∈ closure (B.carrier ∪ S)) :
+    ((repMvPoly' hBh hBSr).map h).eval (fun s : S => s.1) = r :=
+  (exists_mvPolynomial_of_le_range_of_mem_closure hBh hBSr).choose_spec
 
 end Subring
 
