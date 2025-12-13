@@ -135,6 +135,13 @@ end Subring
 
 namespace SWICat
 
+lemma aaaaaa {k : Type*} [Field k] {i : k} (hi : i ≠ 0) {I : SWICat} (x : I.X)
+    {m : { T k e | e : I.E } →₀ ℕ} {p : MvPolynomial { T k e | e : I.E } k}
+    (hmp : m ∉ p.support) :
+    ((monomial m i + p).map (Pi.ringHom fun x => C)).eval (fun s => s.1) x = 0 ↔
+      ((monomial m) ((Pi.ringHom fun x => C) i)).eval (fun s => s.1) x = 0 ∧
+      (p.map (Pi.ringHom fun x => C)).eval (fun s => s.1) x = 0 := sorry
+
 lemma wewfw (k : Type*) [Field k] {I : SWICat}
     {p : MvPolynomial { T k e | e : I.E } k} :
     IsOpen { x : I.X | (p.map (Pi.ringHom fun x => C)).eval (fun s => s.1) x ≠ 0 } ∧
