@@ -135,6 +135,18 @@ end Subring
 
 namespace SWICat
 
+lemma eval_map_ringHom_apply_eq_eval_map_C_apply {k : Type*} [Field k]
+    {I : SWICat} (x : I.X) (p : MvPolynomial { T k e | e : I.E } k) :
+    (p.map (Pi.ringHom fun _ => C)).eval (fun s => s.1) x =
+    (p.map C).eval fun s => s.1 x := by
+  refine @p.induction_on k _ _ (fun p => (p.map (Pi.ringHom fun x => C)).eval _ x =
+    (p.map C).eval _) (fun i => ?_) (fun p q => ?_) (fun p T => ?_)
+  · simp only [map_C, eval_C, Pi.ringHom_apply]
+  · simp only [map_add]
+    exact fun hp hq => hp ▸ hq ▸ rfl
+  · simp only [map_mul, map_X, eval_X]
+    exact fun hp => hp ▸ rfl
+
 lemma aaaaaa {k : Type*} [Field k] {i : k} (hi : i ≠ 0) {I : SWICat} (x : I.X)
     {m : { T k e | e : I.E } →₀ ℕ} {p : MvPolynomial { T k e | e : I.E } k}
     (hmp : m ∉ p.support) :
