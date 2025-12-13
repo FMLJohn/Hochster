@@ -502,7 +502,7 @@ def closureInsertDiv {X : Type*} [TopologicalSpace X] {i : X → Type*}
     (h1 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) ≤ v p (b p.z.1))
     (h2 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) = v p (b p.z.1) → b p.z.2 ≠ 0) :
     SpringLike' (closure (A.carrier.insert (a / b))) :=
-  hA.springLike'_closure_union_of_forall_isOpen_isCompact fun _ hr =>
+  hA.closureUnion fun _ hr =>
     ⟨(hAv.isClosed_vanishing_set_of_forall_map_apply_le_of_forall_ne_zero ha hb hab hr h1 h2).1,
       hA.isCompact_support_of_mem_closure_insert_div ha hb hab hr⟩
 

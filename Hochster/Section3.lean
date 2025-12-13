@@ -470,7 +470,7 @@ lemma Pi.ringHomToPiFractionRing_apply_ne_zero_iff_of_forall_isDomain {α : Type
 
 namespace SpringLike'
 
-lemma springLike'_map_ringHomToPiFractionRing {X : Type*} [TopologicalSpace X]
+lemma mapRingHomToPiFractionRing {X : Type*} [TopologicalSpace X]
     {i : X → Type*} [(x : X) → CommRing (i x)] [(x : X) → IsDomain (i x)]
     {A : Subring (Π x : X, i x)} (hA : SpringLike' A) :
     SpringLike' (A.map (Pi.ringHomToPiFractionRing i)) where
@@ -489,7 +489,7 @@ lemma springLike'_map_ringHomToPiFractionRing {X : Type*} [TopologicalSpace X]
     · exact ⟨Pi.ringHomToPiFractionRing i a, Subring.mem_map.2 ⟨a, ha, rfl⟩, has ▸ Set.ext
         fun x => (Pi.ringHomToPiFractionRing_apply_ne_zero_iff_of_forall_isDomain a x).symm⟩
 
-lemma springLike'_closure_union_of_forall_isOpen_isCompact {X : Type*} [TopologicalSpace X]
+lemma closureUnion {X : Type*} [TopologicalSpace X]
     {i : X → Type*} [(x : X) → CommRing (i x)] [(x : X) → IsDomain (i x)]
     {A : Subring (Π x : X, i x)} (hA : SpringLike' A) {B : Set (Π x : X, i x)}
     (hBA : ∀ c ∈ Subring.closure (B ∪ A),
