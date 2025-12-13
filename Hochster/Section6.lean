@@ -144,7 +144,10 @@ lemma wewfw (k : Type*) [Field k] {I : SWICat}
     by_cases hi : i = 0
     · simp only [hi, not_true_eq_false, Set.setOf_false, Set.finite_empty, Set.Finite.isCompact]
     · simp only [hi, not_false_eq_true, Set.setOf_true, isCompact_univ]
-  · sorry
+  · simp only [Set.coe_setOf, Set.mem_setOf_eq, map_add, map_monomial, Pi.add_apply,
+      ne_eq]
+    have := Set.notMem_subset (p.support_map_subset (Pi.ringHom fun x : I.X => @C k I.E _)) hmp
+    sorry
 
 lemma eeef (k : Type*) [Field k] {I : SWICat} (a : I.X → MvPolynomial I.E k)
     (ha : a ∈ Subring.closure ((Pi.ringHom fun x => C).range.carrier ∪ { T k e | e : I.E })) :
