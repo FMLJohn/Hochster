@@ -54,7 +54,7 @@ noncomputable def T (k : Type*) [Field k] {I : SWICat} (e : I.E) :
     I.X → MvPolynomial I.E k :=
   fun x => if x ∈ I.g e then MvPolynomial.X e else 0
 
-lemma t_apply_support_eq_g (k : Type*) [Field k] {I : SWICat} (e : I.E) :
+lemma T_apply_support_eq_g (k : Type*) [Field k] {I : SWICat} (e : I.E) :
     { x : I.X | T k e x ≠ 0 } = I.g e := by
   simp only [T, ne_eq, ite_eq_right_iff, X_ne_zero, imp_false, not_not, Set.setOf_mem_eq]
 
@@ -151,8 +151,22 @@ lemma aaaaaa {k : Type*} [Field k] {i : k} (hi : i ≠ 0) {I : SWICat} (x : I.X)
     {m : { T k e | e : I.E } →₀ ℕ} {p : MvPolynomial { T k e | e : I.E } k}
     (hmp : m ∉ p.support) :
     ((monomial m i + p).map (Pi.ringHom fun x => C)).eval (fun s => s.1) x = 0 ↔
-      ((monomial m) ((Pi.ringHom fun x => C) i)).eval (fun s => s.1) x = 0 ∧
-      (p.map (Pi.ringHom fun x => C)).eval (fun s => s.1) x = 0 := sorry
+      (monomial m ((Pi.ringHom fun x => C) i)).eval (fun s => s.1) x = 0 ∧
+      (p.map (Pi.ringHom fun x => C)).eval (fun s => s.1) x = 0 := by
+  have : (((monomial m) ((Pi.ringHom fun x => C) i)).eval fun s => s.1) x =
+      (((MvPolynomial.map C) (monomial m i)).eval fun s => s.1 x) :=
+    eval_map_ringHom_apply_eq_eval_map_C_apply x (monomial m i) ▸
+      map_monomial (Pi.ringHom fun x => C) m i ▸ rfl
+  refine eval_map_ringHom_apply_eq_eval_map_C_apply x (monomial m i + p) ▸
+    eval_map_ringHom_apply_eq_eval_map_C_apply x p ▸ this ▸
+    map_add (MvPolynomial.map C) (monomial m i) p ▸
+    eval_add (f := fun s : { T k e | e : I.E } => s.1 x) ▸
+    ⟨?_, fun ⟨himx, hpx⟩ => himx.symm ▸ hpx.symm ▸ zero_add 0⟩
+  · refine (p.map C).eval_eq (fun s : { T k e | e : I.E } => s.1 x) ▸
+      p.support_map_of_injective (C_injective I.E k) ▸ map_monomial C m i ▸
+      eval_monomial (f := fun s : { T k e | e : I.E } => s.1 x) ▸ ?_
+    · simp only [coeff_map]
+      sorry
 
 lemma wewfw (k : Type*) [Field k] {I : SWICat}
     {p : MvPolynomial { T k e | e : I.E } k} :
