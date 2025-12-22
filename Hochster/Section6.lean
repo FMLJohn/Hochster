@@ -207,6 +207,23 @@ lemma evalMapApplyPoly_def {k : Type*} [Field k] {I : SWICat}
     (x : I.X) (p : MvPolynomial I.E k) :
   evalMapApplyPoly x p = (p.map (Pi.ringHom fun _ => C)).eval (fun e => T k e) x := rfl
 
+open Classical in
+lemma evalMapApplyPoly_def3wefw {k : Type*} [Field k] {I : SWICat}
+    (x : I.X) (p : MvPolynomial I.E k) :
+    ∀ m : I.E →₀ ℕ, (evalMapApplyPoly x p).coeff m =
+    if ∃ e : m.support, x ∉ I.g e then 0 else p.coeff m := by
+  refine @induction_on k I.E _ (fun p => ∀ m : I.E →₀ ℕ, (evalMapApplyPoly x p).coeff m =
+    if ∃ e : m.support, x ∉ I.g e then 0 else p.coeff m) p (fun i m => ?_) (fun p q => ?_)
+    (fun p n => ?_)
+  · simp only [evalMapApplyPoly, map_C, eval_C, Pi.ringHom_apply, coeff_C]
+    by_cases hmx : ∃ e : m.support, x ∉ I.g e
+    · simp only [hmx, reduceIte, ite_eq_right_iff]
+      obtain ⟨⟨e, hem⟩, he⟩ := hmx
+      exact fun hm => ((List.mem_nil_iff e).mp (hm ▸ hem : e ∈ Finsupp.support 0)).elim
+    · simp only [hmx, reduceIte]
+  · sorry
+  · sorry
+
 lemma wewew {k : Type*} [Field k] {I : SWICat}
     (x : I.X) (p : MvPolynomial I.E k) :
     (evalMapApplyPoly x p).support ⊆ p.support := by
