@@ -208,21 +208,59 @@ lemma evalMapApplyPoly_def {k : Type*} [Field k] {I : SWICat}
   evalMapApplyPoly x p = (p.map (Pi.ringHom fun _ => C)).eval (fun e => T k e) x := rfl
 
 open Classical in
+lemma evalMapApplyPoly_def3weee {k : Type*} [Field k] (i : k) {I : SWICat}
+    (x : I.X) (m : I.E →₀ ℕ) :
+    evalMapApplyPoly x (monomial m i) =
+    if ∃ e ∈ m.support, x ∉ I.g e then 0 else monomial m i := by
+  haveI : Nonempty I.X := ⟨x⟩
+  have := Pi.ringHom_injective (fun x : I.X => @C k I.E _) (fun _ => C_injective I.E k)
+  simp only [evalMapApplyPoly, eval_eq, map_monomial, coeff_monomial, ite_mul, zero_mul,
+    Finset.sum_apply, support_monomial]
+  by_cases hmx : ∃ e ∈ m.support, x ∉ I.g e
+  · simp only [hmx, reduceIte]
+    by_cases hi : (Pi.ringHom fun x : I.X => @C k I.E _) i = 0
+    · simp only [hi, zero_mul, ite_self, Pi.zero_apply, Finset.sum_const_zero]
+    · simp only [hi, reduceIte, Finset.sum_singleton, Pi.mul_apply, Pi.ringHom_apply,
+        Finset.prod_apply, Pi.pow_apply, T, ite_pow]
+      obtain ⟨e, hem, he⟩ := hmx
+      sorry
+  · simp only [hmx]
+    by_cases hi : (Pi.ringHom fun x : I.X => @C k I.E _) i = 0
+    · simp only [hi]
+      exact ((RingHom.ker_eq_bot_iff_eq_zero _).1 <| (RingHom.injective_iff_ker_eq_bot _).1 this)
+        i hi ▸ monomial_zero.symm
+    · simp only [hi, reduceIte, Finset.sum_singleton, Pi.mul_apply, Finset.prod_apply, Pi.pow_apply]
+      refine monomial_eq (a := i) (s := m) ▸
+        (mul_eq_mul_left_iff.2 <| Or.intro_left _ <| Finset.prod_congr rfl fun e hem => ?_)
+      · simp only [not_exists, not_and, not_not] at hmx
+        simp only [T, hmx e hem, reduceIte]
+
+open Classical in
 lemma evalMapApplyPoly_def3wefw {k : Type*} [Field k] {I : SWICat}
-    (x : I.X) (p : MvPolynomial I.E k) :
-    ∀ m : I.E →₀ ℕ, (evalMapApplyPoly x p).coeff m =
-    if ∃ e : m.support, x ∉ I.g e then 0 else p.coeff m := by
-  refine @induction_on k I.E _ (fun p => ∀ m : I.E →₀ ℕ, (evalMapApplyPoly x p).coeff m =
-    if ∃ e : m.support, x ∉ I.g e then 0 else p.coeff m) p (fun i m => ?_) (fun p q => ?_)
-    (fun p n => ?_)
+    (x : I.X) (m : I.E →₀ ℕ) (p : MvPolynomial I.E k) :
+    (evalMapApplyPoly x p).coeff m =
+    if ∃ e ∈ m.support, x ∉ I.g e then 0 else p.coeff m := by
+  refine p.monomial_add_induction_on (fun i => ?_) (fun n i p hnp hi hmp => ?_)
   · simp only [evalMapApplyPoly, map_C, eval_C, Pi.ringHom_apply, coeff_C]
-    by_cases hmx : ∃ e : m.support, x ∉ I.g e
+    by_cases hmx : ∃ e ∈ m.support, x ∉ I.g e
     · simp only [hmx, reduceIte, ite_eq_right_iff]
-      obtain ⟨⟨e, hem⟩, he⟩ := hmx
+      obtain ⟨e, hem, he⟩ := hmx
       exact fun hm => ((List.mem_nil_iff e).mp (hm ▸ hem : e ∈ Finsupp.support 0)).elim
     · simp only [hmx, reduceIte]
-  · sorry
-  · sorry
+  · simp only [evalMapApplyPoly, map_add, map_monomial, Pi.add_apply, coeff_add]
+      at hmp ⊢
+    by_cases hmx : ∃ e ∈ m.support, x ∉ I.g e
+    · simp only [hmx, reduceIte]
+      sorry
+    · simp only [hmx, reduceIte, coeff_monomial] at hmp ⊢
+      refine hmp.symm ▸ (add_left_inj (coeff m p)).mpr ?_
+      · by_cases hmn : n = m
+        · simp only [hmn, reduceIte]
+          sorry
+        · simp only [hmn, reduceIte]
+          sorry
+
+
 
 lemma wewew {k : Type*} [Field k] {I : SWICat}
     (x : I.X) (p : MvPolynomial I.E k) :
