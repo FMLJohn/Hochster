@@ -346,22 +346,48 @@ lemma evalMapApplyPoly_monomial_support_eq_biInter (k : Type*) [Field k]
   ext x
   simp [evalMapApplyPoly_monomial, hi]
 
-lemma evalMapApplyPoly_polyjj_support_eq_biInter (k : Type*) [Field k]
+open Classical in
+lemma evalMapApplyPoly_support_eq_biUnion {k : Type*} [Field k]
     {i : k} (hi : i ≠ 0) {I : SWICat} (p : MvPolynomial I.E k) :
     { x : I.X | evalMapApplyPoly x p ≠ 0 } =
       ⋃ m ∈ p.support, { x : I.X | evalMapApplyPoly x (monomial m i) ≠ 0 } := by
   ext x
-  haveI : Nonempty I.X := ⟨x⟩
-  simp only [Set.mem_setOf_eq]
-  simp only [(evalMapApplyPoly x p).ne_zero_iff]
-  simp only [Set.mem_iUnion, Set.mem_setOf_eq]
-  refine ⟨fun ⟨m, hdmpx⟩ => ?_, fun ⟨m, hmp, himx⟩ => ?_⟩
-  · refine ⟨m, ?_⟩
-    have := mem_support_iff.2 <| hdmpx
-    refine ⟨support_evalMapApplyPoly_subset x p this, ?_⟩
-    refine evalMapApplyPoly_monomial i x m ▸ ?_
-    sorry
-  · sorry
+  simp only [Set.mem_setOf_eq, (evalMapApplyPoly x p).ne_zero_iff, Set.mem_iUnion, Set.mem_setOf_eq]
+  refine ⟨fun ⟨m, hdmpx⟩ => ?_, fun ⟨m, hmp, himx⟩ => ⟨m, ?_⟩⟩
+  · refine ⟨m, support_evalMapApplyPoly_subset x p <| mem_support_iff.2 hdmpx,
+      evalMapApplyPoly_monomial i x m ▸ ne_zero_iff.2 ⟨m, ?_⟩⟩
+    · have : ¬∃ e ∈ m.support, x ∉ I.g e := fun h => by
+        have := coeff_evalMapApplyPoly x m p ▸ hdmpx
+        simp only [h] at this
+        exact this rfl
+      simpa only [this, reduceIte, coeff_monomial m m i] using hi
+  · refine coeff_evalMapApplyPoly x m p ▸ ?_
+    · have : ¬∃ e ∈ m.support, x ∉ I.g e := fun h => by
+        have := evalMapApplyPoly_monomial i x m ▸ himx
+        simp only [h] at this
+        exact this rfl
+      simp only [this]
+      exact mem_support_iff.1 hmp
+
+lemma evalMapApplyPoly_support_eq_biUnion_biInter
+    {k : Type*} [Field k] {I : SWICat} (p : MvPolynomial I.E k) :
+    { x : I.X | evalMapApplyPoly x p ≠ 0 } =
+      ⋃ m ∈ p.support, ⋂ e ∈ m.support, I.g e := by
+  simp only [evalMapApplyPoly_support_eq_biUnion one_ne_zero p,
+    evalMapApplyPoly_monomial_support_eq_biInter k one_ne_zero]
+
+lemma isOpen_evalMapApplyPoly_support {k : Type*} [Field k]
+    {I : SWICat} (p : MvPolynomial I.E k) :
+    IsOpen { x : I.X | evalMapApplyPoly x p ≠ 0 } :=
+  evalMapApplyPoly_support_eq_biUnion_biInter p ▸ isOpen_biUnion fun _ _ =>
+    isOpen_biInter_finset fun e _ => I.forall_isOpen e
+
+lemma isCompact_evalMapApplyPoly_support {k : Type*} [Field k]
+    {I : SWICat} (p : MvPolynomial I.E k) :
+    IsCompact { x : I.X | evalMapApplyPoly x p ≠ 0 } :=
+  evalMapApplyPoly_support_eq_biUnion_biInter p ▸ p.support.isCompact_biUnion fun m _ =>
+    (m.support.biInter_mem_of_finiteInter (finiteInter_isOpen_and_isCompact I.X)
+      (fun _ ⟨e, hes⟩ => hes ▸ ⟨I.forall_isOpen e, I.forall_isCompact e⟩)).2
 
 -- example {k : Type*} [Field k] {i : k} (hi : i ≠ 0) {I : SWICat} (x : I.X)
 --     {m : { T k e | e : I.E } →₀ ℕ} {p : MvPolynomial { T k e | e : I.E } k}
@@ -380,42 +406,6 @@ lemma evalMapApplyPoly_polyjj_support_eq_biInter (k : Type*) [Field k]
 --   · refine (p.map C).eval_eq (fun s => s.1 x) ▸ p.support_map_of_injective (C_injective I.E k) ▸
 --       map_monomial C m i ▸ eval_monomial (f := fun s : { T k e | e : I.E } => s.1 x) ▸ sorry
 
-lemma bbbbb {k : Type*} [Field k] {i : k} (hi : i ≠ 0) {I : SWICat} (x : I.X)
-    {m : I.E →₀ ℕ} {p : MvPolynomial I.E k} (hmp : m ∉ p.support) :
-    (((monomial m i + p).map (Pi.ringHom fun x => C)).eval fun e => T k e) x = 0 ↔
-      (((monomial m i).map (Pi.ringHom fun x => C)).eval fun e => T k e) x = 0 ∧
-      ((p.map (Pi.ringHom fun x => C)).eval fun e => T k e) x = 0 := by
-  sorry
-
--- example (k : Type*) [Field k] {I : SWICat} (p : MvPolynomial { T k e | e : I.E } k) :
---     IsOpen { x : I.X | (p.map (Pi.ringHom fun x => C)).eval (fun s => s.1) x ≠ 0 } ∧
---       IsCompact { x : I.X | (p.map (Pi.ringHom fun x => C)).eval (fun s => s.1) x ≠ 0 } := by
---   refine p.monomial_add_induction_on (fun i => ?_) (fun m i p hmp hi ⟨hp1, hp2⟩ => ?_)
---   · simp only [map_C, eval_C, Pi.ringHom_apply, ne_eq, map_eq_zero, isOpen_const, true_and]
---     by_cases hi : i = 0
---     · simp only [hi, not_true_eq_false, Set.setOf_false, Set.finite_empty, Set.Finite.isCompact]
---     · simp only [hi, not_false_eq_true, Set.setOf_true, isCompact_univ]
---   · simp only [Set.coe_setOf, Set.mem_setOf_eq, map_add, map_monomial, Pi.add_apply, ne_eq]
---     have := Set.notMem_subset (p.support_map_subset (Pi.ringHom fun x : I.X => @C k I.E _)) hmp
---     sorry
-
-lemma aaaaa (k : Type*) [Field k] {I : SWICat} (p : MvPolynomial I.E k) :
-    IsOpen { x : I.X | (p.map (Pi.ringHom fun x => C)).eval (fun e => T k e) x ≠ 0 } ∧
-      IsCompact { x : I.X | (p.map (Pi.ringHom fun x => C)).eval (fun e => T k e) x ≠ 0 } := by
-  refine p.monomial_add_induction_on (fun i => ?_) (fun m i p hmp hi ⟨hp1, hp2⟩ => ?_)
-  · simp only [map_C, eval_C, Pi.ringHom_apply, ne_eq, map_eq_zero, isOpen_const, true_and]
-    by_cases hi : i = 0
-    · simp only [hi, not_true_eq_false, Set.setOf_false, Set.finite_empty, Set.Finite.isCompact]
-    · simp only [hi, not_false_eq_true, Set.setOf_true, isCompact_univ]
-  · sorry
-
-lemma eeef (k : Type*) [Field k] {I : SWICat} (a : I.X → MvPolynomial I.E k)
-    (ha : a ∈ Subring.closure ((Pi.ringHom fun x => C).range.carrier ∪ { T k e | e : I.E })) :
-    IsOpen { x : I.X | a x ≠ 0 } ∧ IsCompact { x : I.X | a x ≠ 0 } := by
-  obtain ⟨p, hp⟩ := exists_mvPolynomial_of_le_range_of_subset_range_of_mem_closure (le_refl _)
-    (Set.Subset.refl _) ha
-  sorry
-
 open Classical in
 lemma springLike' (k : Type*) [Field k] (I : SWICat) :
     SpringLike' (Subring.closure ((Pi.ringHom fun x => C).range.carrier ∪
@@ -423,35 +413,8 @@ lemma springLike' (k : Type*) [Field k] (I : SWICat) :
   spectralSpace := I.spectralSpace
   forall_isOpen := fun a ha => by
     sorry
-    -- refine closure_induction (fun a ha => ?_) ?_ ?_ (fun a b _ _ ha hb => ?_) ?_ ?_ ha
-    -- · refine ha.elim (fun ⟨i, hai⟩ => hai ▸ ?_) (fun ⟨e, hex⟩ => ?_)
-    --   · by_cases hi : i = 0
-    --     · exact hi ▸ C_0 (R := k) ▸ (Set.Subset.antisymm (fun _ h _ => h) fun _ h => h rfl) ▸
-    --         isOpen_const
-    --     · exact (Set.ext fun x => ⟨fun hix => Set.mem_univ x, fun hx => C_ne_zero.2 hi⟩) ▸
-    --         isOpen_univ
-    --   · exact hex ▸ t_apply_support_eq_g k e ▸ I.forall_isOpen e
-    -- · simp only [Pi.zero_apply, ne_eq, not_true_eq_false, Set.setOf_false, isOpen_empty]
-    -- · simp only [Pi.one_apply, ne_eq, one_ne_zero, not_false_eq_true, Set.setOf_true, isOpen_univ]
-    -- · sorry
-    -- · sorry
-    -- · sorry
   forall_isCompact := fun a ha => by
     sorry
-    -- refine closure_induction (fun a ha => ?_) ?_ ?_ ?_ ?_ ?_ ha
-    -- · refine ha.elim (fun ⟨i, hai⟩ => hai ▸ ?_) (fun ⟨e, hex⟩ => ?_)
-    --   · by_cases hi : i = 0
-    --     · exact hi ▸ C_0 (R := k) ▸ (Set.Subset.antisymm (fun _ h _ => h) fun _ h => h rfl) ▸
-    --         isCompact_empty
-    --     · exact (Set.ext fun x => ⟨fun hix => Set.mem_univ x, fun hx => C_ne_zero.2 hi⟩) ▸
-    --         isCompact_univ
-    --   · exact hex ▸ t_apply_support_eq_g k e ▸ I.forall_isCompact e
-    -- · simp only [Pi.zero_apply, ne_eq, not_true_eq_false, Set.setOf_false, isCompact_empty]
-    -- · simp only [Pi.one_apply, ne_eq, one_ne_zero, not_false_eq_true, Set.setOf_true,
-    --     isCompact_univ]
-    -- · sorry
-    -- · sorry
-    -- · sorry
   isTopologicalBasis := sorry
 
 end SWICat

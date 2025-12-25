@@ -538,6 +538,22 @@ lemma Set.Finite.sInter_mem_of_finiteInter {α : Type*} {S : Set (Set α)}
   simpa only [Set.Finite.coe_toFinset] using FiniteInter.finiteInter_mem hS hF.toFinset
     (fun f hfF => hFS ((Set.Finite.mem_toFinset hF).1 hfF))
 
+lemma Set.Finite.biInter_mem_of_finiteInter {α ι : Type*} {S : Set (Set α)}
+    (hS : FiniteInter S) {s : Set ι} (hs : s.Finite) {f : ι → Set α}
+    (hfS : Set.range f ⊆ S) : ⋂ i ∈ s, f i ∈ S := by
+  have : ⋂ i ∈ s, f i = ⋂₀ { f i | i ∈ s } := by
+    ext
+    simp only [Set.mem_iInter, Set.mem_sInter, Set.mem_setOf_eq, forall_exists_index, and_imp,
+      forall_apply_eq_imp_iff₂]
+  exact this ▸ ((hs.image f).subset fun _ h => h).sInter_mem_of_finiteInter hS
+    (fun a ⟨i, his, hafi⟩ => hfS (hafi ▸ Set.mem_range_self i))
+
+lemma Finset.biInter_mem_of_finiteInter {α ι : Type*} {S : Set (Set α)}
+    (hS : FiniteInter S) (s : Finset ι) {f : ι → Set α} (hfS : Set.range f ⊆ S) :
+    ⋂ i ∈ s, f i ∈ S := by
+  have : ⋂ i ∈ s, f i = ⋂ i ∈ s.toSet, f i := rfl
+  exact this ▸ s.finite_toSet.biInter_mem_of_finiteInter hS hfS
+
 lemma Set.Finite.sInter_ne_empty_of_finiteInter_finiteInter_of_subset_union
     {α : Type*} {S T U : Set (Set α)} (hS : FiniteInter S) (hT : FiniteInter T)
     (hST : ∀ s ∈ S, ∀ t ∈ T, s ∩ t ≠ ∅) (hU : U.Finite) (hUST : U ⊆ S ∪ T) :
@@ -548,6 +564,12 @@ lemma Set.Finite.sInter_ne_empty_of_finiteInter_finiteInter_of_subset_union
         Set.inter_subset_right) _
       (Set.Finite.sInter_mem_of_finiteInter hT (Set.Finite.inter_of_left hU T)
         Set.inter_subset_right)
+
+lemma finiteInter_isOpen_and_isCompact (X : Type*)
+    [TopologicalSpace X] [CompactSpace X] [QuasiSeparatedSpace X] :
+    FiniteInter { s : Set X | IsOpen s ∧ IsCompact s } where
+  univ_mem := ⟨isOpen_univ, isCompact_univ⟩
+  inter_mem := fun _ ⟨hs1, hs2⟩ _ ⟨ht1, ht2⟩ => ⟨hs1.inter ht1, hs2.inter_of_isOpen ht2 hs1 ht1⟩
 
 lemma mem_patch_closure_iff_mem_pt_closure {X : Type*} [TopologicalSpace X]
     [CompactSpace X] [QuasiSober X] [QuasiSeparatedSpace X] [PrespectralSpace X]
