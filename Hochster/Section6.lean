@@ -191,22 +191,21 @@ lemma prod_T_support_eq_biInter (k : Type*) [Field k]
   exact s.prod_ne_zero_iff.trans ⟨fun h i his => (T_apply_ne_zero_iff k x (f i)).1 (h i his),
     fun h i his => (T_apply_ne_zero_iff k x (f i)).2 (h i his)⟩
 
-lemma eval_map_ringHom_apply_eq_eval_map_C_apply {k : Type*} [Field k]
-    {I : SWICat} (x : I.X) (p : MvPolynomial { T k e | e : I.E } k) :
-    (p.map (Pi.ringHom fun _ => C)).eval (fun s => s.1) x =
-    (p.map C).eval fun s => s.1 x := by
-  refine @p.induction_on k _ _ (fun p => (p.map (Pi.ringHom fun x => C)).eval _ x =
-    (p.map C).eval _) (fun i => ?_) (fun p q => ?_) (fun p T => ?_)
-  · simp only [map_C, eval_C, Pi.ringHom_apply]
-  · simp only [map_add]
-    exact fun hp hq => hp ▸ hq ▸ rfl
-  · simp only [map_mul, map_X, eval_X]
-    exact fun hp => hp ▸ rfl
+-- lemma eval_map_ringHom_apply_eq_eval_map_C_apply {k : Type*} [Field k]
+--     {I : SWICat} (x : I.X) (p : MvPolynomial { T k e | e : I.E } k) :
+--     (p.map (Pi.ringHom fun _ => C)).eval (fun s => s.1) x =
+--     (p.map C).eval fun s => s.1 x := by
+--   refine @p.induction_on k _ _ (fun p => (p.map (Pi.ringHom fun x => C)).eval _ x =
+--     (p.map C).eval _) (fun i => ?_) (fun p q => ?_) (fun p T => ?_)
+--   · simp only [map_C, eval_C, Pi.ringHom_apply]
+--   · simp only [map_add]
+--     exact fun hp hq => hp ▸ hq ▸ rfl
+--   · simp only [map_mul, map_X, eval_X]
+--     exact fun hp => hp ▸ rfl
 
 lemma eval_map_ringHom_apply_eq_eval_map_C_apply' {k : Type*} [Field k]
     {I : SWICat} (x : I.X) (p : MvPolynomial I.E k) :
-    (p.map (Pi.ringHom fun _ => C)).eval (fun e => T k e) x =
-    (p.map C).eval fun e => T k e x := by
+    (p.map (Pi.ringHom fun _ => C)).eval (T k) x = (p.map C).eval fun e => T k e x := by
   refine @p.induction_on k _ _ (fun p => (p.map (Pi.ringHom fun x => C)).eval _ x =
     (p.map C).eval _) (fun i => ?_) (fun p q => ?_) (fun p _ => ?_)
   · simp only [map_C, eval_C, Pi.ringHom_apply]
@@ -216,15 +215,15 @@ lemma eval_map_ringHom_apply_eq_eval_map_C_apply' {k : Type*} [Field k]
     exact fun hp => hp ▸ rfl
 
 /--
-`SWICat.evalMapApplyPoly x p := (p.map (Pi.ringHom fun _ => C)).eval (fun e => T k e) x`.
+`SWICat.evalMapApplyPoly x p := (p.map (Pi.ringHom fun _ => C)).eval (T k) x`.
 -/
 noncomputable def evalMapApplyPoly {k : Type*} [Field k] {I : SWICat}
     (x : I.X) (p : MvPolynomial I.E k) :=
-  (p.map (Pi.ringHom fun _ => C)).eval (fun e => T k e) x
+  (p.map (Pi.ringHom fun _ => C)).eval (T k) x
 
 lemma evalMapApplyPoly_def {k : Type*} [Field k] {I : SWICat}
     (x : I.X) (p : MvPolynomial I.E k) :
-  evalMapApplyPoly x p = (p.map (Pi.ringHom fun _ => C)).eval (fun e => T k e) x := rfl
+  evalMapApplyPoly x p = (p.map (Pi.ringHom fun _ => C)).eval (T k) x := rfl
 
 lemma evalMapApplyPoly_zero (k : Type*) [Field k] {I : SWICat} (x : I.X) :
     evalMapApplyPoly (k := k) x 0 = 0 := by
@@ -406,15 +405,29 @@ lemma isCompact_evalMapApplyPoly_support {k : Type*} [Field k]
 --   · refine (p.map C).eval_eq (fun s => s.1 x) ▸ p.support_map_of_injective (C_injective I.E k) ▸
 --       map_monomial C m i ▸ eval_monomial (f := fun s : { T k e | e : I.E } => s.1 x) ▸ sorry
 
-open Classical in
 lemma springLike' (k : Type*) [Field k] (I : SWICat) :
-    SpringLike' (Subring.closure ((Pi.ringHom fun x => C).range.carrier ∪
+    SpringLike' (Subring.closure ((Pi.ringHom fun _ => C).range.carrier ∪
       { T k e | e : I.E })) where
   spectralSpace := I.spectralSpace
   forall_isOpen := fun a ha => by
-    sorry
+    obtain ⟨p, hap⟩ := exists_mvPolynomial_of_le_range_of_subset_range_of_mem_closure
+      (le_refl _) (Set.Subset.refl _) ha
+    exact hap ▸ isOpen_evalMapApplyPoly_support p
   forall_isCompact := fun a ha => by
-    sorry
-  isTopologicalBasis := sorry
+    obtain ⟨p, hap⟩ := exists_mvPolynomial_of_le_range_of_subset_range_of_mem_closure
+      (le_refl _) (Set.Subset.refl _) ha
+    exact hap ▸ isCompact_evalMapApplyPoly_support p
+  isTopologicalBasis := by
+    refine (isTopologicalBasis_of_subbasis I.eq_generateFrom).of_isOpen_of_subset
+      (fun s ⟨a, ha, has⟩ => ?_) (fun s ⟨S, ⟨hS, hIS⟩, hSs⟩ => ?_)
+    · obtain ⟨p, hap⟩ := exists_mvPolynomial_of_le_range_of_subset_range_of_mem_closure
+        (le_refl _) (Set.Subset.refl _) ha
+      exact has ▸ hap ▸ isOpen_evalMapApplyPoly_support p
+    · choose f hf using fun s : hS.toFinset => hIS <| hS.mem_toFinset.mp s.2
+      refine ⟨∏ s : hS.toFinset, T k (f s), ?_, ?_⟩
+      · exact prod_mem fun s _ => mem_closure_of_mem <| Or.intro_right _ ⟨f s, rfl⟩
+      · ext
+        simp only [Finset.univ_eq_attach, ← hSs, prod_T_support_eq_biInter, hf, Finset.mem_attach,
+          Set.iInter_true, Set.mem_iInter, Subtype.forall, hS.mem_toFinset, Set.mem_sInter]
 
 end SWICat
