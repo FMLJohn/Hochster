@@ -1,6 +1,6 @@
 import Hochster.Section5
 
-open CategoryTheory Function MvPolynomial Subring TopologicalSpace
+open CategoryTheory Function IsFractionRing MvPolynomial Subring OreLocalization TopologicalSpace
 
 /-- The category of spaces with indeterminates. -/
 @[ext]
@@ -172,6 +172,14 @@ lemma T_apply_ne_zero_iff (k : Type*) [Field k] {I : SWICat}
     (x : I.X) (e : I.E) : T k e x ≠ 0 ↔ x ∈ I.g e := by
   simp [T]
 
+lemma finite_image_T (k : Type*) [Field k] {I : SWICat} (e : I.E) :
+    { T k e x | x : I.X }.Finite := by
+  refine ((Set.finite_singleton 0).insert (MvPolynomial.X e)).subset fun p ⟨x, hpx⟩ => ?_
+  · by_cases hex : x ∈ I.g e
+    · simp only [← hpx, T, hex, reduceIte, Set.mem_insert_iff, Set.mem_singleton_iff, X_ne_zero,
+        or_false]
+    · simp only [← hpx, T, hex, reduceIte, Set.mem_insert_iff, Set.mem_singleton_iff, or_true]
+
 lemma T_support_eq_g (k : Type*) [Field k] {I : SWICat} (e : I.E) :
     { x : I.X | T k e x ≠ 0 } = I.g e := by
   simp [T]
@@ -339,6 +347,20 @@ lemma support_evalMapApplyPoly_subset {k : Type*} [Field k]
     (evalMapApplyPoly x p).support ⊆ p.support :=
   fun _ hpx => (support_evalMapApplyPoly x p ▸ Finset.mem_coe.2 hpx).1
 
+lemma finite_evalMapApplyPoly_image {k : Type*} [Field k]
+    {I : SWICat} (p : MvPolynomial I.E k) :
+    { evalMapApplyPoly x p | x : I.X }.Finite := by
+  refine @induction_on k I.E _ (fun p => { evalMapApplyPoly x p | x : I.X }.Finite) p
+    (fun i => ?_) (fun p q => ?_) (fun p e hp => ?_)
+  · simp only [evalMapApplyPoly_C]
+    exact (Set.finite_singleton (C i)).subset fun a ⟨_, ha⟩ => ha ▸ rfl
+  · simp only [evalMapApplyPoly_add]
+    exact fun hp hq => (hp.add hq).subset fun _ ⟨x, hpq⟩ =>
+      ⟨evalMapApplyPoly x p, ⟨x, rfl⟩, evalMapApplyPoly x q, ⟨x, rfl⟩, hpq⟩
+  · simp only [evalMapApplyPoly_mul, evalMapApplyPoly_X]
+    exact (hp.mul (finite_image_T k e)).subset fun _ ⟨x, hpx⟩ =>
+      hpx ▸ ⟨evalMapApplyPoly x p, ⟨x, rfl⟩, T k e x, ⟨x, rfl⟩, rfl⟩
+
 lemma evalMapApplyPoly_monomial_support_eq_biInter (k : Type*) [Field k]
     {i : k} (hi : i ≠ 0) {I : SWICat} (m : I.E →₀ ℕ) :
     { x : I.X | evalMapApplyPoly x (monomial m i) ≠ 0 } = ⋂ e ∈ m.support, I.g e := by
@@ -429,5 +451,18 @@ lemma springLike' (k : Type*) [Field k] (I : SWICat) :
       · ext
         simp only [Finset.univ_eq_attach, ← hSs, prod_T_support_eq_biInter, hf, Finset.mem_attach,
           Set.iInter_true, Set.mem_iInter, Subtype.forall, hS.mem_toFinset, Set.mem_sInter]
+
+noncomputable def closureRangeUnionIsSimple (k : Type*) [Field k]
+    (I : SWICat) : (I.springLike' k).isSimple where
+  F := FractionRing (MvPolynomial I.E k)
+  field := inferInstance
+  h x := OreLocalization.numeratorRingHom
+  forall_injective x := IsFractionRing.injective
+    (MvPolynomial I.E k) (FractionRing (MvPolynomial I.E k))
+  forall_finite a := fun ha => by
+    obtain ⟨p, hap⟩ := exists_mvPolynomial_of_le_range_of_subset_range_of_mem_closure
+      (le_refl _) (Set.Subset.refl _) ha
+    exact hap ▸ ((finite_evalMapApplyPoly_image p).image numeratorRingHom.toFun).subset
+      fun q ⟨x, hpqx⟩ => hpqx ▸ ⟨evalMapApplyPoly x p, ⟨x, rfl⟩, rfl⟩
 
 end SWICat

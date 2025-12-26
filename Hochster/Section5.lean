@@ -25,9 +25,9 @@ noncomputable def SpringLike'.mapRingHomToPiFractionRingIsSimple {X : Type*}
     hA.mapRingHomToPiFractionRing.isSimple where
   F := h.F
   field := h.field
-  h (x : X) := IsFractionRing.lift (K := FractionRing (i x)) (h.forall_injective x)
-  forall_injective (x : X) := RingHom.injective _
-  forall_finite := fun a ⟨b, hAb, hab⟩ => by
+  h x := IsFractionRing.lift (K := FractionRing (i x)) (h.forall_injective x)
+  forall_injective x := RingHom.injective _
+  forall_finite a := fun ⟨b, hAb, hab⟩ => by
     have : { h.h x (b x) | x : X } = { IsFractionRing.lift (h.forall_injective x)
         ((Pi.ringHomToPiFractionRing i) b x) | x : X } := by
       ext f
@@ -48,7 +48,7 @@ def indExtForVSuccIsSimple {X : Type*} [TopologicalSpace X] {i : X → Type*}
   field := h.field
   h := h.h
   forall_injective := h.forall_injective
-  forall_finite := fun a ha => by
+  forall_finite a := fun ha => by
     refine closure_induction (fun a ha => ?_) ?_ ?_ (fun a b _ _ ha hb => ?_) (fun a _ ha => ?_)
       (fun a b _ _ ha hb => ?_) ha
     · refine Or.elim ha (fun ha => h.forall_finite a ha) ?_
@@ -112,7 +112,7 @@ def iSupExtForVIsSimple {X : Type*} [TopologicalSpace X] {i : X → Type*}
   field := h.field
   h := h.h
   forall_injective := h.forall_injective
-  forall_finite := fun a hAav => by
+  forall_finite a := fun hAav => by
     obtain ⟨n, hAanv⟩ := (mem_iSupExtForV_iff v A a).1 hAav
     have : { h.h x (a x) | x : X } ⊆ (hAv.indExtForVIsSimple_f h n).mp ''
         { (indExtForVIsSimple h hAv n).h x (a x) | x : X } := by
