@@ -1,6 +1,7 @@
 import Hochster.Section5
 
 open CategoryTheory Function IsFractionRing MvPolynomial Subring OreLocalization TopologicalSpace
+  Valuation
 
 /-- The category of spaces with indeterminates. -/
 @[ext]
@@ -464,5 +465,19 @@ noncomputable def closureRangeUnionIsSimple (k : Type*) [Field k]
       (le_refl _) (Set.Subset.refl _) ha
     exact hap ▸ ((finite_evalMapApplyPoly_image p).image numeratorRingHom.toFun).subset
       fun q ⟨x, hpqx⟩ => hpqx ▸ ⟨evalMapApplyPoly x p, ⟨x, rfl⟩, rfl⟩
+
+open Classical in
+def preV (k : Type*) [Field k] (I : SWICat) :
+    Π p : σ(I.X), Valuation (MvPolynomial I.E k) NNRat :=
+  fun p => {
+    toFun := fun P => sorry
+      -- (P.support.image fun m =>
+      --   ∏ i ∈ m.support, (if p.z.2 ∈ I.g i then 1 else 0)).max
+    map_zero' := sorry
+    map_one' := sorry
+    map_mul' := sorry
+    map_add_le_max' := sorry
+  }
+
 
 end SWICat
