@@ -418,8 +418,9 @@ lemma quasiSober_of_isEmbedding_of_isClosed_constructibleTop_range
             (Set.nonempty_iff_ne_empty.2 (Set.image_inter_preimage _ _ _ ▸
               Set.inter_comm _ _ ▸ (Finset.mem_image.1 htU).choose.2.2.2)))
       have hfsU : (f '' s ∩ ⋂ s ∈ U, f '' s).Nonempty :=
-        Set.Nonempty.mono (Set.inter_subset_inter_right (f '' s) (U.toSet.image_sInter_subset f))
-        (Set.image_inter hf.injective ▸ Set.Nonempty.image f hsU)
+        Set.Nonempty.mono (Set.inter_subset_inter_right (f '' s)
+          ((SetLike.coe U).image_sInter_subset f))
+            (Set.image_inter hf.injective ▸ Set.Nonempty.image f hsU)
       have hfstU : ⋂ s ∈ U, f '' s ⊆ ⋂ i ∈ u, t i := by
         simp only [Set.iInter_coe_set, Set.subset_iInter_iff]
         intro r ⟨hr1, hr2, hrfs⟩ hru
@@ -551,7 +552,7 @@ lemma Set.Finite.biInter_mem_of_finiteInter {α ι : Type*} {S : Set (Set α)}
 lemma Finset.biInter_mem_of_finiteInter {α ι : Type*} {S : Set (Set α)}
     (hS : FiniteInter S) (s : Finset ι) {f : ι → Set α} (hfS : Set.range f ⊆ S) :
     ⋂ i ∈ s, f i ∈ S := by
-  have : ⋂ i ∈ s, f i = ⋂ i ∈ s.toSet, f i := rfl
+  have : ⋂ i ∈ s, f i = ⋂ i ∈ (SetLike.coe s), f i := rfl
   exact this ▸ s.finite_toSet.biInter_mem_of_finiteInter hS hfS
 
 lemma Set.Finite.sInter_ne_empty_of_finiteInter_finiteInter_of_subset_union
@@ -587,7 +588,7 @@ lemma mem_patch_closure_iff_mem_pt_closure {X : Type*} [TopologicalSpace X]
         (IsClosed.isCompact hY) t hιt
       simp only [t, ← Set.sInter_eq_iInter] at this
       obtain ⟨U', hYU'⟩ := this (Set.not_nonempty_iff_eq_empty.1 h)
-      let U : Set (Set X) := Subtype.val '' U'.toSet
+      let U : Set (Set X) := Subtype.val '' (SetLike.coe U')
       have hU1 : U.Finite := U.toFinite
       have hU2 : U ⊆ { s : Set X | IsOpen s ∧ IsCompact s ∧ x ∈ s } :=
         Subtype.coe_image_subset { s | IsOpen s ∧ IsCompact s ∧ x ∈ s } U'
@@ -625,7 +626,7 @@ lemma exist_open_disjoint_or_mem_pt_closure {X : Type*} [TopologicalSpace X]
         CompactSpace.isCompact_univ t hιt
       simp only [Set.univ_inter, t, ← Set.sInter_eq_iInter] at this
       obtain ⟨U', hU'⟩ := this (Set.not_nonempty_iff_eq_empty.1 h')
-      let U : Set (Set X) := Subtype.val '' U'.toSet
+      let U : Set (Set X) := Subtype.val '' (SetLike.coe U')
       have hU1 : U.Finite := U.toFinite
       have hU2 : U ⊆ { s : Set X | IsOpen s ∧ IsCompact s ∧ x ∈ s } ∪
           { s | IsOpen s ∧ IsCompact s ∧ y ∈ s } :=
