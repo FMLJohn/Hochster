@@ -637,8 +637,8 @@ lemma map_apply_eq_one_iff_apply_ne_zero_of_forall_map_apply_le_of_forall_ne_zer
         · have := (v p).map_sum_eq_of_lt
             (Finset.mem_range.2 <| Nat.zero_lt_succ (repPoly hr).natDegree)
             (f := fun n => (repPoly hr).coeff n p.z.1 * (a / b) p.z.1 ^ n)
-          simp only [pow_zero, mul_one, hvpr, ne_eq, one_ne_zero, not_false_eq_true,
-            Finset.mem_sdiff, Finset.mem_singleton, map_mul, map_pow, and_imp, forall_const] at this
+          simp only [pow_zero, mul_one, hvpr, Finset.mem_sdiff, Finset.mem_singleton, map_mul,
+            map_pow, and_imp] at this
           refine this fun n hnr hn => ?_
           · by_cases hrnp : (repPoly hr).coeff n p.z.1 = 0
             · exact hrnp ▸ (v p).map_zero ▸ (zero_mul ((v p _) ^ n)).symm ▸ rfl
@@ -800,7 +800,7 @@ lemma exists_isIndex_of_forall_exist_eq_and_mem_and_mem_and_forall_imp_and_exist
     {hA : SpringLike' A} (hAv : hA.isIndex v) {F : Finset (Π x : X, i x)}
     (h : ∀ f ∈ F, ∃ a b, f = a / b ∧ a ∈ A ∧ b ∈ A ∧ (∀ x : X, b x = 0 → a x = 0) ∧
       (∃ hAf : SpringLike' (closure (A.carrier.insert f)), hAf.isIndex v)) :
-    ∃ hAF : SpringLike' (closure (A.carrier ∪ F.toSet)), hAF.isIndex v := by
+    ∃ hAF : SpringLike' (closure (A.carrier ∪ (F : Set _))), hAF.isIndex v := by
   choose! a b hFab hFAa hFAb hFXba hFAv using h
   let S : Finset ((Π x : X, i x) × (Π x : X, i x)) := F.image (fun f => (a f, b f))
   have hSA : ∀ s ∈ S, s.1 ∈ A ∧ s.2 ∈ A := by
@@ -825,7 +825,7 @@ lemma exists_isIndex_of_forall_exist_eq_and_mem_and_mem_and_forall_imp_and_exist
       · exact habfs ▸ rfl
       · exact habfs ▸ rfl
     exact this ▸ ((hFab f hfF) ▸ hFAv f hfF).choose_spec
-  have : F.toSet = { s.1 / s.2 | s ∈ S } := by
+  have : (F : Set _) = { s.1 / s.2 | s ∈ S } := by
     ext f
     refine ⟨fun hfF => ?_, fun ⟨s, hsS, hsf⟩ => ?_⟩
     · exact ⟨(a f, b f), Finset.mem_image_of_mem (fun f => (a f, b f)) hfF, (hFab f hfF).symm⟩
@@ -839,7 +839,7 @@ end SpringLike'.isIndex
 open Classical in
 lemma Subring.exists_finset_subset_and_mem_closure_union_of_mem_closure_union {R : Type*}
     [Ring R] {r : R} {A : Subring R} {S : Set R} (hrAS : r ∈ closure (A.carrier ∪ S)) :
-    ∃ F : Finset R, F.toSet ⊆ S ∧ r ∈ Subring.closure (A.carrier ∪ F) := by
+    ∃ F : Finset R, (F : Set R) ⊆ S ∧ r ∈ Subring.closure (A.carrier ∪ F) := by
   refine closure_induction (fun a haAS => ?_) ?_ ?_ ?_ (fun a haAS ⟨F, hFS, haAF⟩ => ?_) ?_ hrAS
   · exact ⟨((Set.finite_singleton a).inter_of_left S).toFinset,
       fun b hbaS => Set.mem_of_mem_inter_right <|
@@ -847,18 +847,18 @@ lemma Subring.exists_finset_subset_and_mem_closure_union_of_mem_closure_union {R
       mem_closure_of_mem <| Or.elim haAS (fun hbB => Set.mem_union_left _ hbB)
         (fun haS => Set.mem_union_right _
           (((Set.finite_singleton a).inter_of_left S).mem_toFinset.2 <| Set.mem_inter rfl haS))⟩
-  · exact ⟨∅, Finset.coe_empty ▸ ⟨Set.empty_subset S, zero_mem (closure (A.carrier ∪ ∅))⟩⟩
-  · exact ⟨∅, Finset.coe_empty ▸ ⟨Set.empty_subset S, one_mem (closure (A.carrier ∪ ∅))⟩⟩
+  · exact ⟨∅, Finset.coe_empty.symm ▸ Set.empty_subset S, Finset.coe_empty.symm ▸ zero_mem (closure (A.carrier ∪ ∅))⟩
+  · exact ⟨∅, Finset.coe_empty.symm ▸ Set.empty_subset S, Finset.coe_empty.symm ▸ one_mem (closure (A.carrier ∪ ∅))⟩
   · intro a b haAS hbAS ⟨F1, hF1S, haAF1⟩ ⟨F2, hF2S, hbAF2⟩
-    refine ⟨F1 ∪ F2, F1.coe_union F2 ▸ Set.union_subset hF1S hF2S, Subring.add_mem _ ?_ ?_⟩
-    · exact F1.coe_union F2 ▸ closure_mono (Set.union_assoc .. ▸ Set.subset_union_left) haAF1
-    · exact F1.coe_union F2 ▸ closure_mono (Set.union_comm F1.toSet F2.toSet ▸ Set.union_assoc .. ▸
+    refine ⟨F1 ∪ F2, Finset.coe_union F1 F2 ▸ Set.union_subset hF1S hF2S, Subring.add_mem _ ?_ ?_⟩
+    · exact Finset.coe_union F1 F2 ▸ closure_mono (Set.union_assoc .. ▸ Set.subset_union_left) haAF1
+    · exact Finset.coe_union F1 F2 ▸ closure_mono (Set.union_comm (F1 : Set R) (F2 : Set R) ▸ Set.union_assoc .. ▸
         Set.subset_union_left) hbAF2
-  · exact ⟨F, hFS, Subring.neg_mem (closure (A.carrier ∪ F.toSet)) haAF⟩
+  · exact ⟨F, hFS, Subring.neg_mem (closure (A.carrier ∪ (F : Set R))) haAF⟩
   · intro a b haAS hbAS ⟨F1, hF1S, haAF1⟩ ⟨F2, hF2S, hbAF2⟩
-    refine ⟨F1 ∪ F2, F1.coe_union F2 ▸ Set.union_subset hF1S hF2S, Subring.mul_mem _ ?_ ?_⟩
-    · exact F1.coe_union F2 ▸ closure_mono (Set.union_assoc .. ▸ Set.subset_union_left) haAF1
-    · exact F1.coe_union F2 ▸ closure_mono (Set.union_comm F1.toSet F2.toSet ▸ Set.union_assoc .. ▸
+    refine ⟨F1 ∪ F2, Finset.coe_union F1 F2 ▸ Set.union_subset hF1S hF2S, Subring.mul_mem _ ?_ ?_⟩
+    · exact Finset.coe_union F1 F2 ▸ closure_mono (Set.union_assoc .. ▸ Set.subset_union_left) haAF1
+    · exact Finset.coe_union F1 F2 ▸ closure_mono (Set.union_comm (F1 : Set R) (F2 : Set R) ▸ Set.union_assoc .. ▸
         Set.subset_union_left) hbAF2
 
 lemma SpringLike'.isIndex.exists_springLike'_closure_union_isIndex
