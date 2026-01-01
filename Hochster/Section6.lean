@@ -1,5 +1,7 @@
 import Hochster.Section5
 
+import Mathlib.Algebra.MvPolynomial.Basic
+
 open CategoryTheory Function IsFractionRing MvPolynomial Subring OreLocalization TopologicalSpace
   Valuation
 
@@ -467,17 +469,20 @@ noncomputable def closureRangeUnionIsSimple (k : Type*) [Field k]
       fun q ⟨x, hpqx⟩ => hpqx ▸ ⟨evalMapApplyPoly x p, ⟨x, rfl⟩, rfl⟩
 
 open Classical in
-def preV (k : Type*) [Field k] (I : SWICat) :
+noncomputable def preV (k : Type*) [Field k] (I : SWICat) :
     Π p : σ(I.X), Valuation (MvPolynomial I.E k) NNRat :=
   fun p => {
-    toFun := fun P => sorry
-      -- (P.support.image fun m =>
-      --   ∏ i ∈ m.support, (if p.z.2 ∈ I.g i then 1 else 0)).max
-    map_zero' := sorry
-    map_one' := sorry
+    toFun := fun P =>
+      if H : P.support.Nonempty then
+        (P.support.image fun m => ∏ i ∈ m.support, if p.z.2 ∈ I.g i then 1 else 1 / 2).max'
+          (P.support.image_nonempty.2 H)
+      else 0
+    map_zero' := by simp only [MvPolynomial.support_zero, Finset.not_nonempty_empty, reduceDIte]
+    map_one' := by
+      simp only [support_nonempty, ne_eq, one_ne_zero, not_false_eq_true, ↓reduceDIte, one_div]
+      sorry
     map_mul' := sorry
     map_add_le_max' := sorry
   }
-
 
 end SWICat
