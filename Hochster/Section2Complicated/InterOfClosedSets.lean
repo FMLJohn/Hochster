@@ -169,7 +169,7 @@ lemma forall_inter_nonempty [Nonempty X] [@CompactSpace X T] (S : U.carrier) :
       have finite : ({ S.1 } ∪ { i.1 | i : s } : Set (Set X)).Finite := by
         refine Set.finite_union.2 ⟨?_, ?_⟩
         · exact Set.finite_singleton _
-        · have : { i.1.1 | i : s } = s.toSet := by
+        · have : { i.1.1 | i : s } = SetLike.coe s := by
             ext
             simp only [Subtype.exists, exists_prop, Set.mem_setOf_eq, Set.mem_image, Finset.mem_coe]
           rw [this]
