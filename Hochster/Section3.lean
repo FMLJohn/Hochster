@@ -50,15 +50,15 @@ noncomputable def isAffine.homeomorph {𝔸 : SpringCat} (h : 𝔸.isAffine) :
 @[ext]
 structure Hom (𝔸 𝔹 : SpringCat) where
   hom' : 𝔹.A →+* 𝔸.A
-  image_subset : hom'.specComap '' (Set.range 𝔸.f) ⊆ Set.range 𝔹.f
+  image_subset : PrimeSpectrum.comap hom' '' (Set.range 𝔸.f) ⊆ Set.range 𝔹.f
 
 def Hom.id (𝔸 : SpringCat) : Hom 𝔸 𝔸 where
   hom' := RingHom.id 𝔸.A
-  image_subset := by simp
+  image_subset := by simp [PrimeSpectrum.comap_id]
 
 def Hom.comp {𝔸 𝔹 ℂ : SpringCat} (hom1 : 𝔸.Hom 𝔹) (hom2 : 𝔹.Hom ℂ) : 𝔸.Hom ℂ where
   hom' := hom1.hom'.comp hom2.hom'
-  image_subset := specComap_comp hom2.hom' hom1.hom' ▸ Set.image_comp _ _ _ ▸
+  image_subset := PrimeSpectrum.comap_comp hom2.hom' hom1.hom' ▸ Set.image_comp _ _ _ ▸
     (Set.image_mono hom1.image_subset).trans hom2.image_subset
 
 instance : Category SpringCat where
