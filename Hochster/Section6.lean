@@ -2,8 +2,8 @@ import Hochster.Section5
 
 import Mathlib.Algebra.MvPolynomial.Basic
 
-open CategoryTheory Function IsFractionRing MvPolynomial Subring OreLocalization TopologicalSpace
-  Valuation
+open CategoryTheory Finset Function IsFractionRing MvPolynomial Subring OreLocalization
+  TopologicalSpace Valuation
 
 /-- The category of spaces with indeterminates. -/
 @[ext]
@@ -265,12 +265,12 @@ lemma evalMapApplyPoly_mul {k : Type*} [Field k] {I : SWICat}
 
 lemma evalMapApplyPoly_sum {k : Type*} [Field k] {I : SWICat} (x : I.X)
     {ι : Type u_1} (s : Finset ι) (f : ι → MvPolynomial I.E k) :
-    evalMapApplyPoly x (Finset.sum s f) = Finset.sum s fun i => evalMapApplyPoly x (f i) := by
+    evalMapApplyPoly x (s.sum f) = s.sum fun i => evalMapApplyPoly x (f i) := by
   simp [evalMapApplyPoly]
 
 lemma evalMapApplyPoly_prod {k ι : Type*} [Field k] {I : SWICat} (x : I.X)
     (s : Finset ι) (f : ι → MvPolynomial I.E k) :
-    evalMapApplyPoly x (Finset.prod s f) = Finset.prod s fun i => evalMapApplyPoly x (f i) := by
+    evalMapApplyPoly x (s.prod f) = s.prod fun i => evalMapApplyPoly x (f i) := by
   simp [evalMapApplyPoly]
 
 open Classical in
@@ -283,10 +283,10 @@ lemma evalMapApplyPoly_monomial {k : Type*} [Field k]
   by_cases hmx : ∃ e ∈ m.support, x ∉ I.g e
   · simp only [hmx, reduceIte]
     by_cases hi : (Pi.ringHom fun x : I.X => @C k I.E _) i = 0
-    · simp only [hi, zero_mul, ite_self, Pi.zero_apply, Finset.sum_const_zero]
-    · simp only [hi, reduceIte, Finset.sum_singleton, Pi.mul_apply, Finset.prod_apply]
+    · simp only [hi, zero_mul, ite_self, Pi.zero_apply, sum_const_zero]
+    · simp only [hi, reduceIte, sum_singleton, Pi.mul_apply, prod_apply]
       obtain ⟨e, hem, he⟩ := hmx
-      refine mul_eq_zero.2 <| Or.intro_right _ <| Finset.prod_eq_zero hem ?_
+      refine mul_eq_zero.2 <| Or.intro_right _ <| prod_eq_zero hem ?_
       · simp only [Pi.pow_apply, T, he, reduceIte, ne_eq, Finsupp.mem_support_iff.1 hem,
           not_false_eq_true, zero_pow]
   · simp only [hmx]
@@ -294,9 +294,9 @@ lemma evalMapApplyPoly_monomial {k : Type*} [Field k]
     · simp only [hi]
       exact ((RingHom.ker_eq_bot_iff_eq_zero _).1 <| (RingHom.injective_iff_ker_eq_bot _).1 <|
         Pi.ringHom_injective _ (fun _ => C_injective I.E k)) i hi ▸ monomial_zero.symm
-    · simp only [hi, reduceIte, Finset.sum_singleton, Pi.mul_apply, Finset.prod_apply, Pi.pow_apply]
+    · simp only [hi, reduceIte, sum_singleton, Pi.mul_apply, prod_apply, Pi.pow_apply]
       refine monomial_eq (a := i) (s := m) ▸
-        (mul_eq_mul_left_iff.2 <| Or.intro_left _ <| Finset.prod_congr rfl fun e hem => ?_)
+        (mul_eq_mul_left_iff.2 <| Or.intro_left _ <| prod_congr rfl fun e hem => ?_)
       · simp only [not_exists, not_and, not_not] at hmx
         simp only [T, hmx e hem, reduceIte]
 
@@ -348,7 +348,7 @@ lemma support_evalMapApplyPoly {k : Type*} [Field k]
 lemma support_evalMapApplyPoly_subset {k : Type*} [Field k]
     {I : SWICat} (x : I.X) (p : MvPolynomial I.E k) :
     (evalMapApplyPoly x p).support ⊆ p.support :=
-  fun _ hpx => (support_evalMapApplyPoly x p ▸ Finset.mem_coe.2 hpx).1
+  fun _ hpx => (support_evalMapApplyPoly x p ▸ mem_coe.2 hpx).1
 
 lemma finite_evalMapApplyPoly_image {k : Type*} [Field k]
     {I : SWICat} (p : MvPolynomial I.E k) :
@@ -452,7 +452,7 @@ lemma springLike' (k : Type*) [Field k] (I : SWICat) :
       refine ⟨∏ s : hS.toFinset, T k (f s), ?_, ?_⟩
       · exact prod_mem fun s _ => mem_closure_of_mem <| Or.intro_right _ ⟨f s, rfl⟩
       · ext
-        simp only [Finset.univ_eq_attach, ← hSs, prod_T_support_eq_biInter, hf, Finset.mem_attach,
+        simp only [univ_eq_attach, ← hSs, prod_T_support_eq_biInter, hf, mem_attach,
           Set.iInter_true, Set.mem_iInter, Subtype.forall, hS.mem_toFinset, Set.mem_sInter]
 
 noncomputable def closureRangeUnionIsSimple (k : Type*) [Field k]
@@ -478,9 +478,8 @@ noncomputable def preV (k : Type*) [Field k] (I : SWICat) :
           (P.support.image_nonempty.2 H)
       else 0
     map_zero' := by simp only [MvPolynomial.support_zero, Finset.not_nonempty_empty, reduceDIte]
-    map_one' := by
-      simp only [support_nonempty, ne_eq, one_ne_zero, not_false_eq_true, ↓reduceDIte, one_div]
-      sorry
+    map_one' := by simp only [← C_1, support_C, one_ne_zero, reduceIte, singleton_nonempty,
+      reduceDIte, image_singleton, Finsupp.support_zero, prod_empty, max'_singleton]
     map_mul' := sorry
     map_add_le_max' := sorry
   }
