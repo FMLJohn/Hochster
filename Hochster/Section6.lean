@@ -480,7 +480,17 @@ noncomputable def preV (k : Type*) [Field k] (I : SWICat) :
     map_zero' := by simp only [MvPolynomial.support_zero, Finset.not_nonempty_empty, reduceDIte]
     map_one' := by simp only [← C_1, support_C, one_ne_zero, reduceIte, singleton_nonempty,
       reduceDIte, image_singleton, Finsupp.support_zero, prod_empty, max'_singleton]
-    map_mul' := sorry
+    map_mul' := fun P Q => by
+      by_cases HPQ : (P * Q).support.Nonempty
+      · obtain ⟨hP, hQ⟩ := mul_ne_zero_iff.1 <| support_nonempty.1 HPQ
+        have HP := support_nonempty.2 hP
+        have HQ := support_nonempty.2 hQ
+        simp only [HPQ, reduceDIte, one_div, HP, HQ]
+        sorry
+      · refine (mul_eq_zero.1 <| support_nonempty.not_left.1 HPQ).elim (fun hP => ?_) (fun hQ => ?_)
+        · simp only [hP, zero_mul, MvPolynomial.support_zero, Finset.not_nonempty_empty, reduceDIte,
+            mul_dite, dite_eq_ite, ite_self]
+        · simp only [hQ, mul_zero, MvPolynomial.support_zero, Finset.not_nonempty_empty, reduceDIte]
     map_add_le_max' := sorry
   }
 
