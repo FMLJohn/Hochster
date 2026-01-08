@@ -468,6 +468,17 @@ noncomputable def closureRangeUnionIsSimple (k : Type*) [Field k]
     exact hap ▸ ((finite_evalMapApplyPoly_image p).image numeratorRingHom.toFun).subset
       fun q ⟨x, hpqx⟩ => hpqx ▸ ⟨evalMapApplyPoly x p, ⟨x, rfl⟩, rfl⟩
 
+set_option maxHeartbeats 500000 in
+open Classical in
+lemma wwefwewefw {k : Type*} [Field k] {I : SWICat} {p : σ(I.X)} {P Q : MvPolynomial I.E k}
+    (HP : (P.support.image fun m => ∏ x ∈ m.support, 4).Nonempty)
+    (HQ : (Q.support.image fun m => ∏ x ∈ m.support, 4).Nonempty)
+    (HPQ : ((P * Q).support.image fun m => ∏ x ∈ m.support, 4).Nonempty) :
+    ((P * Q).support.image fun m => ∏ x ∈ m.support, 4).max' HPQ =
+    (P.support.image fun m => ∏ x ∈ m.support, 4).max' HP *
+    (Q.support.image fun m => ∏ x ∈ m.support, 4).max' HQ := by
+  sorry
+
 open Classical in
 noncomputable def preV (k : Type*) [Field k] (I : SWICat) :
     Π p : σ(I.X), Valuation (MvPolynomial I.E k) NNRat :=
@@ -486,6 +497,18 @@ noncomputable def preV (k : Type*) [Field k] (I : SWICat) :
         have HP := support_nonempty.2 hP
         have HQ := support_nonempty.2 hQ
         simp only [HPQ, reduceDIte, one_div, HP, HQ]
+        -- suffices ∀ (HP1 : (P.support.image fun m => ∏ x ∈ m.support,
+        --     if p.z.2 ∈ I.g x then (1 : NNRat) else 2⁻¹).Nonempty)
+        --   (HQ1 : (Q.support.image fun m => ∏ x ∈ m.support,
+        --     if p.z.2 ∈ I.g x then (1 : NNRat) else 2⁻¹).Nonempty)
+        --   (HPQ1 : ((P * Q).support.image fun m => ∏ x ∈ m.support,
+        --     if p.z.2 ∈ I.g x then (1 : NNRat) else 2⁻¹).Nonempty),
+        --   ((P * Q).support.image fun m => ∏ x ∈ m.support,
+        --     if p.z.2 ∈ I.g x then (1 : NNRat) else 2⁻¹).max' HPQ1 =
+        --   (P.support.image fun m => ∏ x ∈ m.support, if p.z.2 ∈ I.g x then 1 else 2⁻¹).max' HP1 *
+        --     (Q.support.image fun m => ∏ x ∈ m.support, if p.z.2 ∈ I.g x then 1 else 2⁻¹).max' HQ1
+        --   by exact this _ _ _
+        -- · intro HP1 HQ1 HPQ1
         sorry
       · refine (mul_eq_zero.1 <| support_nonempty.not_left.1 HPQ).elim (fun hP => ?_) (fun hQ => ?_)
         · simp only [hP, zero_mul, MvPolynomial.support_zero, Finset.not_nonempty_empty, reduceDIte,
