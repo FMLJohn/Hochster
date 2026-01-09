@@ -468,16 +468,20 @@ noncomputable def closureRangeUnionIsSimple (k : Type*) [Field k]
     exact hap ▸ ((finite_evalMapApplyPoly_image p).image numeratorRingHom.toFun).subset
       fun q ⟨x, hpqx⟩ => hpqx ▸ ⟨evalMapApplyPoly x p, ⟨x, rfl⟩, rfl⟩
 
-set_option maxHeartbeats 500000 in
-open Classical in
-lemma wwefwewefw {k : Type*} [Field k] {I : SWICat} {p : σ(I.X)} {P Q : MvPolynomial I.E k}
-    (HP : (P.support.image fun m => ∏ x ∈ m.support, 4).Nonempty)
-    (HQ : (Q.support.image fun m => ∏ x ∈ m.support, 4).Nonempty)
-    (HPQ : ((P * Q).support.image fun m => ∏ x ∈ m.support, 4).Nonempty) :
-    ((P * Q).support.image fun m => ∏ x ∈ m.support, 4).max' HPQ =
-    (P.support.image fun m => ∏ x ∈ m.support, 4).max' HP *
-    (Q.support.image fun m => ∏ x ∈ m.support, 4).max' HQ := by
-  sorry
+end SWICat
+
+namespace MvPolynomial
+
+theorem support_mul_C_of_ne_zero {R σ : Type*} [CommSemiring R]
+    [IsDomain R] {r : R} (hr : r ≠ 0) (p : MvPolynomial σ R) :
+    (p * C r).support = p.support := by
+  ext m
+  exact (p * C r).mem_support_iff.trans <| not_iff_comm.mp <| p.notMem_support_iff.trans <|
+    mul_comm p _ ▸ p.coeff_C_mul m r ▸ (mul_eq_zero_iff_left hr).symm
+
+end MvPolynomial
+
+namespace SWICat
 
 open Classical in
 noncomputable def preV (k : Type*) [Field k] (I : SWICat) :
@@ -497,19 +501,20 @@ noncomputable def preV (k : Type*) [Field k] (I : SWICat) :
         have HP := support_nonempty.2 hP
         have HQ := support_nonempty.2 hQ
         simp only [HPQ, reduceDIte, one_div, HP, HQ]
-        -- suffices ∀ (HP1 : (P.support.image fun m => ∏ x ∈ m.support,
-        --     if p.z.2 ∈ I.g x then (1 : NNRat) else 2⁻¹).Nonempty)
-        --   (HQ1 : (Q.support.image fun m => ∏ x ∈ m.support,
-        --     if p.z.2 ∈ I.g x then (1 : NNRat) else 2⁻¹).Nonempty)
-        --   (HPQ1 : ((P * Q).support.image fun m => ∏ x ∈ m.support,
-        --     if p.z.2 ∈ I.g x then (1 : NNRat) else 2⁻¹).Nonempty),
-        --   ((P * Q).support.image fun m => ∏ x ∈ m.support,
-        --     if p.z.2 ∈ I.g x then (1 : NNRat) else 2⁻¹).max' HPQ1 =
-        --   (P.support.image fun m => ∏ x ∈ m.support, if p.z.2 ∈ I.g x then 1 else 2⁻¹).max' HP1 *
-        --     (Q.support.image fun m => ∏ x ∈ m.support, if p.z.2 ∈ I.g x then 1 else 2⁻¹).max' HQ1
-        --   by exact this _ _ _
-        -- · intro HP1 HQ1 HPQ1
-        sorry
+        suffices ∀ hQ1 : Q ≠ 0, ((P * Q).support.image fun m => ∏ x ∈ m.support,
+          if p.z.2 ∈ I.g x then (1 : NNRat) else 2⁻¹).max'
+            (image_nonempty.2 <| support_nonempty.2 <| mul_ne_zero hP hQ1) =
+          (P.support.image fun m => ∏ x ∈ m.support, if p.z.2 ∈ I.g x then 1 else 2⁻¹).max'
+            (image_nonempty.2 HP) *
+          (Q.support.image fun m => ∏ x ∈ m.support, if p.z.2 ∈ I.g x then 1 else 2⁻¹).max'
+            (image_nonempty.2 <| support_nonempty.2 hQ1) by
+          exact this hQ
+        · refine Q.monomial_add_induction_on (fun i hi => ?_) (fun m i L hLm hi h hLim => ?_)
+          · have := C_ne_zero.1 hi
+            have hiP := P.support_mul_C_of_ne_zero this
+            simp only [hiP, support_C, this, reduceIte, image_singleton, Finsupp.support_zero,
+              prod_empty, max'_singleton, mul_one]
+          · sorry
       · refine (mul_eq_zero.1 <| support_nonempty.not_left.1 HPQ).elim (fun hP => ?_) (fun hQ => ?_)
         · simp only [hP, zero_mul, MvPolynomial.support_zero, Finset.not_nonempty_empty, reduceDIte,
             mul_dite, dite_eq_ite, ite_self]
