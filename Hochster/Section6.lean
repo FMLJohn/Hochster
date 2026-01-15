@@ -501,6 +501,27 @@ lemma prod_le_valuationFun_apply_of_mem_support {k : Type*} [Field k] {I : SWICa
   simp only [this, valuationFun]
   exact le_max' _ _ <| mem_image.2 ⟨m, hmP, by congr⟩
 
+open Classical in
+lemma valuationFun_apply_eq_iff {k : Type*} [Field k] {I : SWICat} (p : σ(I.X))
+    {P : MvPolynomial I.E k} (hP : P.support.Nonempty) (r : NNRat) :
+    I.valuationFun k p P = r ↔
+    (∀ n ∈ P.support, (∏ i ∈ n.support, if p.z.2 ∈ I.g i then 1 else (1 / 2) ^ n i) ≤ r) ∧
+      ∃ m ∈ P.support, ∏ i ∈ m.support, (if p.z.2 ∈ I.g i then 1 else (1 / 2) ^ m i) = r := by
+  refine ⟨fun hPpr => ⟨fun n hnP => ?_, ?_⟩, fun ⟨hPpr, m, hmP, hmr⟩ => ?_⟩
+  · exact hPpr ▸ prod_le_valuationFun_apply_of_mem_support p hnP
+  · by_contra h
+    have : valuationFun k p P < r := by
+      simp only [valuationFun, hP]
+      refine (max'_lt_iff _ _).2 fun q hPq => ?_
+      · obtain ⟨m, hmP, hmpq⟩ := (mem_image ..).1 hPq
+        exact hmpq ▸ lt_of_le_of_ne (hPpr ▸ prod_le_valuationFun_apply_of_mem_support p hmP)
+          ((not_and.1 <| not_exists.1 h m) hmP)
+    exact (ne_of_lt this) hPpr
+  · simp only [valuationFun, hP]
+    refine (max'_eq_iff _ _ r).2 ⟨mem_image.2 ⟨m, hmP, by congr⟩, fun q hPqm => ?_⟩
+    · obtain ⟨n, hnP, hnpq⟩ := mem_image.1 hPqm
+      exact hnpq ▸ hPpr n hnP
+
 lemma wrfjweorifj {k : Type*} [Field k] {I : SWICat} (p : σ(I.X)) {P Q : MvPolynomial I.E k}
     (hPQ : I.valuationFun k p P < I.valuationFun k p Q) :
     I.valuationFun k p (P + Q) = I.valuationFun k p Q := sorry
