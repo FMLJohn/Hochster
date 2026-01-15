@@ -487,16 +487,27 @@ open Classical in
 noncomputable def valuationFun (k : Type*) [Field k] {I : SWICat} (p : σ(I.X)) :
     MvPolynomial I.E k → NNRat :=
   fun P =>
-    if H : P.support.Nonempty then
+    if hP : P.support.Nonempty then
       (P.support.image fun m => ∏ i ∈ m.support, if p.z.2 ∈ I.g i then 1 else (1 / 2) ^ m i).max'
-        (P.support.image_nonempty.2 H)
+        (P.support.image_nonempty.2 hP)
     else 0
+
+open Classical in
+lemma valuationFun_apply_of_support_nonempty {k : Type*} [Field k] {I : SWICat}
+    (p : σ(I.X)) {P : MvPolynomial I.E k} (hP : P.support.Nonempty) :
+    valuationFun k p P = (P.support.image fun m => ∏ i ∈ m.support,
+      if p.z.2 ∈ I.g i then 1 else (1 / 2) ^ m i).max' (P.support.image_nonempty.2 hP) := by
+  simp [valuationFun, hP]
+
+lemma valuationFun_apply_zero (k : Type*) [Field k] {I : SWICat} (p : σ(I.X)) :
+    valuationFun k p 0 = 0 := by
+  simp [valuationFun]
 
 open Classical in
 lemma prod_le_valuationFun_apply_of_mem_support {k : Type*} [Field k] {I : SWICat}
     (p : σ(I.X)) {P : MvPolynomial I.E k} {m : I.E →₀ ℕ} (hmP : m ∈ P.support) :
     ∏ i ∈ m.support, (if p.z.2 ∈ I.g i then 1 else (1 / 2) ^ m i)
-      ≤ I.valuationFun k p P := by
+      ≤ valuationFun k p P := by
   have : P.support.Nonempty := ⟨m, hmP⟩
   simp only [this, valuationFun]
   exact le_max' _ _ <| mem_image.2 ⟨m, hmP, by congr⟩
@@ -504,27 +515,37 @@ lemma prod_le_valuationFun_apply_of_mem_support {k : Type*} [Field k] {I : SWICa
 open Classical in
 lemma valuationFun_apply_eq_iff {k : Type*} [Field k] {I : SWICat} (p : σ(I.X))
     {P : MvPolynomial I.E k} (hP : P.support.Nonempty) (r : NNRat) :
-    I.valuationFun k p P = r ↔
+    valuationFun k p P = r ↔
     (∀ n ∈ P.support, (∏ i ∈ n.support, if p.z.2 ∈ I.g i then 1 else (1 / 2) ^ n i) ≤ r) ∧
       ∃ m ∈ P.support, ∏ i ∈ m.support, (if p.z.2 ∈ I.g i then 1 else (1 / 2) ^ m i) = r := by
   refine ⟨fun hPpr => ⟨fun n hnP => ?_, ?_⟩, fun ⟨hPpr, m, hmP, hmr⟩ => ?_⟩
   · exact hPpr ▸ prod_le_valuationFun_apply_of_mem_support p hnP
   · by_contra h
     have : valuationFun k p P < r := by
-      simp only [valuationFun, hP]
-      refine (max'_lt_iff _ _).2 fun q hPq => ?_
+      refine valuationFun_apply_of_support_nonempty p hP ▸ (max'_lt_iff _ _).2 fun q hPq => ?_
       · obtain ⟨m, hmP, hmpq⟩ := (mem_image ..).1 hPq
         exact hmpq ▸ lt_of_le_of_ne (hPpr ▸ prod_le_valuationFun_apply_of_mem_support p hmP)
           ((not_and.1 <| not_exists.1 h m) hmP)
     exact (ne_of_lt this) hPpr
-  · simp only [valuationFun, hP]
-    refine (max'_eq_iff _ _ r).2 ⟨mem_image.2 ⟨m, hmP, by congr⟩, fun q hPqm => ?_⟩
+  · refine valuationFun_apply_of_support_nonempty p hP ▸
+      (max'_eq_iff _ _ r).2 ⟨mem_image.2 ⟨m, hmP, by congr⟩, fun q hPqm => ?_⟩
     · obtain ⟨n, hnP, hnpq⟩ := mem_image.1 hPqm
       exact hnpq ▸ hPpr n hnP
 
+open Classical in
 lemma wrfjweorifj {k : Type*} [Field k] {I : SWICat} (p : σ(I.X)) {P Q : MvPolynomial I.E k}
     (hPQ : I.valuationFun k p P < I.valuationFun k p Q) :
-    I.valuationFun k p (P + Q) = I.valuationFun k p Q := sorry
+    I.valuationFun k p (P + Q) = I.valuationFun k p Q := by
+  have hQ : Q.support.Nonempty :=
+    Q.support_nonempty.2 fun hQ => not_lt_zero <| (hQ ▸ valuationFun_apply_zero k p) ▸ hPQ
+  by_cases hP : P.support.Nonempty
+  · obtain ⟨hpQ1, m, hmQ, hpQ2⟩ := (valuationFun_apply_eq_iff p hQ _).1 rfl
+    refine (valuationFun_apply_eq_iff p ?_ _).2 ⟨fun n hnPQ => ?_, ?_⟩
+    · sorry
+    · have := P.support_add hnPQ
+      sorry
+    · sorry
+  · exact (of_not_not <| (not_iff_not.2 support_nonempty).1 hP) ▸ (zero_add Q).symm ▸ rfl
 
 open Classical in
 noncomputable def preV (k : Type*) [Field k] (I : SWICat) :
