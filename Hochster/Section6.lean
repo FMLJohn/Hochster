@@ -484,12 +484,34 @@ end MvPolynomial
 namespace SWICat
 
 open Classical in
+noncomputable def valuationFun (k : Type*) [Field k] {I : SWICat} (p : σ(I.X)) :
+    MvPolynomial I.E k → NNRat :=
+  fun P =>
+    if H : P.support.Nonempty then
+      (P.support.image fun m => ∏ i ∈ m.support, if p.z.2 ∈ I.g i then 1 else (1 / 2) ^ m i).max'
+        (P.support.image_nonempty.2 H)
+    else 0
+
+open Classical in
+lemma prod_le_valuationFun_apply_of_mem_support {k : Type*} [Field k] {I : SWICat}
+    (p : σ(I.X)) {P : MvPolynomial I.E k} {m : I.E →₀ ℕ} (hmP : m ∈ P.support) :
+    ∏ i ∈ m.support, (if p.z.2 ∈ I.g i then 1 else (1 / 2) ^ m i)
+      ≤ I.valuationFun k p P := by
+  have : P.support.Nonempty := ⟨m, hmP⟩
+  simp only [this, valuationFun]
+  exact le_max' _ _ <| mem_image.2 ⟨m, hmP, by congr⟩
+
+lemma wrfjweorifj {k : Type*} [Field k] {I : SWICat} (p : σ(I.X)) {P Q : MvPolynomial I.E k}
+    (hPQ : I.valuationFun k p P < I.valuationFun k p Q) :
+    I.valuationFun k p (P + Q) = I.valuationFun k p Q := sorry
+
+open Classical in
 noncomputable def preV (k : Type*) [Field k] (I : SWICat) :
     Π p : σ(I.X), Valuation (MvPolynomial I.E k) NNRat :=
   fun p => {
     toFun := fun P =>
       if H : P.support.Nonempty then
-        (P.support.image fun m => ∏ i ∈ m.support, if p.z.2 ∈ I.g i then 1 else 1 / 2).max'
+        (P.support.image fun m => ∏ i ∈ m.support, if p.z.2 ∈ I.g i then 1 else (1 / 2) ^ m i).max'
           (P.support.image_nonempty.2 H)
       else 0
     map_zero' := by simp only [MvPolynomial.support_zero, Finset.not_nonempty_empty, reduceDIte]
@@ -501,20 +523,7 @@ noncomputable def preV (k : Type*) [Field k] (I : SWICat) :
         have HP := support_nonempty.2 hP
         have HQ := support_nonempty.2 hQ
         simp only [HPQ, reduceDIte, one_div, HP, HQ]
-        suffices ∀ hQ1 : Q ≠ 0, ((P * Q).support.image fun m => ∏ x ∈ m.support,
-          if p.z.2 ∈ I.g x then (1 : NNRat) else 2⁻¹).max'
-            (image_nonempty.2 <| support_nonempty.2 <| mul_ne_zero hP hQ1) =
-          (P.support.image fun m => ∏ x ∈ m.support, if p.z.2 ∈ I.g x then 1 else 2⁻¹).max'
-            (image_nonempty.2 HP) *
-          (Q.support.image fun m => ∏ x ∈ m.support, if p.z.2 ∈ I.g x then 1 else 2⁻¹).max'
-            (image_nonempty.2 <| support_nonempty.2 hQ1) by
-          exact this hQ
-        · refine Q.monomial_add_induction_on (fun i hi => ?_) (fun m i L hLm hi h hLim => ?_)
-          · have := C_ne_zero.1 hi
-            have hiP := P.support_mul_C_of_ne_zero this
-            simp only [hiP, support_C, this, reduceIte, image_singleton, Finsupp.support_zero,
-              prod_empty, max'_singleton, mul_one]
-          · sorry
+        sorry
       · refine (mul_eq_zero.1 <| support_nonempty.not_left.1 HPQ).elim (fun hP => ?_) (fun hQ => ?_)
         · simp only [hP, zero_mul, MvPolynomial.support_zero, Finset.not_nonempty_empty, reduceDIte,
             mul_dite, dite_eq_ite, ite_self]
