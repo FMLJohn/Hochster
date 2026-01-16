@@ -533,18 +533,21 @@ lemma valuationFun_apply_eq_iff {k : Type*} [Field k] {I : SWICat} (p : σ(I.X))
       exact hnpq ▸ hPpr n hnP
 
 open Classical in
-lemma wrfjweorifj {k : Type*} [Field k] {I : SWICat} (p : σ(I.X)) {P Q : MvPolynomial I.E k}
-    (hPQ : I.valuationFun k p P < I.valuationFun k p Q) :
+lemma valuationFun_apply_add_eq_apply_of_lt {k : Type*} [Field k] {I : SWICat} (p : σ(I.X))
+    {P Q : MvPolynomial I.E k} (hPQ : I.valuationFun k p P < I.valuationFun k p Q) :
     I.valuationFun k p (P + Q) = I.valuationFun k p Q := by
   have hQ : Q.support.Nonempty :=
     Q.support_nonempty.2 fun hQ => not_lt_zero <| (hQ ▸ valuationFun_apply_zero k p) ▸ hPQ
   by_cases hP : P.support.Nonempty
   · obtain ⟨hpQ1, m, hmQ, hpQ2⟩ := (valuationFun_apply_eq_iff p hQ _).1 rfl
-    refine (valuationFun_apply_eq_iff p ?_ _).2 ⟨fun n hnPQ => ?_, ?_⟩
-    · sorry
-    · have := P.support_add hnPQ
-      sorry
-    · sorry
+    have : m ∈ (P + Q).support := mem_support_iff.2 <| coeff_add m P Q ▸ fun h => by
+      have : m ∈ P.support := mem_support_iff.2 fun hmP =>
+        (mem_support_iff.1 hmQ) (zero_add (coeff m Q) ▸ hmP ▸ h)
+      exact not_le_of_gt hPQ <| hpQ2 ▸ prod_le_valuationFun_apply_of_mem_support p this
+    refine (valuationFun_apply_eq_iff p ⟨m, this⟩ _).2 ⟨fun n hnPQ => ?_, ⟨m, this, hpQ2⟩⟩
+    · refine (mem_union.1 <| P.support_add hnPQ).elim (fun hnP => ?_) (fun hnQ => ?_)
+      · exact le_of_lt <| lt_of_le_of_lt (prod_le_valuationFun_apply_of_mem_support p hnP) hPQ
+      · exact prod_le_valuationFun_apply_of_mem_support p hnQ
   · exact (of_not_not <| (not_iff_not.2 support_nonempty).1 hP) ▸ (zero_add Q).symm ▸ rfl
 
 open Classical in
