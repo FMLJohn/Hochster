@@ -533,6 +533,15 @@ lemma valuationFun_apply_eq_iff {k : Type*} [Field k] {I : SWICat} (p : σ(I.X))
       exact hnpq ▸ hPpr n hnP
 
 open Classical in
+lemma valuationFun_apply_eq_of_forall_prod_eq {k : Type*} [Field k] {I : SWICat}
+    {p : σ(I.X)} {P : MvPolynomial I.E k} (hP : P.support.Nonempty) {r : NNRat}
+    (hPpr : ∀ m ∈ P.support, (∏ i ∈ m.support, if p.z.2 ∈ I.g i then 1 else (1 / 2) ^ m i) = r) :
+    valuationFun k p P = r := by
+  refine (valuationFun_apply_eq_iff p hP r).2 ⟨fun n hnP => le_of_eq <| hPpr n hnP, ?_⟩
+  · obtain ⟨m, hmP⟩ := hP
+    exact ⟨m, hmP, hPpr m hmP⟩
+
+open Classical in
 lemma valuationFun_apply_add_eq_apply_of_lt {k : Type*} [Field k] {I : SWICat} (p : σ(I.X))
     {P Q : MvPolynomial I.E k} (hPQ : I.valuationFun k p P < I.valuationFun k p Q) :
     I.valuationFun k p (P + Q) = I.valuationFun k p Q := by
