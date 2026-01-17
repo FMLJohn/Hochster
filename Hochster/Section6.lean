@@ -602,6 +602,37 @@ lemma valuationFun_apply_le_of_forall_prod_le {k : Type*} [Field k]
   · simp only [valuationFun, hP, reduceDIte, zero_le]
 
 open Classical in
+lemma valuationFun_apply_le_iff {k : Type*} [Field k] {I : SWICat}
+    (p : σ(I.X)) (P : MvPolynomial I.E k) (r : NNRat) :
+    valuationFun k p P ≤ r ↔
+    ∀ n ∈ P.support, (∏ e ∈ n.support, if p.z.2 ∈ I.g e then 1 else (1 / 2) ^ n e) ≤ r := by
+  by_cases hP : P.support.Nonempty
+  · simp only [valuationFun, hP, reduceDIte, max'_le_iff, mem_image, forall_exists_index, and_imp,
+      forall_apply_eq_imp_iff₂]
+  · simp only [valuationFun, not_nonempty_iff_eq_empty.1 hP, notMem_empty, IsEmpty.forall_iff,
+      implies_true, Finset.not_nonempty_empty, reduceDIte, zero_le]
+
+open Classical in
+lemma valuationFun_apply_lt_iff_of_support_nonempty {k : Type*} [Field k] {I : SWICat}
+    (p : σ(I.X)) {P : MvPolynomial I.E k} (hP : P.support.Nonempty) (r : NNRat) :
+    valuationFun k p P < r ↔
+    ∀ n ∈ P.support, (∏ e ∈ n.support, if p.z.2 ∈ I.g e then 1 else (1 / 2) ^ n e) < r :=
+  valuationFun_apply_of_support_nonempty p hP ▸ by
+    simp only [max'_lt_iff, mem_image, forall_exists_index, and_imp, forall_apply_eq_imp_iff₂]
+
+open Classical in
+lemma valuationFun_apply_lt_iff_of_ne_zero {k : Type*} [Field k] {I : SWICat}
+    (p : σ(I.X)) (P : MvPolynomial I.E k) {r : NNRat} (hr : r ≠ 0) :
+    valuationFun k p P < r ↔
+    ∀ n ∈ P.support, (∏ e ∈ n.support, if p.z.2 ∈ I.g e then 1 else (1 / 2) ^ n e) < r := by
+  by_cases hP : P.support.Nonempty
+  · simp only [valuationFun, hP, reduceDIte, max'_lt_iff, mem_image, forall_exists_index, and_imp,
+      forall_apply_eq_imp_iff₂]
+  · simp only [valuationFun, not_nonempty_iff_eq_empty.1 hP, notMem_empty, IsEmpty.forall_iff,
+      implies_true, iff_true]
+    exact pos_of_ne_zero hr
+
+open Classical in
 lemma valuationFun_apply_add_eq_apply_of_lt {k : Type*} [Field k] {I : SWICat} (p : σ(I.X))
     {P Q : MvPolynomial I.E k} (hPQ : I.valuationFun k p P < I.valuationFun k p Q) :
     I.valuationFun k p (P + Q) = I.valuationFun k p Q := by
