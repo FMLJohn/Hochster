@@ -488,15 +488,15 @@ noncomputable def valuationFun (k : Type*) [Field k] {I : SWICat} (p : σ(I.X)) 
     MvPolynomial I.E k → NNRat :=
   fun P =>
     if hP : P.support.Nonempty then
-      (P.support.image fun m => ∏ i ∈ m.support, if p.z.2 ∈ I.g i then 1 else (1 / 2) ^ m i).max'
+      (P.support.image fun m => ∏ e ∈ m.support, if p.z.2 ∈ I.g e then 1 else (1 / 2) ^ m e).max'
         (P.support.image_nonempty.2 hP)
     else 0
 
 open Classical in
 lemma valuationFun_apply_of_support_nonempty {k : Type*} [Field k] {I : SWICat}
     (p : σ(I.X)) {P : MvPolynomial I.E k} (hP : P.support.Nonempty) :
-    valuationFun k p P = (P.support.image fun m => ∏ i ∈ m.support,
-      if p.z.2 ∈ I.g i then 1 else (1 / 2) ^ m i).max' (P.support.image_nonempty.2 hP) := by
+    valuationFun k p P = (P.support.image fun m => ∏ e ∈ m.support,
+      if p.z.2 ∈ I.g e then 1 else (1 / 2) ^ m e).max' (P.support.image_nonempty.2 hP) := by
   simp [valuationFun, hP]
 
 lemma valuationFun_apply_zero (k : Type*) [Field k] {I : SWICat} (p : σ(I.X)) :
@@ -514,9 +514,21 @@ lemma valuationFun_apply_C {k : Type*} (i : k) [Field k] {I : SWICat} (p : σ(I.
         Pi.zero_apply, pow_zero, inv_one, ite_self, prod_const_one, max'_singleton]
 
 open Classical in
+lemma valuationFun_apply_X (k : Type*) [Field k] {I : SWICat} (e : I.E) (p : σ(I.X)) :
+    valuationFun k p (MvPolynomial.X e) = if p.z.2 ∈ I.g e then 1 else 1 / 2 := by
+  refine valuationFun_apply_of_support_nonempty p
+    (support_nonempty.2 <| @X_ne_zero k I.E _ _ e) ▸ ?_
+  . have : (Finsupp.single e 1).support = {e} := by
+      ext d
+      exact (Finsupp.mem_support_single d e 1).trans
+        ⟨fun ⟨hde, h⟩ => mem_singleton.2 hde, fun hde => ⟨mem_singleton.1 hde, one_ne_zero⟩⟩
+    simp only [support_X, image_singleton, max'_singleton, Finsupp.single_apply, this, pow_one,
+      prod_singleton, reduceIte]
+
+open Classical in
 lemma prod_le_valuationFun_apply_of_mem_support {k : Type*} [Field k] {I : SWICat}
     (p : σ(I.X)) {P : MvPolynomial I.E k} {m : I.E →₀ ℕ} (hmP : m ∈ P.support) :
-    ∏ i ∈ m.support, (if p.z.2 ∈ I.g i then 1 else (1 / 2) ^ m i)
+    ∏ e ∈ m.support, (if p.z.2 ∈ I.g e then 1 else (1 / 2) ^ m e)
       ≤ valuationFun k p P := by
   have : P.support.Nonempty := ⟨m, hmP⟩
   simp only [this, valuationFun]
@@ -526,8 +538,8 @@ open Classical in
 lemma valuationFun_apply_eq_iff {k : Type*} [Field k] {I : SWICat} (p : σ(I.X))
     {P : MvPolynomial I.E k} (hP : P.support.Nonempty) (r : NNRat) :
     valuationFun k p P = r ↔
-    (∀ n ∈ P.support, (∏ i ∈ n.support, if p.z.2 ∈ I.g i then 1 else (1 / 2) ^ n i) ≤ r) ∧
-      ∃ m ∈ P.support, ∏ i ∈ m.support, (if p.z.2 ∈ I.g i then 1 else (1 / 2) ^ m i) = r := by
+    (∀ n ∈ P.support, (∏ e ∈ n.support, if p.z.2 ∈ I.g e then 1 else (1 / 2) ^ n e) ≤ r) ∧
+      ∃ m ∈ P.support, ∏ e ∈ m.support, (if p.z.2 ∈ I.g e then 1 else (1 / 2) ^ m e) = r := by
   refine ⟨fun hPpr => ⟨fun n hnP => ?_, ?_⟩, fun ⟨hPpr, m, hmP, hmr⟩ => ?_⟩
   · exact hPpr ▸ prod_le_valuationFun_apply_of_mem_support p hnP
   · by_contra h
@@ -545,7 +557,7 @@ lemma valuationFun_apply_eq_iff {k : Type*} [Field k] {I : SWICat} (p : σ(I.X))
 open Classical in
 lemma valuationFun_apply_eq_of_forall_prod_eq {k : Type*} [Field k] {I : SWICat}
     {p : σ(I.X)} {P : MvPolynomial I.E k} (hP : P.support.Nonempty) {r : NNRat}
-    (hPpr : ∀ m ∈ P.support, (∏ i ∈ m.support, if p.z.2 ∈ I.g i then 1 else (1 / 2) ^ m i) = r) :
+    (hPpr : ∀ m ∈ P.support, (∏ e ∈ m.support, if p.z.2 ∈ I.g e then 1 else (1 / 2) ^ m e) = r) :
     valuationFun k p P = r := by
   refine (valuationFun_apply_eq_iff p hP r).2 ⟨fun n hnP => le_of_eq <| hPpr n hnP, ?_⟩
   · obtain ⟨m, hmP⟩ := hP
@@ -575,7 +587,7 @@ noncomputable def preV (k : Type*) [Field k] (I : SWICat) :
   fun p => {
     toFun := fun P =>
       if H : P.support.Nonempty then
-        (P.support.image fun m => ∏ i ∈ m.support, if p.z.2 ∈ I.g i then 1 else (1 / 2) ^ m i).max'
+        (P.support.image fun m => ∏ e ∈ m.support, if p.z.2 ∈ I.g e then 1 else (1 / 2) ^ m e).max'
           (P.support.image_nonempty.2 H)
       else 0
     map_zero' := by simp only [MvPolynomial.support_zero, Finset.not_nonempty_empty, reduceDIte]
