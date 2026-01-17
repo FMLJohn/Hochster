@@ -504,7 +504,7 @@ lemma valuationFun_apply_zero (k : Type*) [Field k] {I : SWICat} (p : σ(I.X)) :
   simp [valuationFun]
 
 open Classical in
-lemma valuationFun_apply_C {k : Type*} (i : k) [Field k] {I : SWICat} (p : σ(I.X)) :
+lemma valuationFun_apply_C {k : Type*} [Field k] (i : k) {I : SWICat} (p : σ(I.X)) :
     valuationFun k p (C i) = if i = 0 then 0 else 1 := by
   by_cases hi : i = 0
   · exact hi.symm ▸ @C_0 k I.E _ ▸ valuationFun_apply_zero k p ▸ (if_pos rfl).symm
@@ -524,6 +524,16 @@ lemma valuationFun_apply_X (k : Type*) [Field k] {I : SWICat} (e : I.E) (p : σ(
         ⟨fun ⟨hde, h⟩ => mem_singleton.2 hde, fun hde => ⟨mem_singleton.1 hde, one_ne_zero⟩⟩
     simp only [support_X, image_singleton, max'_singleton, Finsupp.single_apply, this, pow_one,
       prod_singleton, reduceIte]
+
+open Classical in
+lemma valuationFun_apply_monomial {k : Type*} [Field k]
+    (i : k) {I : SWICat} (p : σ(I.X)) (m : I.E →₀ ℕ) :
+    valuationFun k p (monomial m i) =
+      if i = 0 then 0 else ∏ e ∈ m.support, if p.z.2 ∈ I.g e then 1 else (1 / 2) ^ m e := by
+  by_cases hi : i = 0
+  · simpa only [hi, monomial_zero] using valuationFun_apply_zero k p
+  · simp only [valuationFun, support_monomial, hi, reduceIte, singleton_nonempty, reduceDIte,
+      image_singleton, max'_singleton]
 
 open Classical in
 lemma prod_le_valuationFun_apply_of_mem_support {k : Type*} [Field k] {I : SWICat}
@@ -555,6 +565,22 @@ lemma valuationFun_apply_eq_iff {k : Type*} [Field k] {I : SWICat} (p : σ(I.X))
       exact hnpq ▸ hPpr n hnP
 
 open Classical in
+lemma valuationFun_apply_eq_zero_iff {k : Type*} [Field k]
+    {I : SWICat} (p : σ(I.X)) (P : MvPolynomial I.E k) :
+    valuationFun k p P = 0 ↔ P = 0 := by
+  refine ⟨fun hPp => ?_, fun hP => hP ▸ valuationFun_apply_zero k p⟩
+  · by_contra hP
+    obtain ⟨m, hmP⟩ := support_nonempty.2 hP
+    obtain ⟨e, hem, hemp⟩ := prod_eq_zero_iff.1 (eq_of_ge_of_le (((valuationFun_apply_eq_iff p
+      (support_nonempty.2 hP) 0).1 hPp).1 m hmP) (zero_le _)).symm
+    have : (if p.z.2 ∈ I.g e then (1 : NNRat) else (1 / 2) ^ m e) ≠ 0 := by
+      by_cases hep : p.z.2 ∈ I.g e
+      · simp only [hep, reduceIte, ne_eq, one_ne_zero, not_false_eq_true]
+      · simp only [hep, reduceIte, one_div, ne_eq, inv_eq_zero, pow_eq_zero_iff',
+          OfNat.ofNat_ne_zero, false_and, not_false_eq_true]
+    exact this hemp
+
+open Classical in
 lemma valuationFun_apply_eq_of_forall_prod_eq {k : Type*} [Field k] {I : SWICat}
     {p : σ(I.X)} {P : MvPolynomial I.E k} (hP : P.support.Nonempty) {r : NNRat}
     (hPpr : ∀ m ∈ P.support, (∏ e ∈ m.support, if p.z.2 ∈ I.g e then 1 else (1 / 2) ^ m e) = r) :
@@ -562,6 +588,18 @@ lemma valuationFun_apply_eq_of_forall_prod_eq {k : Type*} [Field k] {I : SWICat}
   refine (valuationFun_apply_eq_iff p hP r).2 ⟨fun n hnP => le_of_eq <| hPpr n hnP, ?_⟩
   · obtain ⟨m, hmP⟩ := hP
     exact ⟨m, hmP, hPpr m hmP⟩
+
+open Classical in
+lemma valuationFun_apply_le_of_forall_prod_le {k : Type*} [Field k]
+    {I : SWICat} {p : σ(I.X)} {P : MvPolynomial I.E k} {r : NNRat}
+    (hPpr : ∀ m ∈ P.support, (∏ e ∈ m.support, if p.z.2 ∈ I.g e then 1 else (1 / 2) ^ m e) ≤ r) :
+    valuationFun k p P ≤ r := by
+  by_cases hP : P.support.Nonempty
+  · refine valuationFun_apply_of_support_nonempty p hP ▸ max'_le _ (image_nonempty.2 hP) r
+      fun q hPpq => ?_
+    · obtain ⟨m, hmP, hmpq⟩ := mem_image.1 hPpq
+      exact hmpq ▸ hPpr m hmP
+  · simp only [valuationFun, hP, reduceDIte, zero_le]
 
 open Classical in
 lemma valuationFun_apply_add_eq_apply_of_lt {k : Type*} [Field k] {I : SWICat} (p : σ(I.X))
