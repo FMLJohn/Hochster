@@ -504,6 +504,16 @@ lemma valuationFun_apply_zero (k : Type*) [Field k] {I : SWICat} (p : σ(I.X)) :
   simp [valuationFun]
 
 open Classical in
+lemma valuationFun_apply_C {k : Type*} (i : k) [Field k] {I : SWICat} (p : σ(I.X)) :
+    valuationFun k p (C i) = if i = 0 then 0 else 1 := by
+  by_cases hi : i = 0
+  · exact hi.symm ▸ @C_0 k I.E _ ▸ valuationFun_apply_zero k p ▸ (if_pos rfl).symm
+  · exact valuationFun_apply_of_support_nonempty p (support_nonempty.2 <| C_ne_zero.2 hi) ▸
+      if_neg hi ▸ by
+      simp only [one_div, inv_pow, support_C i, if_neg hi, image_singleton, Finsupp.coe_zero,
+        Pi.zero_apply, pow_zero, inv_one, ite_self, prod_const_one, max'_singleton]
+
+open Classical in
 lemma prod_le_valuationFun_apply_of_mem_support {k : Type*} [Field k] {I : SWICat}
     (p : σ(I.X)) {P : MvPolynomial I.E k} {m : I.E →₀ ℕ} (hmP : m ∈ P.support) :
     ∏ i ∈ m.support, (if p.z.2 ∈ I.g i then 1 else (1 / 2) ^ m i)
