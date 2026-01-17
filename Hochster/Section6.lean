@@ -633,9 +633,18 @@ lemma valuationFun_apply_lt_iff_of_ne_zero {k : Type*} [Field k] {I : SWICat}
     exact pos_of_ne_zero hr
 
 open Classical in
+lemma valuationFun_apply_add_le_max {k : Type*} [Field k]
+    {I : SWICat} (p : σ(I.X)) (P Q : MvPolynomial I.E k) :
+    valuationFun k p (P + Q) ≤ max (valuationFun k p P) (valuationFun k p Q) := by
+  refine (valuationFun_apply_le_iff p (P + Q) _).2 fun n hnPQ =>
+    (mem_union.1 <| support_add hnPQ).elim (fun hnP => ?_) (fun hnQ => ?_)
+  · exact (prod_le_valuationFun_apply_of_mem_support p hnP).trans (le_max_left ..)
+  · exact (prod_le_valuationFun_apply_of_mem_support p hnQ).trans (le_max_right ..)
+
+open Classical in
 lemma valuationFun_apply_add_eq_apply_of_lt {k : Type*} [Field k] {I : SWICat} (p : σ(I.X))
-    {P Q : MvPolynomial I.E k} (hPQ : I.valuationFun k p P < I.valuationFun k p Q) :
-    I.valuationFun k p (P + Q) = I.valuationFun k p Q := by
+    {P Q : MvPolynomial I.E k} (hPQ : valuationFun k p P < valuationFun k p Q) :
+    valuationFun k p (P + Q) = valuationFun k p Q := by
   have hQ : Q.support.Nonempty :=
     Q.support_nonempty.2 fun hQ => not_lt_zero <| (hQ ▸ valuationFun_apply_zero k p) ▸ hPQ
   by_cases hP : P.support.Nonempty
