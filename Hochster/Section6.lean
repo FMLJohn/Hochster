@@ -660,6 +660,44 @@ lemma valuationFun_apply_add_eq_apply_of_lt {k : Type*} [Field k] {I : SWICat} (
   · exact (of_not_not <| (not_iff_not.2 support_nonempty).1 hP) ▸ (zero_add Q).symm ▸ rfl
 
 open Classical in
+lemma valuationFun_apply_mul_le_we {k : Type*} [Field k]
+    {I : SWICat} (p : σ(I.X)) (m n : I.E →₀ ℕ) :
+    valuationFun k p (monomial (m + n) 1) =
+    valuationFun k p (monomial m 1) * valuationFun k p (monomial n 1) := by
+  simp only [valuationFun_apply_monomial, one_ne_zero, reduceIte, Finsupp.coe_add, Pi.add_apply]
+  have hmn : (m + n).support = m.support \ n.support ∪ n.support := by
+    ext e
+    simp only [Finsupp.mem_support_iff, Finsupp.coe_add, Pi.add_apply, ne_eq, Nat.add_eq_zero_iff,
+      not_and, sdiff_union_self_eq_union, mem_union]
+    exact imp_iff_not_or
+  refine hmn ▸ prod_union (M := NNRat) (s₁ := m.support \ n.support) sdiff_disjoint ▸ ?_
+  refine sdiff_union_inter n.support m.support ▸ ?_
+  · sorry
+
+
+
+
+
+open Classical in
+lemma valuationFun_apply_mul_le_mul {k : Type*} [Field k]
+    {I : SWICat} (p : σ(I.X)) (P Q : MvPolynomial I.E k) :
+    valuationFun k p (P * Q) ≤ valuationFun k p P * valuationFun k p Q := by
+  refine (valuationFun_apply_le_iff p (P * Q) _).2 fun n hnPQ => ?_
+  · obtain ⟨l, hlP, m, hmQ, hlmn⟩ := mem_add.1 <| support_mul P Q hnPQ
+    have hlm : (l + m).support = l.support ∪ m.support := by
+      ext e
+      simp only [Finsupp.mem_support_iff, Finsupp.coe_add, Pi.add_apply, ne_eq, Nat.add_eq_zero_iff,
+        not_and, mem_union]
+      exact imp_iff_not_or
+    refine hlmn ▸ hlm ▸ ?_
+    · sorry
+
+
+
+
+
+
+open Classical in
 noncomputable def preV (k : Type*) [Field k] (I : SWICat) :
     Π p : σ(I.X), Valuation (MvPolynomial I.E k) NNRat :=
   fun p => {
