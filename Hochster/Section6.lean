@@ -545,8 +545,8 @@ lemma prod_le_valuationFun_apply_of_mem_support {k : Type*} [Field k] {I : SWICa
   exact le_max' _ _ <| mem_image.2 ⟨m, hmP, by congr⟩
 
 open Classical in
-lemma valuationFun_apply_eq_iff {k : Type*} [Field k] {I : SWICat} (p : σ(I.X))
-    {P : MvPolynomial I.E k} (hP : P.support.Nonempty) (r : NNRat) :
+lemma valuationFun_apply_eq_iff_of_support_nonempty {k : Type*} [Field k] {I : SWICat}
+    (p : σ(I.X)) {P : MvPolynomial I.E k} (hP : P.support.Nonempty) (r : NNRat) :
     valuationFun k p P = r ↔
     (∀ n ∈ P.support, (∏ e ∈ n.support, if p.z.2 ∈ I.g e then 1 else (1 / 2) ^ n e) ≤ r) ∧
       ∃ m ∈ P.support, ∏ e ∈ m.support, (if p.z.2 ∈ I.g e then 1 else (1 / 2) ^ m e) = r := by
@@ -571,7 +571,8 @@ lemma valuationFun_apply_eq_zero_iff {k : Type*} [Field k]
   refine ⟨fun hPp => ?_, fun hP => hP ▸ valuationFun_apply_zero k p⟩
   · by_contra hP
     obtain ⟨m, hmP⟩ := support_nonempty.2 hP
-    obtain ⟨e, hem, hemp⟩ := prod_eq_zero_iff.1 (eq_of_ge_of_le (((valuationFun_apply_eq_iff p
+    obtain ⟨e, hem, hemp⟩ := prod_eq_zero_iff.1
+      (eq_of_ge_of_le (((valuationFun_apply_eq_iff_of_support_nonempty p
       (support_nonempty.2 hP) 0).1 hPp).1 m hmP) (zero_le _)).symm
     have : (if p.z.2 ∈ I.g e then (1 : NNRat) else (1 / 2) ^ m e) ≠ 0 := by
       by_cases hep : p.z.2 ∈ I.g e
@@ -585,7 +586,8 @@ lemma valuationFun_apply_eq_of_forall_prod_eq {k : Type*} [Field k] {I : SWICat}
     {p : σ(I.X)} {P : MvPolynomial I.E k} (hP : P.support.Nonempty) {r : NNRat}
     (hPpr : ∀ m ∈ P.support, (∏ e ∈ m.support, if p.z.2 ∈ I.g e then 1 else (1 / 2) ^ m e) = r) :
     valuationFun k p P = r := by
-  refine (valuationFun_apply_eq_iff p hP r).2 ⟨fun n hnP => le_of_eq <| hPpr n hnP, ?_⟩
+  refine (valuationFun_apply_eq_iff_of_support_nonempty p hP r).2
+    ⟨fun n hnP => le_of_eq <| hPpr n hnP, ?_⟩
   · obtain ⟨m, hmP⟩ := hP
     exact ⟨m, hmP, hPpr m hmP⟩
 
@@ -665,16 +667,60 @@ lemma valuationFun_apply_add_eq_apply_of_lt {k : Type*} [Field k] {I : SWICat} (
   have hQ : Q.support.Nonempty :=
     Q.support_nonempty.2 fun hQ => not_lt_zero <| (hQ ▸ valuationFun_apply_zero k p) ▸ hPQ
   by_cases hP : P.support.Nonempty
-  · obtain ⟨hpQ1, m, hmQ, hpQ2⟩ := (valuationFun_apply_eq_iff p hQ _).1 rfl
+  · obtain ⟨hpQ1, m, hmQ, hpQ2⟩ := (valuationFun_apply_eq_iff_of_support_nonempty p hQ _).1 rfl
     have : m ∈ (P + Q).support := mem_support_iff.2 <| coeff_add m P Q ▸ fun h => by
       have : m ∈ P.support := mem_support_iff.2 fun hmP =>
         (mem_support_iff.1 hmQ) (zero_add (coeff m Q) ▸ hmP ▸ h)
       exact not_le_of_gt hPQ <| hpQ2 ▸ prod_le_valuationFun_apply_of_mem_support p this
-    refine (valuationFun_apply_eq_iff p ⟨m, this⟩ _).2 ⟨fun n hnPQ => ?_, ⟨m, this, hpQ2⟩⟩
+    refine (valuationFun_apply_eq_iff_of_support_nonempty p ⟨m, this⟩ _).2
+      ⟨fun n hnPQ => ?_, ⟨m, this, hpQ2⟩⟩
     · refine (mem_union.1 <| P.support_add hnPQ).elim (fun hnP => ?_) (fun hnQ => ?_)
       · exact le_of_lt <| lt_of_le_of_lt (prod_le_valuationFun_apply_of_mem_support p hnP) hPQ
       · exact prod_le_valuationFun_apply_of_mem_support p hnQ
   · exact (of_not_not <| (not_iff_not.2 support_nonempty).1 hP) ▸ (zero_add Q).symm ▸ rfl
+
+open Classical in
+lemma valuationFun_apply_eq_iff_exist_of_support_nonempty {k : Type*} [Field k] {I : SWICat}
+    (p : σ(I.X)) {P : MvPolynomial I.E k} (hP : P.support.Nonempty) (r : NNRat) :
+    valuationFun k p P = r ↔
+    ∃ Q R : MvPolynomial I.E k, P = Q + R ∧ valuationFun k p Q < r ∧
+      R.support.Nonempty ∧ ∀ m ∈ R.support, valuationFun k p (monomial m 1) = r := by
+  have : (∑ m ∈ P.support with valuationFun k p (monomial m 1) = r,
+      coeff m P • monomial m (1 : k)).support =
+      P.support.filter fun m => valuationFun k p (monomial m 1) = r := by
+    ext m
+    simp only [mem_support_iff, coeff_sum, coeff_smul, coeff_monomial, smul_eq_mul, mul_ite,
+      mul_one, mul_zero, sum_ite_eq', mem_filter, ne_eq, ite_eq_right_iff, and_imp,
+      Classical.not_imp, and_congr_right_iff, and_iff_left_iff_imp]
+    exact fun hmP _ => hmP
+  refine ⟨fun hPpr => ⟨∑ m ∈ P.support.filter fun m => valuationFun k p (monomial m 1) ≠ r,
+    P.coeff m • monomial m 1, ∑ m ∈ P.support.filter fun m => valuationFun k p (monomial m 1) = r,
+    P.coeff m • monomial m 1, ?_, ?_, ?_, ?_⟩, fun ⟨Q, R, hPQR, hQpr, hR, hRrp⟩ => ?_⟩
+  · ext
+    simp only [← sum_union (disjoint_filter.2 fun m hmP hmPr => hmPr), union_comm,
+      filter_union_filter_not_eq, coeff_sum, coeff_smul, coeff_monomial, smul_eq_mul, mul_ite,
+      mul_one, mul_zero, sum_ite_eq', mem_support_iff, ite_not, right_eq_ite_iff, imp_self]
+  · refine (valuationFun_apply_lt_iff_forall_valuationFun_apply_lt_of_ne_zero p _ fun hr =>
+      P.support_nonempty_iff.1 hP <| (valuationFun_apply_eq_zero_iff p P).1 <| hr ▸ hPpr).2
+      fun n hn => ?_
+    · have : (∑ m ∈ P.support with valuationFun k p (monomial m 1) ≠ r,
+          coeff m P • monomial m (1 : k)).support =
+          P.support.filter fun m => valuationFun k p (monomial m 1) ≠ r := by
+        ext m
+        simp only [ne_eq, mem_support_iff, coeff_sum, coeff_smul, coeff_monomial, smul_eq_mul,
+          mul_ite, mul_one, mul_zero, sum_ite_eq', mem_filter, ite_eq_right_iff, and_imp,
+          Classical.not_imp, and_congr_right_iff, and_iff_left_iff_imp]
+        exact fun hm _ => hm
+      obtain ⟨hnP, hnpr⟩ := mem_filter.1 (this ▸ hn)
+      exact lt_of_le_of_ne ((valuationFun_apply_le_iff_forall_valuationFun_apply_le p P _).1
+        (le_of_eq hPpr) n hnP) hnpr
+  · obtain ⟨m, hmP, hmpr⟩ := ((valuationFun_apply_eq_iff_of_support_nonempty p hP r).1 hPpr).2
+    exact this.symm ▸ ⟨m, mem_filter.2 ⟨hmP, valuationFun_apply_monomial (k := k) 1 p m ▸
+      if_neg (one_ne_zero (α := k)) ▸ hmpr⟩⟩
+  · exact this.symm ▸ fun m hmPpr => (mem_filter.1 hmPpr).2
+  · exact valuationFun_apply_eq_of_forall_valuationFun_apply_eq hR hRrp ▸
+      hPQR ▸ valuationFun_apply_add_eq_apply_of_lt p
+        (valuationFun_apply_eq_of_forall_valuationFun_apply_eq hR hRrp ▸ hQpr)
 
 open Classical in
 lemma valuationFun_apply_monomial_mul_monomial (k : Type*)
@@ -706,6 +752,19 @@ lemma valuationFun_apply_monomial_mul_monomial (k : Type*)
     · by_cases hep : p.z.2 ∈ I.g e
       · simp only [hep, reduceIte, mul_one]
       · simp only [hep, reduceIte, pow_add, add_comm (m e)]
+
+open Classical in
+lemma valuationFun_apply_mul_eq_of_forall_of_forall {k : Type*}
+    [Field k] {I : SWICat} (p : σ(I.X)) {P Q : MvPolynomial I.E k}
+    (hP : P.support.Nonempty) (hQ : Q.support.Nonempty) {r s : NNRat}
+    (hPpr : ∀ m ∈ P.support, valuationFun k p (monomial m 1) = r)
+    (hQps : ∀ m ∈ Q.support, valuationFun k p (monomial m 1) = s) :
+    valuationFun k p (P * Q) = r * s := by
+  refine valuationFun_apply_eq_of_forall_valuationFun_apply_eq ?_ fun m hmPQ => ?_
+  · exact (P * Q).support_nonempty_iff.2 <| mul_ne_zero (M₀ := MvPolynomial I.E k)
+      (P.support_nonempty_iff.1 hP) (Q.support_nonempty_iff.1 hQ)
+  · obtain ⟨l, hlP, n, hnQ, hlmn⟩ := mem_add.1 <| support_mul P Q hmPQ
+    exact hlmn ▸ valuationFun_apply_monomial_mul_monomial k p l n ▸ hPpr l hlP ▸ hQps n hnQ ▸ rfl
 
 open Classical in
 lemma valuationFun_apply_mul_le_mul {k : Type*} [Field k]
