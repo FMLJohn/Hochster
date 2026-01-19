@@ -777,6 +777,41 @@ lemma valuationFun_apply_mul_le_mul {k : Type*} [Field k]
     · exact (valuationFun_apply_le_iff_forall_valuationFun_apply_le p P _).1 (le_of_eq rfl) l hlP
     · exact (valuationFun_apply_le_iff_forall_valuationFun_apply_le p Q _).1 (le_of_eq rfl) m hmQ
 
+lemma valuationFun_apply_mul {k : Type*} [Field k]
+    {I : SWICat} (p : σ(I.X)) (P Q : MvPolynomial I.E k) :
+    valuationFun k p (P * Q) = valuationFun k p P * valuationFun k p Q := by
+  by_cases hP : P.support.Nonempty
+  · by_cases hQ : Q.support.Nonempty
+    · obtain ⟨R1, S1, hPRS, hPRp, hS1, hPSp⟩ :=
+        (valuationFun_apply_eq_iff_exist_of_support_nonempty p hP _).1 rfl
+      obtain ⟨R2, S2, hQRS, hQRp, hS2, hQSp⟩ :=
+        (valuationFun_apply_eq_iff_exist_of_support_nonempty p hQ _).1 rfl
+      have hS : valuationFun k p (S1 * S2) = valuationFun k p P * valuationFun k p Q :=
+        valuationFun_apply_mul_eq_of_forall_of_forall p hS1 hS2 hPSp hQSp
+      have hP' : 0 < valuationFun k p P := pos_of_ne_zero fun hPp =>
+        P.support_nonempty_iff.1 hP <| (valuationFun_apply_eq_zero_iff p P).1 hPp
+      have hQ' : 0 < valuationFun k p Q := pos_of_ne_zero fun hQp =>
+        Q.support_nonempty_iff.1 hQ <| (valuationFun_apply_eq_zero_iff p Q).1 hQp
+      nth_rw 1 [hPRS, hQRS, mul_add, add_mul, add_mul, ← add_assoc, ← hS]
+      refine valuationFun_apply_add_eq_apply_of_lt p <| lt_of_le_of_lt
+        (valuationFun_apply_add_le_max p (R1 * R2 + S1 * R2) (R1 * S2)) <| max_lt ?_ ?_
+      · refine lt_of_le_of_lt (valuationFun_apply_add_le_max p (R1 * R2) (S1 * R2)) <| max_lt ?_ ?_
+        · refine lt_of_le_of_lt (valuationFun_apply_mul_le_mul p R1 R2) <| hS ▸ ?_
+          · by_cases hRp : 0 < valuationFun k p R1
+            · exact mul_lt_mul_of_pos hPRp hQRp hRp hQ'
+            · exact eq_of_le_of_ge (zero_le _) (le_of_not_gt hRp) ▸
+                (zero_mul (valuationFun k p R2)).symm ▸ mul_pos hP' hQ'
+        · exact lt_of_le_of_lt (valuationFun_apply_mul_le_mul p S1 R2) <| hS ▸
+            (valuationFun_apply_eq_of_forall_valuationFun_apply_eq hS1 hPSp).symm ▸
+            mul_lt_mul' (le_of_eq rfl) hQRp (zero_le _) hP'
+      · exact lt_of_le_of_lt (valuationFun_apply_mul_le_mul p R1 S2) <| hS ▸
+          (valuationFun_apply_eq_of_forall_valuationFun_apply_eq hS2 hQSp).symm ▸
+          mul_lt_mul hPRp (le_of_eq rfl) hQ' (zero_le _)
+    · exact (iff_not_comm.2 support_nonempty).2 hQ ▸ valuationFun_apply_zero k p ▸
+        (mul_zero P).symm ▸ (mul_zero (valuationFun k p P)).symm ▸ valuationFun_apply_zero k p
+  · exact (iff_not_comm.2 support_nonempty).2 hP ▸ valuationFun_apply_zero k p ▸
+      (zero_mul Q).symm ▸ (zero_mul (valuationFun k p Q)).symm ▸ valuationFun_apply_zero k p
+
 open Classical in
 noncomputable def preV (k : Type*) [Field k] (I : SWICat) :
     Π p : σ(I.X), Valuation (MvPolynomial I.E k) NNRat :=
