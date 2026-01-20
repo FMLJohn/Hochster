@@ -812,30 +812,13 @@ lemma valuationFun_apply_mul {k : Type*} [Field k]
   · exact (iff_not_comm.2 support_nonempty).2 hP ▸ valuationFun_apply_zero k p ▸
       (zero_mul Q).symm ▸ (zero_mul (valuationFun k p Q)).symm ▸ valuationFun_apply_zero k p
 
-open Classical in
 noncomputable def preV (k : Type*) [Field k] (I : SWICat) :
-    Π p : σ(I.X), Valuation (MvPolynomial I.E k) NNRat :=
+    Π _ : σ(I.X), Valuation (MvPolynomial I.E k) NNRat :=
   fun p => {
-    toFun := fun P =>
-      if H : P.support.Nonempty then
-        (P.support.image fun m => ∏ e ∈ m.support, if p.z.2 ∈ I.g e then 1 else (1 / 2) ^ m e).max'
-          (P.support.image_nonempty.2 H)
-      else 0
-    map_zero' := by simp only [MvPolynomial.support_zero, Finset.not_nonempty_empty, reduceDIte]
-    map_one' := by simp only [← C_1, support_C, one_ne_zero, reduceIte, singleton_nonempty,
-      reduceDIte, image_singleton, Finsupp.support_zero, prod_empty, max'_singleton]
-    map_mul' := fun P Q => by
-      by_cases HPQ : (P * Q).support.Nonempty
-      · obtain ⟨hP, hQ⟩ := mul_ne_zero_iff.1 <| support_nonempty.1 HPQ
-        have HP := support_nonempty.2 hP
-        have HQ := support_nonempty.2 hQ
-        simp only [HPQ, reduceDIte, one_div, HP, HQ]
-        sorry
-      · refine (mul_eq_zero.1 <| support_nonempty.not_left.1 HPQ).elim (fun hP => ?_) (fun hQ => ?_)
-        · simp only [hP, zero_mul, MvPolynomial.support_zero, Finset.not_nonempty_empty, reduceDIte,
-            mul_dite, dite_eq_ite, ite_self]
-        · simp only [hQ, mul_zero, MvPolynomial.support_zero, Finset.not_nonempty_empty, reduceDIte]
-    map_add_le_max' := sorry
-  }
+    toFun := valuationFun k p
+    map_zero' := valuationFun_apply_zero k p
+    map_one' := @C_1 k I.E _ ▸ valuationFun_apply_C (1 : k) p ▸ if_neg (one_ne_zero (α := k))
+    map_mul' P Q := valuationFun_apply_mul p P Q
+    map_add_le_max' P Q := valuationFun_apply_add_le_max p P Q }
 
 end SWICat
