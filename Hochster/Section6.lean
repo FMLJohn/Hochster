@@ -828,4 +828,10 @@ noncomputable def v (k : Type*) [Field k] (I : SWICat) :
       (not_iff_not.2 (valuationFun_apply_eq_zero_iff p P)).2 (mem_nonZeroDivisors_iff_ne_zero.1 hP))
     (FractionRing (MvPolynomial I.E k))
 
+lemma v_apply_ringHomToPiFractionRing_apply (k : Type*) [Field k]
+    {I : SWICat} (p : σ(I.X)) (a : I.X → MvPolynomial I.E k) :
+    I.v k p (Pi.ringHomToPiFractionRing (fun _ => MvPolynomial I.E k) a p.z.1) =
+      I.preV k p (a p.z.1) :=
+  extendToLocalization_apply_map_apply _ _ (FractionRing (MvPolynomial I.E k)) (a p.z.1)
+
 end SWICat
