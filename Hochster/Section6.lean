@@ -821,4 +821,13 @@ noncomputable def preV (k : Type*) [Field k] (I : SWICat) :
     map_mul' P Q := valuationFun_apply_mul p P Q
     map_add_le_max' P Q := valuationFun_apply_add_le_max p P Q }
 
+noncomputable def V (k : Type*) [Field k] (I : SWICat) :
+    Π _ : σ(I.X), Valuation (FractionRing (MvPolynomial I.E k)) NNRat :=
+  fun p => (preV k I p).extendToLocalization
+    (S := nonZeroDivisors (MvPolynomial I.E k))
+    (fun P hP => Ideal.mem_primeCompl_iff.2 <|
+      (not_iff_not.2 (valuationFun_apply_eq_zero_iff p P)).2
+        (mem_nonZeroDivisors_iff_ne_zero.1 hP))
+    (FractionRing (MvPolynomial I.E k))
+
 end SWICat
