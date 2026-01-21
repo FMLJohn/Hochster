@@ -59,8 +59,8 @@ spring.
 structure SpringLike'.isIndex {X : Type*} [TopologicalSpace X] {i : X → Type*}
     [(x : X) → Field (i x)] {A : Subring (Π x : X, i x)} (hA : SpringLike' A)
     (v : Π p : σ(X), Valuation (i p.z.1) NNRat) where
-  forall_isRankOneDiscrete (p : σ(X)) : (v p).IsRankOneDiscrete
-  exists_forall_eq : ∃ γ : NNRatˣ, ∀ p : σ(X), (forall_isRankOneDiscrete p).generator = γ
+  forall_exists_of_ne_zero (p : σ(X)) (a : Π x : X, i x) :
+    a p.z.1 ≠ 0 → ∃ n : ℤ, v p (a p.z.1) = 2 ^ n
   forall_le_of_ne (p : σ(X)) : ∀ a ∈ A, a p.z.1 ≠ 0 → v p (a p.z.1) ≤ 1
   forall_iff_of_ne (p : σ(X)) : ∀ a ∈ A, a p.z.1 ≠ 0 → (v p (a p.z.1) = 1 ↔ a p.z.2 ≠ 0)
   forall_exists_le : ∀ a ∈ A, ∃ q > (0 : NNRat), ∀ p : σ(X), a p.z.1 ≠ 0 → q ≤ v p (a p.z.1)
@@ -90,34 +90,16 @@ theorem Valuation.IsRankOneDiscrete.apply_le_generator_of_apply_lt_one
 
 namespace SpringLike'.isIndex
 
-lemma choose_ne_zero {X : Type*} [TopologicalSpace X] (p : σ(X))
-    {i : X → Type*} [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
-    {A : Subring (Π x : X, i x)} {hA : SpringLike' A} (hAv : hA.isIndex v) :
-    hAv.exists_forall_eq.choose.val ≠ 0 :=
-  hAv.exists_forall_eq.choose_spec p ▸ (hAv.forall_isRankOneDiscrete p).generator_ne_zero
-
-lemma choose_lt_one {X : Type*} [TopologicalSpace X] (p : σ(X))
-    {i : X → Type*} [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
-    {A : Subring (Π x : X, i x)} {hA : SpringLike' A} (hAv : hA.isIndex v) :
-    hAv.exists_forall_eq.choose < 1 :=
-  hAv.exists_forall_eq.choose_spec p ▸ (hAv.forall_isRankOneDiscrete p).generator_lt_one
-
-lemma choose_ne_one {X : Type*} [TopologicalSpace X] (p : σ(X))
-    {i : X → Type*} [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
-    {A : Subring (Π x : X, i x)} {hA : SpringLike' A} (hAv : hA.isIndex v) :
-    hAv.exists_forall_eq.choose ≠ 1 :=
-  ne_of_lt <| choose_lt_one p hAv
-
-lemma map_apply_le_choose_of_apply_ne_zero_of_map_apply_ne_one {X : Type*} [TopologicalSpace X]
+lemma map_apply_le_of_apply_ne_zero_of_map_apply_ne_one {X : Type*} [TopologicalSpace X]
     {i : X → Type*} [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
     {A : Subring (Π x : X, i x)} {a : Π x : X, i x} (haA : a ∈ A) {p : σ(X)} (hap : a p.z.1 ≠ 0)
     (hvpa : v p (a p.z.1) ≠ 1) {hA : SpringLike' A} (hAv : hA.isIndex v) :
-    v p (a p.z.1) ≤ hAv.exists_forall_eq.choose := by
-  obtain ⟨γ, hXγv⟩ := hAv.exists_forall_eq
-  obtain ⟨β, hβpv, hβ⟩ := hAv.forall_isRankOneDiscrete p
-  exact hAv.exists_forall_eq.choose_spec p ▸
-    (hAv.forall_isRankOneDiscrete p).apply_le_generator_of_apply_lt_one <|
-      lt_of_le_of_ne (hAv.forall_le_of_ne p a haA hap) hvpa
+    v p (a p.z.1) ≤ 1 / 2 := by
+  obtain ⟨n, hvpan⟩ := hAv.forall_exists_of_ne_zero p a hap
+  have h1 := hvpan ▸ lt_of_le_of_ne (hAv.forall_le_of_ne p a haA hap) hvpa
+  have h2 : (1 / 2 : NNRat) = 2 ^ (-1 : ℤ) := one_div (2 : NNRat) ▸ rfl
+  simp only [Nat.one_lt_ofNat, zpow_lt_one_iff_right₀] at h1
+  exact hvpan ▸ h2 ▸ zpow_le_zpow_right₀ one_le_two (Int.add_le_zero_iff_le_neg.mp h1)
 
 end SpringLike'.isIndex
 
@@ -696,8 +678,7 @@ lemma closureInsertDiv_isIndex_of_forall_map_apply_le_of_forall_ne_zero
     (h1 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) ≤ v p (b p.z.1))
     (h2 : ∀ p : σ(X), a p.z.1 ≠ 0 → v p (a p.z.1) = v p (b p.z.1) → b p.z.2 ≠ 0) :
     (hAv.closureInsertDiv ha hb hab h1 h2).isIndex v where
-  forall_isRankOneDiscrete := hAv.forall_isRankOneDiscrete
-  exists_forall_eq := hAv.exists_forall_eq
+  forall_exists_of_ne_zero p a hap := hAv.forall_exists_of_ne_zero p a hap
   forall_le_of_ne _ _ hr hrp := map_apply_le_one_of_mem_closure_insert_div_of_forall_map_apply_le
     hAv hab hr hrp h1
   forall_iff_of_ne _ _ hr hrp :=
@@ -886,8 +867,7 @@ lemma SpringLike'.isIndex.exists_springLike'_closure_union_isIndex
         (hXA4 (fun f hfF => hXA2 c hcA hfF)).forall_isOpen c (hXA3 c hcA)) hA.isTopologicalBasis
       (fun U ⟨a, haA, haU⟩ => ⟨a, mem_closure_of_mem <| Or.intro_left _ haA, haU⟩) }
   exact {
-    forall_isRankOneDiscrete := hAv.forall_isRankOneDiscrete
-    exists_forall_eq := hAv.exists_forall_eq
+    forall_exists_of_ne_zero := fun p a hap => hAv.forall_exists_of_ne_zero p a hap
     forall_le_of_ne := fun p a haA hap =>
       (hXAv (fun f hfF => hXA2 a haA hfF)).forall_le_of_ne p a (hXA3 a haA) hap
     forall_iff_of_ne := fun p a haA hap =>
@@ -997,8 +977,7 @@ lemma exists_springLike'_iSupExtForV_isIndex
       hA.isTopologicalBasis (fun U ⟨r, hrA, hrU⟩ => ⟨r, (mem_iSupExtForV_iff v A r).2 ⟨0, hrA⟩, hrU⟩)
   }
   exact {
-    forall_isRankOneDiscrete := hAv.forall_isRankOneDiscrete
-    exists_forall_eq := hAv.exists_forall_eq
+    forall_exists_of_ne_zero := fun p a hap => hAv.forall_exists_of_ne_zero p a hap
     forall_le_of_ne := fun p r hrA hrp => (hAnv <| hAX r hrA).forall_le_of_ne p r (hAXv r hrA) hrp
     forall_iff_of_ne := fun p r hrA hrp => (hAnv <| hAX r hrA).forall_iff_of_ne p r (hAXv r hrA) hrp
     forall_exists_le := fun r hrA => (hAnv <| hAX r hrA).forall_exists_le r <| hAXv r hrA }
@@ -1033,14 +1012,11 @@ lemma mem_radical_span_singleton_of_forall_imp {X : Type*} [TopologicalSpace X]
       ∃ N > 0, ∀ p : σ(X), a.1 p.z.1 ≠ 0 → v p (a.1 p.z.1) ≠ 1 → v p ((a.1 ^ N) p.z.1) < q := by
     by_cases hσX : Nonempty σ(X)
     · simp only [Pi.pow_apply, map_pow]
-      let s : NNRatˣ := ⟨q, q⁻¹, mul_inv_cancel₀ (ne_of_lt hq).symm,
-        inv_mul_cancel₀ (ne_of_lt hq).symm⟩
-      obtain ⟨N, hNs⟩ := exists_pow_lt (hAmnv.choose_lt_one <| Classical.choice hσX) s
+      obtain ⟨N, hNq⟩ := exists_pow_lt_of_lt_one hq one_half_lt_one
       refine ⟨N + 1, N.zero_lt_succ, fun p hap hvpa => ?_⟩
       · have : v p (a.1 p.z.1) ^ N < q := lt_of_le_of_lt
-          (pow_le_pow_left' (hAmnv.map_apply_le_choose_of_apply_ne_zero_of_map_apply_ne_one
-            hAamnv hap hvpa) N)
-          (hAmnv.exists_forall_eq.choose.val_pow_eq_pow_val N ▸ Units.val_lt_val.2 hNs)
+          (pow_le_pow_left' (hAmnv.map_apply_le_of_apply_ne_zero_of_map_apply_ne_one
+            hAamnv hap hvpa) N) hNq
         exact lt_of_le_of_lt (pow_add (v p _) N 1 ▸ mul_le_of_le_one_right (zero_le _)
           ((pow_one (v p _)).symm ▸ hAmnv.forall_le_of_ne p a.1 hAamnv hap)) this
     · exact ⟨1, Nat.one_pos, fun p => ((not_nonempty_iff.1 hσX).1 p).elim⟩

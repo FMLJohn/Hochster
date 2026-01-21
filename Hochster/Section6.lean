@@ -834,4 +834,8 @@ lemma v_apply_ringHomToPiFractionRing_apply (k : Type*) [Field k]
       I.preV k p (a p.z.1) :=
   extendToLocalization_apply_map_apply _ _ (FractionRing (MvPolynomial I.E k)) (a p.z.1)
 
+lemma wfwfewefewf (k : Type*) [Field k]
+    {I : SWICat} (p : σ(I.X)) (a : I.X → MvPolynomial I.E k) :
+    (I.springLike' k).mapRingHomToPiFractionRing.isIndex (I.v k) := sorry
+
 end SWICat
