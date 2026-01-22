@@ -847,13 +847,17 @@ lemma v_apply_ringHomToPiFractionRing_apply (k : Type*) [Field k]
       I.preV k p (a p.z.1) :=
   extendToLocalization_apply_map_apply _ _ (FractionRing (MvPolynomial I.E k)) (a p.z.1)
 
-lemma wfwfewefewf (k : Type*) [Field k]
-    {I : SWICat} (p : σ(I.X)) (a : I.X → MvPolynomial I.E k) :
+lemma springLike'_mapRingHomToPiFractionRing_isIndex (k : Type*) [Field k] (I : SWICat) :
     (I.springLike' k).mapRingHomToPiFractionRing.isIndex (I.v k) where
-  forall_exists_of_ne_zero p a hap := by
-    simp [v]
-    simp [preV]
-    sorry
+  forall_exists_of_ne_zero p a := by
+    refine Localization.induction_on (a p.z.1) fun (P, Q) hPQ => ?_
+    · simp only [v, preV, FractionRing.mk_eq_div, map_div₀, extendToLocalization_apply_map_apply,
+        coe_mk, MonoidWithZeroHom.coe_mk, ZeroHom.coe_mk]
+      obtain ⟨n, hPpn⟩ := exists_valuationFun_apply_eq_two_pow_of_ne_zero p fun hP : P = 0 =>
+        false_of_ne <| Localization.mk_zero Q ▸ hP ▸ hPQ
+      obtain ⟨m, hQpm⟩ := exists_valuationFun_apply_eq_two_pow_of_ne_zero p
+        (nonZeroDivisors.coe_ne_zero Q)
+      exact hPpn ▸ hQpm ▸ ⟨n - m, (zpow_sub₀ (NeZero.ne' 2).symm n m).symm⟩
   forall_le_of_ne p := sorry
   forall_iff_of_ne p := sorry
   forall_exists_le a ha := sorry
