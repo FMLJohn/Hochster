@@ -899,7 +899,7 @@ lemma springLike'_mapRingHomToPiFractionRing_isIndex (k : Type*) [Field k] (I : 
             · by_contra hpe
               exact hpe <| Set.inter_singleton_nonempty.mp <|
                 (mem_closure_iff.1 <| p.mem_closure) (I.g e) (I.forall_isOpen e) (hmp e hem)
-        refine (valuationFun_apply_eq_iff_of_support_nonempty p this 1).2 ?_
+        refine            (valuationFun_apply_eq_iff_of_support_nonempty p this 1).2 ?_
         · sorry
       · sorry
   forall_exists_le a ha := sorry
