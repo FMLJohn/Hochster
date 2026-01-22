@@ -812,6 +812,19 @@ lemma valuationFun_apply_mul {k : Type*} [Field k]
   · exact (iff_not_comm.2 support_nonempty).2 hP ▸ valuationFun_apply_zero k p ▸
       (zero_mul Q).symm ▸ (zero_mul (valuationFun k p Q)).symm ▸ valuationFun_apply_zero k p
 
+lemma exists_valuationFun_apply_eq_two_pow_of_ne_zero {k : Type*} [Field k]
+    {I : SWICat} (p : σ(I.X)) {P : MvPolynomial I.E k} (hP : P ≠ 0) :
+    ∃ n : ℤ, valuationFun k p P = 2 ^ n := by
+  obtain ⟨m, _ , hPpm⟩ := ((valuationFun_apply_eq_iff_of_support_nonempty p (support_nonempty.2 hP)
+    (valuationFun k p P)).1 rfl).2
+  refine hPpm ▸ prod_induction _ (fun r => ∃ n : ℤ, r = 2 ^ n) (fun r s ⟨m, hmr⟩ ⟨n, hns⟩ => ?_)
+    ⟨0, rfl⟩ (fun e hem => ?_)
+  · exact ⟨m + n, hmr ▸ hns ▸ (zpow_add₀ (NeZero.ne' 2).symm m n).symm⟩
+  · by_cases hep : p.z.2 ∈ I.g e
+    · exact if_pos hep ▸ ⟨0, rfl⟩
+    · exact if_neg hep ▸ ⟨- m e, one_div (2 : NNRat) ▸ inv_pow (2 : NNRat) (m e) ▸
+        zpow_neg (2 : NNRat) (m e) ▸ rfl⟩
+
 noncomputable def preV (k : Type*) [Field k] (I : SWICat) :
     Π _ : σ(I.X), Valuation (MvPolynomial I.E k) NNRat :=
   fun p => {
@@ -836,6 +849,13 @@ lemma v_apply_ringHomToPiFractionRing_apply (k : Type*) [Field k]
 
 lemma wfwfewefewf (k : Type*) [Field k]
     {I : SWICat} (p : σ(I.X)) (a : I.X → MvPolynomial I.E k) :
-    (I.springLike' k).mapRingHomToPiFractionRing.isIndex (I.v k) := sorry
+    (I.springLike' k).mapRingHomToPiFractionRing.isIndex (I.v k) where
+  forall_exists_of_ne_zero p a hap := by
+    simp [v]
+    simp [preV]
+    sorry
+  forall_le_of_ne p := sorry
+  forall_iff_of_ne p := sorry
+  forall_exists_le a ha := sorry
 
 end SWICat
