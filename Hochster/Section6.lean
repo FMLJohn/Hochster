@@ -847,19 +847,61 @@ lemma v_apply_ringHomToPiFractionRing_apply (k : Type*) [Field k]
       I.preV k p (a p.z.1) :=
   extendToLocalization_apply_map_apply _ _ (FractionRing (MvPolynomial I.E k)) (a p.z.1)
 
+lemma v_apply_ringHomToPiFractionRing_apply' (k : Type*) [Field k]
+    {I : SWICat} (p : σ(I.X)) (a : I.X → MvPolynomial I.E k) :
+    I.v k p (Pi.ringHomToPiFractionRing (fun _ => MvPolynomial I.E k) a p.z.2) =
+      I.preV k p (a p.z.2) :=
+  extendToLocalization_apply_map_apply _ _ (FractionRing (MvPolynomial I.E k)) (a p.z.2)
+
+open Classical in
 lemma springLike'_mapRingHomToPiFractionRing_isIndex (k : Type*) [Field k] (I : SWICat) :
     (I.springLike' k).mapRingHomToPiFractionRing.isIndex (I.v k) where
-  forall_exists_of_ne_zero p a := by
-    refine Localization.induction_on (a p.z.1) fun (P, Q) hPQ => ?_
-    · simp only [v, preV, FractionRing.mk_eq_div, map_div₀, extendToLocalization_apply_map_apply,
-        coe_mk, MonoidWithZeroHom.coe_mk, ZeroHom.coe_mk]
-      obtain ⟨n, hPpn⟩ := exists_valuationFun_apply_eq_two_pow_of_ne_zero p fun hP : P = 0 =>
-        false_of_ne <| Localization.mk_zero Q ▸ hP ▸ hPQ
-      obtain ⟨m, hQpm⟩ := exists_valuationFun_apply_eq_two_pow_of_ne_zero p
-        (nonZeroDivisors.coe_ne_zero Q)
-      exact hPpn ▸ hQpm ▸ ⟨n - m, (zpow_sub₀ (NeZero.ne' 2).symm n m).symm⟩
-  forall_le_of_ne p := sorry
-  forall_iff_of_ne p := sorry
+  forall_exists_of_ne_zero p a := by sorry
+    -- refine Localization.induction_on (a p.z.1) fun (P, Q) hPQ => ?_
+    -- · simp only [v, preV, FractionRing.mk_eq_div, map_div₀, extendToLocalization_apply_map_apply,
+    --     coe_mk, MonoidWithZeroHom.coe_mk, ZeroHom.coe_mk]
+    --   obtain ⟨n, hPpn⟩ := exists_valuationFun_apply_eq_two_pow_of_ne_zero p fun hP : P = 0 =>
+    --     false_of_ne <| Localization.mk_zero Q ▸ hP ▸ hPQ
+    --   obtain ⟨m, hQpm⟩ := exists_valuationFun_apply_eq_two_pow_of_ne_zero p
+    --     (nonZeroDivisors.coe_ne_zero Q)
+    --   exact hPpn ▸ hQpm ▸ ⟨n - m, (zpow_sub₀ (NeZero.ne' 2).symm n m).symm⟩
+  forall_le_of_ne p a ha hap := by sorry
+    -- obtain ⟨b, hb, hab⟩ := ha
+    -- refine hab ▸ v_apply_ringHomToPiFractionRing_apply k p b ▸ ?_
+    -- · simp only [preV, coe_mk, MonoidWithZeroHom.coe_mk, ZeroHom.coe_mk, valuationFun, one_div,
+    --     inv_pow]
+    --   by_cases hbp : (b p.z.1).support.Nonempty
+    --   · simp only [hbp, reduceDIte, max'_le_iff, mem_image, forall_exists_index, and_imp,
+    --       forall_apply_eq_imp_iff₂]
+    --     refine fun a habp => prod_induction _ (fun r => r ≤ 1)
+    --       (fun r s hr hs => mul_le_one₀ hr (zero_le _) hs) (NNRat.coe_le_coe.1 rfl)
+    --       (fun e hem => ?_)
+    --     · by_cases hep : p.z.2 ∈ I.g e
+    --       · exact if_pos hep ▸ NNRat.coe_le_coe.1 rfl
+    --       · exact if_neg hep ▸ (inv_le_one₀ (pow_pos rfl (a e))).2 (one_le_pow₀ one_le_two)
+    --   · simp only [hbp, reduceDIte, zero_le]
+  forall_iff_of_ne p a ha hap := by
+    obtain ⟨b, hb, hab⟩ := ha
+    obtain ⟨P, hPb⟩ := exists_mvPolynomial_of_le_range_of_subset_range_of_mem_closure
+      (le_refl _) (Set.Subset.refl _) hb
+    refine hab ▸ v_apply_ringHomToPiFractionRing_apply k p b ▸ ?_
+    · simp only [preV, coe_mk, MonoidWithZeroHom.coe_mk, ZeroHom.coe_mk,
+        Pi.ringHomToPiFractionRing_apply, ne_eq]
+      refine ((not_iff_not.2 <| to_map_eq_zero_iff (x := b p.z.2)).trans
+        (hPb ▸ ((Set.ext_iff.1 <| evalMapApplyPoly_support_eq_biUnion_biInter P) p.z.2).trans
+          ⟨fun ⟨s, ⟨m, hPms⟩, hps⟩ => ?_, ?_⟩)).symm
+      · have : (evalMapApplyPoly p.z.1 P).support.Nonempty := by
+          refine coe_nonempty.1 <| support_evalMapApplyPoly p.z.1 P ▸ ⟨m, ?_⟩
+          · have := hPms ▸ hps
+            simp only [Set.mem_iUnion, Set.mem_iInter] at this
+            obtain ⟨hmP, hmp⟩ := this
+            refine ⟨hmP, fun e hem => ?_⟩
+            · by_contra hpe
+              exact hpe <| Set.inter_singleton_nonempty.mp <|
+                (mem_closure_iff.1 <| p.mem_closure) (I.g e) (I.forall_isOpen e) (hmp e hem)
+        refine (valuationFun_apply_eq_iff_of_support_nonempty p this 1).2 ?_
+        · sorry
+      · sorry
   forall_exists_le a ha := sorry
 
 end SWICat
