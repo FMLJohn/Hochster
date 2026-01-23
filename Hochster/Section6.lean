@@ -868,6 +868,41 @@ lemma exists_valuationFun_apply_eq_two_pow_of_ne_zero {k : Type*} [Field k]
     · exact if_neg hep ▸ ⟨- m e, one_div (2 : NNRat) ▸ inv_pow (2 : NNRat) (m e) ▸
         zpow_neg (2 : NNRat) (m e) ▸ rfl⟩
 
+open Classical in
+lemma evalMapApplyPoly_ne_zero_iff_valuationFun_apply_evalMapApplyPoly_eq_one
+    {k : Type*} [Field k] {I : SWICat} (p : σ(I.X)) (P : MvPolynomial I.E k) :
+    evalMapApplyPoly p.z.2 P ≠ 0 ↔
+    valuationFun k p (evalMapApplyPoly p.z.1 P) = 1 := by
+  refine ((Set.ext_iff.1 <| evalMapApplyPoly_support_eq_biUnion_biInter P) p.z.2).trans
+    ⟨fun ⟨s, ⟨m, hPms⟩, hps⟩ => ?_, fun hPp => ?_⟩
+  · have hPpm := hPms ▸ hps
+    simp only [Set.mem_iUnion, Set.mem_iInter] at hPpm
+    obtain ⟨hmP, hmp⟩ := hPpm
+    have hPpm : m ∈ (evalMapApplyPoly p.z.1 P).support := by
+      refine mem_coe.1 <| support_evalMapApplyPoly p.z.1 P ▸ ⟨hmP, fun e hem => ?_⟩
+      · by_contra hpe
+        exact hpe <| Set.inter_singleton_nonempty.mp <| (mem_closure_iff.1 <| p.mem_closure)
+          (I.g e) (I.forall_isOpen e) (hmp e hem)
+    refine (valuationFun_apply_eq_iff_of_support_nonempty' p ⟨m, hPpm⟩ 1).2
+      ⟨fun n _ => ?_, ⟨m, hPpm, ?_⟩⟩
+    · exact valuationFun_apply_le_one p (monomial n 1)
+    · exact valuationFun_apply_monomial (k := k) 1 p m ▸ if_neg (one_ne_zero (α := k)) ▸
+        prod_eq_one fun e hem => if_pos (hmp e hem) ▸ rfl
+  · obtain ⟨_, m, hPpm, hmp⟩ := (valuationFun_apply_eq_iff_of_ne_zero' p
+      (evalMapApplyPoly p.z.1 P) one_ne_zero).1 hPp
+    simp only [Set.mem_iUnion, Set.mem_iInter]
+    refine ⟨m, support_evalMapApplyPoly_subset p.z.1 P hPpm, fun e hem => ?_⟩
+    · have : ∀ e ∈ m.support, (if p.z.2 ∈ I.g e then (1 : NNRat) else (1 / 2) ^ m e) = 1 := by
+        refine (prod_eq_one_iff_of_le_one' fun e hem => ?_).1 ?_
+        · by_cases hep : p.z.2 ∈ I.g e
+          · exact if_pos hep ▸ rfl
+          · exact if_neg hep ▸ pow_le_one₀ (one_div_nonneg.2 rfl) (half_le_self rfl)
+        · exact (if_neg (one_ne_zero (α := k)) ▸ valuationFun_apply_monomial 1 p m) ▸ hmp
+      by_contra hep
+      · refine (ne_of_lt <| pow_lt_one₀ (zero_le (1 / 2 : NNRat)) one_half_lt_one
+          (Finsupp.mem_support_iff.mp hem)) ?_
+        · simpa only [hep] using this e hem
+
 noncomputable def preV (k : Type*) [Field k] (I : SWICat) :
     Π _ : σ(I.X), Valuation (MvPolynomial I.E k) NNRat :=
   fun p => {
@@ -916,37 +951,9 @@ lemma springLike'_mapRingHomToPiFractionRing_isIndex (k : Type*) [Field k] (I : 
     -- obtain ⟨b, hb, hab⟩ := ha
     -- obtain ⟨P, hPb⟩ := exists_mvPolynomial_of_le_range_of_subset_range_of_mem_closure
     --   (le_refl _) (Set.Subset.refl _) hb
-    -- refine hab ▸ v_apply_ringHomToPiFractionRing_apply k p b ▸
+    -- exact hab ▸ v_apply_ringHomToPiFractionRing_apply k p b ▸
     --   ((not_iff_not.2 <| to_map_eq_zero_iff (x := b p.z.2)).trans
-    --     (hPb ▸ ((Set.ext_iff.1 <| evalMapApplyPoly_support_eq_biUnion_biInter P) p.z.2).trans
-    --       ⟨fun ⟨s, ⟨m, hPms⟩, hps⟩ => ?_, fun hPp => ?_⟩)).symm
-    -- · have hPpm := hPms ▸ hps
-    --   simp only [Set.mem_iUnion, Set.mem_iInter] at hPpm
-    --   obtain ⟨hmP, hmp⟩ := hPpm
-    --   have hPpm : m ∈ (evalMapApplyPoly p.z.1 P).support := by
-    --     refine mem_coe.1 <| support_evalMapApplyPoly p.z.1 P ▸ ⟨hmP, fun e hem => ?_⟩
-    --     · by_contra hpe
-    --       exact hpe <| Set.inter_singleton_nonempty.mp <| (mem_closure_iff.1 <| p.mem_closure)
-    --         (I.g e) (I.forall_isOpen e) (hmp e hem)
-    --   refine (valuationFun_apply_eq_iff_of_support_nonempty' p ⟨m, hPpm⟩ 1).2
-    --     ⟨fun n _ => ?_, ⟨m, hPpm, ?_⟩⟩
-    --   · exact valuationFun_apply_le_one p (monomial n 1)
-    --   · exact valuationFun_apply_monomial (k := k) 1 p m ▸ if_neg (one_ne_zero (α := k)) ▸
-    --       prod_eq_one fun e hem => if_pos (hmp e hem) ▸ rfl
-    -- · obtain ⟨_, m, hPpm, hmp⟩ := (valuationFun_apply_eq_iff_of_ne_zero' p
-    --     (evalMapApplyPoly p.z.1 P) one_ne_zero).1 hPp
-    --   simp only [Set.mem_iUnion, Set.mem_iInter]
-    --   refine ⟨m, support_evalMapApplyPoly_subset p.z.1 P hPpm, fun e hem => ?_⟩
-    --   · have : ∀ e ∈ m.support, (if p.z.2 ∈ I.g e then (1 : NNRat) else (1 / 2) ^ m e) = 1 := by
-    --       refine (prod_eq_one_iff_of_le_one' fun e hem => ?_).1 ?_
-    --       · by_cases hep : p.z.2 ∈ I.g e
-    --         · exact if_pos hep ▸ rfl
-    --         · exact if_neg hep ▸ pow_le_one₀ (one_div_nonneg.2 rfl) (half_le_self rfl)
-    --       · exact (if_neg (one_ne_zero (α := k)) ▸ valuationFun_apply_monomial 1 p m) ▸ hmp
-    --     by_contra hep
-    --     · refine (ne_of_lt <| pow_lt_one₀ (zero_le (1 / 2 : NNRat)) one_half_lt_one
-    --         (Finsupp.mem_support_iff.mp hem)) ?_
-    --       · simpa only [hep] using this e hem
+    --     (hPb ▸ evalMapApplyPoly_ne_zero_iff_valuationFun_apply_evalMapApplyPoly_eq_one p P)).symm
   forall_exists_le a ha := sorry
 
 end SWICat
