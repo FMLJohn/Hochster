@@ -931,29 +931,61 @@ lemma v_apply_ringHomToPiFractionRing_apply' (k : Type*) [Field k]
       I.preV k p (a p.z.2) :=
   extendToLocalization_apply_map_apply _ _ (FractionRing (MvPolynomial I.E k)) (a p.z.2)
 
-open Classical in
 lemma springLike'_mapRingHomToPiFractionRing_isIndex (k : Type*) [Field k] (I : SWICat) :
     (I.springLike' k).mapRingHomToPiFractionRing.isIndex (I.v k) where
-  forall_exists_of_ne_zero p a := by sorry
-    -- refine Localization.induction_on (a p.z.1) fun (P, Q) hPQ => ?_
-    -- · simp only [v, preV, FractionRing.mk_eq_div, map_div₀, extendToLocalization_apply_map_apply,
-    --     coe_mk, MonoidWithZeroHom.coe_mk, ZeroHom.coe_mk]
-    --   obtain ⟨n, hPpn⟩ := exists_valuationFun_apply_eq_two_pow_of_ne_zero p fun hP : P = 0 =>
-    --     false_of_ne <| Localization.mk_zero Q ▸ hP ▸ hPQ
-    --   obtain ⟨m, hQpm⟩ := exists_valuationFun_apply_eq_two_pow_of_ne_zero p
-    --     (nonZeroDivisors.coe_ne_zero Q)
-    --   exact hPpn ▸ hQpm ▸ ⟨n - m, (zpow_sub₀ (NeZero.ne' 2).symm n m).symm⟩
-  forall_le_of_ne p a ha _ := by sorry
-    -- obtain ⟨b, hb, hab⟩ := ha
-    -- refine hab ▸ v_apply_ringHomToPiFractionRing_apply k p b ▸ ?_
-    -- · simpa only [preV] using valuationFun_apply_le_one p (b p.z.1)
-  forall_iff_of_ne p a ha hap := by sorry
-    -- obtain ⟨b, hb, hab⟩ := ha
-    -- obtain ⟨P, hPb⟩ := exists_mvPolynomial_of_le_range_of_subset_range_of_mem_closure
-    --   (le_refl _) (Set.Subset.refl _) hb
-    -- exact hab ▸ v_apply_ringHomToPiFractionRing_apply k p b ▸
-    --   ((not_iff_not.2 <| to_map_eq_zero_iff (x := b p.z.2)).trans
-    --     (hPb ▸ evalMapApplyPoly_ne_zero_iff_valuationFun_apply_evalMapApplyPoly_eq_one p P)).symm
-  forall_exists_le a ha := sorry
+  forall_exists_of_ne_zero p a := by
+    refine Localization.induction_on (a p.z.1) fun (P, Q) hPQ => ?_
+    · simp only [v, preV, FractionRing.mk_eq_div, map_div₀, extendToLocalization_apply_map_apply,
+        coe_mk, MonoidWithZeroHom.coe_mk, ZeroHom.coe_mk]
+      obtain ⟨n, hPpn⟩ := exists_valuationFun_apply_eq_two_pow_of_ne_zero p fun hP : P = 0 =>
+        false_of_ne <| Localization.mk_zero Q ▸ hP ▸ hPQ
+      obtain ⟨m, hQpm⟩ := exists_valuationFun_apply_eq_two_pow_of_ne_zero p
+        (nonZeroDivisors.coe_ne_zero Q)
+      exact hPpn ▸ hQpm ▸ ⟨n - m, (zpow_sub₀ (NeZero.ne' 2).symm n m).symm⟩
+  forall_le_of_ne p a ha _ := by
+    obtain ⟨b, hb, hab⟩ := ha
+    refine hab ▸ v_apply_ringHomToPiFractionRing_apply k p b ▸ ?_
+    · simpa only [preV] using valuationFun_apply_le_one p (b p.z.1)
+  forall_iff_of_ne p a ha hap := by
+    obtain ⟨b, hb, hab⟩ := ha
+    obtain ⟨P, hPb⟩ := exists_mvPolynomial_of_le_range_of_subset_range_of_mem_closure
+      (le_refl _) (Set.Subset.refl _) hb
+    exact hab ▸ v_apply_ringHomToPiFractionRing_apply k p b ▸
+      ((not_iff_not.2 <| to_map_eq_zero_iff (x := b p.z.2)).trans
+        (hPb ▸ evalMapApplyPoly_ne_zero_iff_valuationFun_apply_evalMapApplyPoly_eq_one p P)).symm
+  forall_exists_le a ha := by
+    obtain ⟨b, hb, hab⟩ := ha
+    obtain ⟨P, hPb⟩ := exists_mvPolynomial_of_le_range_of_subset_range_of_mem_closure
+      (le_refl _) (Set.Subset.refl _) hb
+    refine hab ▸ ⟨if hP : P.support.Nonempty then
+      (P.support.image fun m => ∏ e ∈ m.support, (1 / 2) ^ m e).min'
+        (P.support.image_nonempty.2 hP) else 1, ?_, fun p hbp => ?_⟩
+    · by_cases hP : P.support.Nonempty
+      · simp only [hP, reduceDIte]
+        refine (lt_min'_iff ..).2 fun r hPmr => ?_
+        · obtain ⟨m, hmP, hmr⟩ := mem_image.1 hPmr
+          exact hmr ▸ prod_pos fun e hem => pow_pos one_half_pos (m e)
+      · simp only [hP, reduceDIte, zero_lt_one]
+    · have hbp : b p.z.1 ≠ 0 := fun h => by
+        simp only [Pi.ringHomToPiFractionRing, Pi.ringHom_apply, RingHom.coe_comp, comp_apply,
+          Pi.evalRingHom_apply, h, numeratorRingHom_apply, zero_oreDiv', ne_eq,
+          not_true_eq_false] at hbp
+      refine v_apply_ringHomToPiFractionRing_apply k p b ▸ ?_
+      · change _ ≤ valuationFun k p (b p.z.1)
+        by_cases hP : P.support.Nonempty
+        · simp only [hP, reduceDIte]
+          obtain ⟨m, h1, h2⟩ := ((valuationFun_apply_eq_iff_of_support_nonempty p
+            (support_nonempty.2 hbp) _).1 rfl).2
+          have : m ∈ P.support := support_evalMapApplyPoly_subset p.z.1 P
+            (hPb ▸ h1 : m ∈ (MvPolynomial.eval (T k) _ p.z.1).support)
+          refine h2 ▸ ((P.support.image fun m => ∏ e ∈ m.support, (1 / 2) ^ m e).min'_le
+            (∏ e ∈ m.support, (1 / 2) ^ m e) (mem_image.2 ⟨m, this, rfl⟩)).trans
+              (prod_le_prod (fun e hem => zero_le _) (fun e hem => ?_))
+          · by_cases hep : p.z.2 ∈ I.g e
+            · exact if_pos hep ▸ pow_le_one₀ (zero_le _) (half_le_self rfl)
+            · exact if_neg hep ▸ le_refl ((1 / 2) ^ m e)
+        · exfalso
+          have := (support_nonempty.not_left.1 hP ▸ hPb) ▸ hbp
+          simp only [map_zero, Pi.zero_apply, ne_eq, not_true_eq_false] at this
 
 end SWICat
