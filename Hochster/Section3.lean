@@ -5,6 +5,12 @@ import Hochster.Section2
 
 open CategoryTheory ConstructibleTop OreLocalization PrimeSpectrum RingHom TopologicalSpace Topology
 
+/--
+The category of springs. Mathematically, a spring is a pair `(X, A)` where `A` is a commutative
+ring whose nilradical is `{0}`, and `X` is a dense patch in `PrimeSpectrum A`. In this structure,
+we express this idea by declaring that there is an embedding `f : X → PrimeSpectrum A` and that
+`Set.range f` is a dense patch in `PrimeSpectrum A`.
+-/
 @[ext]
 structure SpringCat where
   X : Type*
@@ -17,6 +23,17 @@ structure SpringCat where
   range_dense : Dense (Set.range f)
   range_isClosed : IsClosed (X := ConstructibleTop (PrimeSpectrum A)) (Set.range f)
 
+/--
+Given a topological space `X` and a commutative ring `A`, `SpringLike X A` holds if `X` is a
+spectral space and there exist `i : X → Type*` and `h : A →+* Π x : X, i x` such that:
+1. for any `x : X`, `i x` is an integral domain;
+2. `h` is injective;
+3. for any `a : A`, `{ x : X | h a x ≠ 0 }` is open and compact;
+4. `{ { x : X | h a x ≠ 0 } | a : A }` is an open basis for `X`.
+Later we will see that `SpringLike 𝔸.X 𝔸.A` holds for any `𝔸 : SpringCat`, and that for any
+topolgical space `X` and commutative ring `A` with `SpringLike X A` there exists some
+`𝔸 : SpringCat` such that `𝔸.X` and `𝔸.A` are defined as `X` and `A` respectively.
+-/
 structure SpringLike (X A : Type*) [TopologicalSpace X] [CommRing A] where
   spectralSpace : SpectralSpace X
   i : X → Type*
@@ -29,6 +46,10 @@ structure SpringLike (X A : Type*) [TopologicalSpace X] [CommRing A] where
   forall_isCompact (a : A) : IsCompact { x : X | h a x ≠ 0 }
   isTopologicalBasis : IsTopologicalBasis { { x : X | h a x ≠ 0 } | a : A }
 
+/--
+`SpringLike' A` holds if `X` is spectral, `{ x : X | a x ≠ 0 }` is open and compact for any
+`a ∈ A`, and `{ { x : X | a x ≠ 0 } | a ∈ A }` is an open basis for `X`.
+-/
 structure SpringLike' {X : Type*} [TopologicalSpace X] {i : X → Type*}
     [(x : X) → CommRing (i x)] [(x : X) → IsDomain (i x)] (A : Subring (Π x : X, i x)) where
   spectralSpace : SpectralSpace X
