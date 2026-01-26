@@ -163,6 +163,9 @@ end Subring
 namespace SWICat
 
 open Classical in
+/--
+`SWICat.T k e := fun x => if x ∈ I.g e then MvPolynomial.X e else 0`.
+-/
 noncomputable def T (k : Type*) [Field k] {I : SWICat} (e : I.E) :
     I.X → MvPolynomial I.E k :=
   fun x => if x ∈ I.g e then MvPolynomial.X e else 0
@@ -484,6 +487,14 @@ end MvPolynomial
 namespace SWICat
 
 open Classical in
+/--
+`SWICat.valuationFun k p :=`
+`fun P =>`
+  `if hP : P.support.Nonempty then`
+    `(P.support.image fun m => ∏ e ∈ m.support, if p.z.2 ∈ I.g e then 1 else (1 / 2) ^ m e).max'`
+      `(P.support.image_nonempty.2 hP)`
+    `else 0`.
+-/
 noncomputable def valuationFun (k : Type*) [Field k] {I : SWICat} (p : σ(I.X)) :
     MvPolynomial I.E k → NNRat :=
   fun P =>
@@ -903,6 +914,9 @@ lemma evalMapApplyPoly_ne_zero_iff_valuationFun_apply_evalMapApplyPoly_eq_one
           (Finsupp.mem_support_iff.mp hem)) ?_
         · simpa only [hep] using this e hem
 
+/--
+For any `p : σ(I.X)`, `(I.preV k p).toFun := valuationFun k p`.
+-/
 noncomputable def preV (k : Type*) [Field k] (I : SWICat) :
     Π _ : σ(I.X), Valuation (MvPolynomial I.E k) NNRat :=
   fun p => {
@@ -912,6 +926,13 @@ noncomputable def preV (k : Type*) [Field k] (I : SWICat) :
     map_mul' P Q := valuationFun_apply_mul p P Q
     map_add_le_max' P Q := valuationFun_apply_add_le_max p P Q }
 
+/--
+`I.v k` is defined as
+`fun p => (preV k I p).extendToLocalization (S := nonZeroDivisors (MvPolynomial I.E k))`
+  `(fun P hP => Ideal.mem_primeCompl_iff.2 <|`
+    `(not_iff_not.2 (valuationFun_apply_eq_zero_iff p P)).2 (mem_nonZeroDivisors_iff_ne_zero.1 hP))`
+  `(FractionRing (MvPolynomial I.E k))`.
+-/
 noncomputable def v (k : Type*) [Field k] (I : SWICat) :
     Π _ : σ(I.X), Valuation (FractionRing (MvPolynomial I.E k)) NNRat :=
   fun p => (preV k I p).extendToLocalization (S := nonZeroDivisors (MvPolynomial I.E k))

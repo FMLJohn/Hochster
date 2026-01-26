@@ -477,7 +477,7 @@ lemma isClosed_vanishing_set_of_forall_map_apply_le_of_forall_ne_zero
               Nat.le_refl _⟩).1 (Pi.mul_pow_natDegree_repPoly_apply_eq_zero_of_apply_eq_zero hry hr)
                 hxy, hbx⟩
 
-def closureInsertDiv {X : Type*} [TopologicalSpace X] {i : X → Type*}
+lemma closureInsertDiv {X : Type*} [TopologicalSpace X] {i : X → Type*}
     [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
     {A : Subring (Π x : X, i x)} {hA : SpringLike' A} (hAv : hA.isIndex v)
     {a b : Π x : X, i x} (ha : a ∈ A) (hb : b ∈ A) (hab : ∀ x : X, b x = 0 → a x = 0)
@@ -875,6 +875,12 @@ lemma SpringLike'.isIndex.exists_springLike'_closure_union_isIndex
     forall_exists_le := fun a haA =>
       (hXAv (fun f hfF => hXA2 a haA hfF)).forall_exists_le a (hXA3 a haA) }
 
+/--
+`IndExtForV v A 0 := A` and for any `n : ℕ`, `IndExtForV v A (n + 1)` is defined as
+`closure ((IndExtForV v A n).carrier ∪ { c : Π x : X, i x | ∃ a b, c = a / b ∧`
+`a ∈ IndExtForV v A n ∧ b ∈ IndExtForV v A n ∧ (∀ x : X, b x = 0 → a x = 0) ∧`
+`∃ hAc : SpringLike' (closure ((IndExtForV v A n).carrier.insert c)), hAc.isIndex v })`.
+-/
 def IndExtForV {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
     (v : Π p : σ(X), Valuation (i p.z.1) NNRat) (A : Subring (Π x : X, i x)) :
     ℕ → Subring (Π x : X, i x)
@@ -897,7 +903,7 @@ lemma exists_springLike'_indExtForV_isIndex
       obtain ⟨hAn, hAnv⟩ := hn
       exact hAnv.exists_springLike'_closure_union_isIndex
 
-def indExtForV {X : Type*} [TopologicalSpace X] {i : X → Type*}
+lemma indExtForV {X : Type*} [TopologicalSpace X] {i : X → Type*}
     [(x : X) → Field (i x)] {v : Π p : σ(X), Valuation (i p.z.1) NNRat}
     {A : Subring (Π x : X, i x)} {hA : SpringLike' A} (hAv : hA.isIndex v) (n : ℕ) :
     SpringLike' (IndExtForV v A n) :=
@@ -938,6 +944,9 @@ lemma mono_of_isIndex_of_isIndex {X : Type*} [TopologicalSpace X]
 
 end IndExtForV
 
+/--
+`ISupExtForV v A := iSup fun n => IndExtForV v A n`.
+-/
 def ISupExtForV {X : Type*} [TopologicalSpace X] {i : X → Type*} [(x : X) → Field (i x)]
     (v : Π p : σ(X), Valuation (i p.z.1) NNRat) (A : Subring (Π x : X, i x)) :
     Subring (Π x : X, i x) :=

@@ -6,6 +6,10 @@ universe u
 
 namespace SpectralSpace
 
+/--
+`(firstSWI X).X := X`; `(firstSWI X).E := { s : Set X | IsOpen s ∧ IsCompact s }`;
+`(firstSWI X).g := fun e => e.1`.
+-/
 def firstSWI (X : Type*) [TopologicalSpace X] [SpectralSpace X] :
     SWICat where
   X := X
@@ -18,6 +22,10 @@ def firstSWI (X : Type*) [TopologicalSpace X] [SpectralSpace X] :
   eq_generateFrom := by
     simpa using SpectralSpace.toPrespectralSpace.isTopologicalBasis.eq_generateFrom
 
+/--
+`hochsterRing X k` is defined as
+`(springLike'_mapRingHomToPiFractionRing_isIndex k (firstSWI X)).iSupExtForV.springLike.spring.A`.
+-/
 def hochsterRing (X k : Type*) [TopologicalSpace X] [SpectralSpace X] [Field k] :=
   (springLike'_mapRingHomToPiFractionRing_isIndex k (firstSWI X)).iSupExtForV.springLike.spring.A
 

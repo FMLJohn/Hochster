@@ -165,6 +165,15 @@ lemma Subring.map_apply_eq_map_apply_of_pi_of_eq_of_eq {X : Type*} {x y : X}
   · exact RingHom.map_add .. ▸ (h x).map_add .. ▸ (h y).map_add .. ▸ habhmxy ▸ habhnxy ▸ rfl
   · exact RingHom.map_mul .. ▸ (h x).map_mul .. ▸ (h y).map_mul .. ▸ habhmxy ▸ habhnxy ▸ rfl
 
+/--
+`NonVanishingConstSetsFromInter a b h :=`
+`let s1 := { h x (a.1 x) | x : X };`
+`let s2 := { h x (b.1 x) | x : X };`
+`let S1 := { s : Set X | ∃ r ∈ s1, s = { x : X | h x (a.1 x) = r } };`
+`let S2 := { s : Set X | ∃ r ∈ s2, s = { x : X | h x (b.1 x) = r } };`
+`{ s : Set X | s.Nonempty ∧ (∃ A ∈ S1, ∃ B ∈ S2, s = A ∩ B) ∧`
+`(∀ x ∈ s, h x (a.1 x) ≠ 0 ∨ h x (b.1 x) ≠ 0) }`.
+-/
 def NonVanishingConstSetsFromInter {X : Type*} {i : X → Type*} [(x : X) → Ring (i x)]
     {A : Subring (Π x : X, i x)} (a b : A) {R : Type*} [Ring R] (h : (x : X) → i x →+* R) :=
   let s1 := { h x (a.1 x) | x : X }

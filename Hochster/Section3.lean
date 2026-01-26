@@ -97,6 +97,9 @@ lemma isSpectralMap (𝔸 : SpringCat) : IsSpectralMap 𝔸.f :=
   ((spectralSpace_and_isSpectralMap_iff_isClosed_constructibleTop_range 𝔸.isEmbedding).2
     𝔸.range_isClosed).2
 
+/--
+`(inclusionRingHom 𝔸).toFun` is defined as `fun a x => Ideal.Quotient.mk (𝔸.f x).asIdeal a`.
+-/
 def inclusionRingHom (𝔸 : SpringCat) :
     𝔸.A →+* Π x : 𝔸.X, 𝔸.A ⧸ (𝔸.f x).asIdeal where
   toFun := fun a x => Ideal.Quotient.mk (𝔸.f x).asIdeal a
