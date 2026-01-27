@@ -99,7 +99,7 @@ lemma coeff_repMvPoly_mem {R : Type*} [CommRing R] {A : Subring R}
 lemma exists_mvPolynomial_of_le_range_of_mem_closure {A R : Type*}
     [CommRing A] [CommRing R] {r : R} {S : Set R} {B : Subring R}
     {h : A →+* R} (hBh : B ≤ h.range) (hBSr : r ∈ closure (B.carrier ∪ S)) :
-    ∃ p : MvPolynomial S A, (p.map h).eval (fun s : S => s.1) = r := by
+    ∃ p : MvPolynomial S A, (p.map h).eval (Subtype.val) = r := by
   refine closure_induction (fun r hr => ?_) ⟨0, rfl⟩ ?_ (fun r s _ _ ⟨p, hpr⟩ ⟨q, hqs⟩ => ?_)
     (fun r _ ⟨p, hpr⟩ => ?_) (fun r s _ _ ⟨p, hpr⟩ ⟨q, hqs⟩ => ?_) hBSr
   · refine hr.elim (fun hBr => ?_) (fun hrS => ?_)
@@ -129,7 +129,7 @@ lemma exists_mvPolynomial_of_le_range_of_subset_range_of_mem_closure
     {A R σ : Type*} [CommRing A] [CommRing R] {r : R} {S : Set R} {B : Subring R}
     {h : A →+* R} (hBh : B ≤ h.range) {f : σ → R} (hSf : S ⊆ Set.range f)
     (hBSr : r ∈ closure (B.carrier ∪ S)) :
-    ∃ p : MvPolynomial σ A, (p.map h).eval (fun s => f s) = r := by
+    ∃ p : MvPolynomial σ A, (p.map h).eval f = r := by
   refine closure_induction (fun r hr => ?_) ⟨0, rfl⟩ ?_ (fun r s _ _ ⟨p, hpr⟩ ⟨q, hqs⟩ => ?_)
     (fun r _ ⟨p, hpr⟩ => ?_) (fun r s _ _ ⟨p, hpr⟩ ⟨q, hqs⟩ => ?_) hBSr
   · refine hr.elim (fun hBr => ?_) (fun hrS => ?_)
