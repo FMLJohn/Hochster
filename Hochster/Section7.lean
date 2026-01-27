@@ -23,7 +23,7 @@ def firstSWI (X : Type*) [TopologicalSpace X] [SpectralSpace X] :
     simpa using SpectralSpace.toPrespectralSpace.isTopologicalBasis.eq_generateFrom
 
 /--
-`hochsterRing X k` is defined as
+`SpectralSpace.hochsterRing X k` is defined as
 `(springLike'_mapRingHomToPiFractionRing_isIndex k (firstSWI X)).iSupExtForV.springLike.spring.A`.
 -/
 def hochsterRing (X k : Type*) [TopologicalSpace X] [SpectralSpace X] [Field k] :=
@@ -34,6 +34,13 @@ noncomputable instance (X k : Type*) [TopologicalSpace X] [SpectralSpace X] [Fie
   delta hochsterRing
   infer_instance
 
+/--
+`SpectralSpace.homeomorph X k` is defined as
+`(iSupExtForV_springLike_spring_isAffine_of_isSimple`
+  `(((firstSWI X).springLike' k).mapRingHomToPiFractionRingIsSimple`
+    `((firstSWI X).closureRangeUnionIsSimple k))`
+  `((firstSWI X).springLike'_mapRingHomToPiFractionRing_isIndex k)).homeomorph`.
+-/
 noncomputable def homeomorph (X k : Type*) [TopologicalSpace X] [SpectralSpace X] [Field k] :
     X ≃ₜ PrimeSpectrum (hochsterRing X k) :=
   (iSupExtForV_springLike_spring_isAffine_of_isSimple
